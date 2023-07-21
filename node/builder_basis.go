@@ -6,6 +6,8 @@ import (
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/impl/basis"
+	"github.com/LMF709268224/titan-vps/node/modules"
+	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/repo"
 	"go.uber.org/fx"
 
@@ -24,7 +26,7 @@ func Basis(out *api.Basis) Option {
 		},
 
 		func(s *Settings) error {
-			resAPI := &basis.Basis{}
+			resAPI := &basis.Manager{}
 			s.invokes[ExtractAPIKey] = fx.Populate(resAPI)
 			*out = resAPI
 			return nil
@@ -41,5 +43,7 @@ func ConfigBasis(c interface{}) Option {
 	return Options(
 		Override(new(*config.BasisCfg), cfg),
 		ConfigCommon(&cfg.Common),
+		Override(new(dtypes.SetBasisConfigFunc), modules.NewSetBasisConfigFunc),
+		Override(new(dtypes.GetBasisConfigFunc), modules.NewGetBasisConfigFunc),
 	)
 }

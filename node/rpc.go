@@ -2,6 +2,7 @@ package node
 
 import (
 	"context"
+	"html/template"
 	"net"
 	"net/http"
 	"time"
@@ -102,7 +103,13 @@ func BasisHandler(a api.Basis, permissioned bool, opts ...jsonrpc.ServerOption) 
 	}
 
 	serveRpc("/rpc/v0", wapi)
+	m.HandleFunc("/rpc/index", homePage)
 	m.PathPrefix("/").Handler(http.DefaultServeMux) // pprof
 
 	return m, nil
+}
+
+func homePage(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("../../homepage.html"))
+	tmpl.Execute(w, nil)
 }

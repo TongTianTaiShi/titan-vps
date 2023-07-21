@@ -18,7 +18,15 @@ type BasisStruct struct {
 	CommonStruct
 
 	Internal struct {
-		Hello func(p0 context.Context, p1 string) (*types.Hellos, error) `perm:"read"`
+		CreateInstance func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 string, p6 int32) (*types.CreateInstanceResponse, error) `perm:"read"`
+
+		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]string, error) `perm:"read"`
+
+		DescribeInstanceType func(p0 context.Context, p1 string, p2 int32, p3 float32) ([]string, error) `perm:"read"`
+
+		DescribePrice func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) `perm:"read"`
+
+		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"read"`
 	}
 }
 
@@ -65,15 +73,59 @@ type TransactionStub struct {
 	CommonStub
 }
 
-func (s *BasisStruct) Hello(p0 context.Context, p1 string) (*types.Hellos, error) {
-	if s.Internal.Hello == nil {
+func (s *BasisStruct) CreateInstance(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 string, p6 int32) (*types.CreateInstanceResponse, error) {
+	if s.Internal.CreateInstance == nil {
 		return nil, ErrNotSupported
 	}
-	return s.Internal.Hello(p0, p1)
+	return s.Internal.CreateInstance(p0, p1, p2, p3, p4, p5, p6)
 }
 
-func (s *BasisStub) Hello(p0 context.Context, p1 string) (*types.Hellos, error) {
+func (s *BasisStub) CreateInstance(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 string, p6 int32) (*types.CreateInstanceResponse, error) {
 	return nil, ErrNotSupported
+}
+
+func (s *BasisStruct) DescribeImages(p0 context.Context, p1 string, p2 string) ([]string, error) {
+	if s.Internal.DescribeImages == nil {
+		return *new([]string), ErrNotSupported
+	}
+	return s.Internal.DescribeImages(p0, p1, p2)
+}
+
+func (s *BasisStub) DescribeImages(p0 context.Context, p1 string, p2 string) ([]string, error) {
+	return *new([]string), ErrNotSupported
+}
+
+func (s *BasisStruct) DescribeInstanceType(p0 context.Context, p1 string, p2 int32, p3 float32) ([]string, error) {
+	if s.Internal.DescribeInstanceType == nil {
+		return *new([]string), ErrNotSupported
+	}
+	return s.Internal.DescribeInstanceType(p0, p1, p2, p3)
+}
+
+func (s *BasisStub) DescribeInstanceType(p0 context.Context, p1 string, p2 int32, p3 float32) ([]string, error) {
+	return *new([]string), ErrNotSupported
+}
+
+func (s *BasisStruct) DescribePrice(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) {
+	if s.Internal.DescribePrice == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.DescribePrice(p0, p1, p2, p3, p4, p5)
+}
+
+func (s *BasisStub) DescribePrice(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *BasisStruct) DescribeRegions(p0 context.Context) ([]string, error) {
+	if s.Internal.DescribeRegions == nil {
+		return *new([]string), ErrNotSupported
+	}
+	return s.Internal.DescribeRegions(p0)
+}
+
+func (s *BasisStub) DescribeRegions(p0 context.Context) ([]string, error) {
+	return *new([]string), ErrNotSupported
 }
 
 func (s *CommonStruct) AuthNew(p0 context.Context, p1 []auth.Permission) ([]byte, error) {

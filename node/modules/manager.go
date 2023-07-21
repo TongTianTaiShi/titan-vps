@@ -37,3 +37,33 @@ func NewGetTransactionConfigFunc(r repo.LockedRepo) func() (config.TransactionCf
 		return
 	}
 }
+
+// NewSetBasisConfigFunc creates a function to set the basis config
+func NewSetBasisConfigFunc(r repo.LockedRepo) func(cfg config.BasisCfg) error {
+	return func(cfg config.BasisCfg) (err error) {
+		return r.SetConfig(func(raw interface{}) {
+			_, ok := raw.(*config.BasisCfg)
+			if !ok {
+				return
+			}
+		})
+	}
+}
+
+// NewGetBasisConfigFunc creates a function to get the basis config
+func NewGetBasisConfigFunc(r repo.LockedRepo) func() (config.BasisCfg, error) {
+	return func() (out config.BasisCfg, err error) {
+		raw, err := r.Config()
+		if err != nil {
+			return
+		}
+
+		scfg, ok := raw.(*config.BasisCfg)
+		if !ok {
+			return
+		}
+
+		out = *scfg
+		return
+	}
+}

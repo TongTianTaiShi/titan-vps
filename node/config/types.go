@@ -28,4 +28,8 @@ type BasisCfg struct {
 	Common
 	// used when 'ListenAddress' is unspecified. must be a valid duration recognized by golang's time.ParseDuration function
 	Timeout string
+
+	DryRun                bool
+	AliyunAccessKeyID     string
+	AliyunAccessKeySecret string
 }

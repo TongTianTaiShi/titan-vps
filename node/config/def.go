@@ -30,10 +30,13 @@ func DefaultBasisCfg() *BasisCfg {
 	return &BasisCfg{
 		Common: Common{
 			API: API{
-				ListenAddress: "0.0.0.0:5566",
+				ListenAddress: "0.0.0.0:5577",
 			},
 		},
-		Timeout: "30s",
+		Timeout:               "30s",
+		DryRun:                true,
+		AliyunAccessKeyID:     "",
+		AliyunAccessKeySecret: "",
 	}
 }
 
