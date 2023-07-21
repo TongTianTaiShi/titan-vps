@@ -243,7 +243,7 @@
                         "id": 1
                     };
 
-                    return fetch("http://192.168.0.78:5577/rpc/v0", {
+                    return fetch("/rpc/v0", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(data)
@@ -368,13 +368,11 @@
 
                     this.showLoading()
 
-                    axios.get("/api/v1/create_instance?regionId=" + this.regionValue +
-                        "&instanceType=" + this.instanceValue +
-                        "&imageId=" + this.imgValue +
-                        "&priceUnit=" + this.unitValue +
-                        "&period=" + this.periodValue +
-                        "&password=" + password).then((res) => {
-                            // console.log(res)
+                    this.fetchData("CreateInstance", [this.regionValue, this.instanceValue, this.unitValue, this.imgValue, password, this.periodValue])
+                        .then(res => res.json())
+                        .then(res => {
+                            console.log(' Response:', res);
+
                             this.hideLoading()
                             if (!this.checkRes(res)) {
                                 return
@@ -382,19 +380,17 @@
                             document.getElementById("buyResults").style.display = "block";
 
                             const instanceIDLabel = document.getElementById('InstanceId');
-                            instanceIDLabel.innerHTML = res.data.data.InstanceId;
+                            instanceIDLabel.innerHTML = res.result.InstanceId;
                             const orderIDLabel = document.getElementById('OrderId');
-                            orderIDLabel.innerHTML = res.data.data.OrderId;
+                            orderIDLabel.innerHTML = res.result.OrderId;
                             const requestIDLabel = document.getElementById('RequestId');
-                            requestIDLabel.innerHTML = res.data.data.RequestId;
+                            requestIDLabel.innerHTML = res.result.RequestId;
                             const tradePriceLabel = document.getElementById('TradePrice');
-                            tradePriceLabel.innerHTML = res.data.data.TradePrice;
+                            tradePriceLabel.innerHTML = res.result.TradePrice;
                             const publicIpAddressLabel = document.getElementById('PublicIpAddress');
-                            publicIpAddressLabel.innerHTML = res.data.data.PublicIpAddress;
-
-                        }).catch((error) => {
-                            console.error('Error:', error);
-                        });
+                            publicIpAddressLabel.innerHTML = res.result.PublicIpAddress;
+                        })
+                        .catch(error => console.error(' Error:', error));
                 },
 
                 showLoading () {
