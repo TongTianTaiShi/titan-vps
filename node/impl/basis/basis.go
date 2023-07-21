@@ -139,7 +139,7 @@ func (m *Manager) CreateInstance(ctx context.Context, regionID, instanceType, pr
 		return nil, xerrors.New(*err.Data)
 	}
 
-	address, err := aliyun.AllocatePublicIpAddress(regionID, k, s, result.InstanceId)
+	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceId)
 	if err != nil {
 		log.Errorf("AllocatePublicIpAddress err:", err.Error())
 	} else {
