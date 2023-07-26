@@ -200,7 +200,6 @@ func (m *Manager) CreateInstance(ctx context.Context, regionID, instanceType, pr
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
 	}
-	// 一分钟后调用
 	go func() {
 		time.Sleep(1 * time.Minute)
 
