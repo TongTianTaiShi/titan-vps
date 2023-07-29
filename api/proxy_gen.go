@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -18,7 +17,11 @@ type BasisStruct struct {
 	CommonStruct
 
 	Internal struct {
+		AttachKeyPair func(p0 context.Context, p1 string, p2 string, p3 string) ([]*types.AttachKeyPairResponse, error) `perm:"read"`
+
 		CreateInstance func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 string, p6 int32) (*types.CreateInstanceResponse, error) `perm:"read"`
+
+		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"read"`
 
 		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]string, error) `perm:"read"`
 
@@ -27,6 +30,8 @@ type BasisStruct struct {
 		DescribePrice func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) `perm:"read"`
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"read"`
+
+		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
 	}
 }
 
@@ -73,6 +78,17 @@ type TransactionStub struct {
 	CommonStub
 }
 
+func (s *BasisStruct) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 string) ([]*types.AttachKeyPairResponse, error) {
+	if s.Internal.AttachKeyPair == nil {
+		return *new([]*types.AttachKeyPairResponse), ErrNotSupported
+	}
+	return s.Internal.AttachKeyPair(p0, p1, p2, p3)
+}
+
+func (s *BasisStub) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 string) ([]*types.AttachKeyPairResponse, error) {
+	return *new([]*types.AttachKeyPairResponse), ErrNotSupported
+}
+
 func (s *BasisStruct) CreateInstance(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 string, p6 int32) (*types.CreateInstanceResponse, error) {
 	if s.Internal.CreateInstance == nil {
 		return nil, ErrNotSupported
@@ -81,6 +97,17 @@ func (s *BasisStruct) CreateInstance(p0 context.Context, p1 string, p2 string, p
 }
 
 func (s *BasisStub) CreateInstance(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 string, p6 int32) (*types.CreateInstanceResponse, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *BasisStruct) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) {
+	if s.Internal.CreateKeyPair == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.CreateKeyPair(p0, p1, p2)
+}
+
+func (s *BasisStub) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) {
 	return nil, ErrNotSupported
 }
 
@@ -126,6 +153,17 @@ func (s *BasisStruct) DescribeRegions(p0 context.Context) ([]string, error) {
 
 func (s *BasisStub) DescribeRegions(p0 context.Context) ([]string, error) {
 	return *new([]string), ErrNotSupported
+}
+
+func (s *BasisStruct) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
+	if s.Internal.RebootInstance == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.RebootInstance(p0, p1, p2)
+}
+
+func (s *BasisStub) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
+	return "", ErrNotSupported
 }
 
 func (s *CommonStruct) AuthNew(p0 context.Context, p1 []auth.Permission) ([]byte, error) {

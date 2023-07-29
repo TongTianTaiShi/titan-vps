@@ -38,7 +38,7 @@ func (m *Manager) getAccessKeys() (string, string) {
 func (m *Manager) DescribeRegions(ctx context.Context) ([]string, error) {
 	rsp, err := aliyun.DescribeRegions(m.getAccessKeys())
 	if err != nil {
-		log.Errorf("DescribeRegions err:", err.Error())
+		log.Errorf("DescribeRegions err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
 
@@ -57,7 +57,7 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, regionID string, cor
 
 	rsp, err := aliyun.DescribeRecommendInstanceType(regionID, k, s, cores, memory)
 	if err != nil {
-		log.Errorf("DescribeRecommendInstanceType err:", err.Error())
+		log.Errorf("DescribeRecommendInstanceType err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
 
@@ -83,7 +83,7 @@ func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType str
 
 	rsp, err := aliyun.DescribeImages(regionID, k, s, instanceType)
 	if err != nil {
-		log.Errorf("DescribeImages err:", err.Error())
+		log.Errorf("DescribeImages err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
 	var rpsData []string
@@ -110,6 +110,40 @@ func (m *Manager) DescribePrice(ctx context.Context, regionID, instanceType, pri
 	return price, nil
 }
 
+func (m *Manager) CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error) {
+	k, s := m.getAccessKeys()
+
+	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, KeyPairName)
+	if err != nil {
+		log.Errorf("CreateKeyPair err: %s", err.Error())
+		return nil, xerrors.New(*err.Data)
+	}
+
+	return keyInfo, nil
+}
+
+func (m *Manager) AttachKeyPair(ctx context.Context, regionID, KeyPairName, instanceIds string) ([]*types.AttachKeyPairResponse, error) {
+	k, s := m.getAccessKeys()
+	AttachResult, err := aliyun.AttachKeyPair(regionID, k, s, KeyPairName, instanceIds)
+	if err != nil {
+		log.Errorf("AttachKeyPair err: %s", err.Error())
+		return nil, xerrors.New(*err.Data)
+	}
+
+	return AttachResult, nil
+}
+
+func (m *Manager) RebootInstance(ctx context.Context, regionID, instanceId string) (string, error) {
+	k, s := m.getAccessKeys()
+	RebootResult, err := aliyun.RebootInstance(regionID, k, s, instanceId)
+	if err != nil {
+		log.Errorf("AttachKeyPair err: %s", err.Error())
+		return "", xerrors.New(*err.Data)
+	}
+
+	return RebootResult.Body.String(), nil
+}
+
 func (m *Manager) CreateInstance(ctx context.Context, regionID, instanceType, priceUnit, imageID, password string, period int32) (*types.CreateInstanceResponse, error) {
 	k, s := m.getAccessKeys()
 
@@ -126,29 +160,29 @@ func (m *Manager) CreateInstance(ctx context.Context, regionID, instanceType, pr
 	} else {
 		securityGroupID, err = aliyun.CreateSecurityGroup(regionID, k, s)
 		if err != nil {
-			log.Errorf("CreateSecurityGroup err:", err.Error())
+			log.Errorf("CreateSecurityGroup err: %s", err.Error())
 			return nil, xerrors.New(*err.Data)
 		}
 	}
 
 	log.Debugf("securityGroupID : ", securityGroupID)
 
-	result, err := aliyun.CreateInstance(regionID, k, s, instanceType, imageID, password, securityGroupID, priceUnit, period, true)
+	result, err := aliyun.CreateInstance(regionID, k, s, instanceType, imageID, password, securityGroupID, priceUnit, period, false)
 	if err != nil {
-		log.Errorf("CreateInstance err:", err.Error())
+		log.Errorf("CreateInstance err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
 
 	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceId)
 	if err != nil {
-		log.Errorf("AllocatePublicIpAddress err:", err.Error())
+		log.Errorf("AllocatePublicIpAddress err: %s", err.Error())
 	} else {
 		result.PublicIpAddress = address
 	}
 
 	err = aliyun.AuthorizeSecurityGroup(regionID, k, s, securityGroupID)
 	if err != nil {
-		log.Errorf("AuthorizeSecurityGroup err:", err.Error())
+		log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
 	}
 
 	// 一分钟后调用

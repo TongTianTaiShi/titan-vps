@@ -29,3 +29,14 @@ type CreateInstanceResponse struct {
 	TradePrice      float32
 	PublicIpAddress string
 }
+type CreateKeyPairResponse struct {
+	KeyPairId      string
+	KeyPairName    string
+	PrivateKeyBody string
+}
+type AttachKeyPairResponse struct {
+	Code       string
+	InstanceId string
+	Message    string
+	Success    string
+}

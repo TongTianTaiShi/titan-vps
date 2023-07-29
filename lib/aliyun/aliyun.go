@@ -621,3 +621,137 @@ func DescribeAvailableResource(regionID, keyID, keySecret string, cores int32, m
 	}
 	return result, nil
 }
+
+// CreateKeyPair Create key pair
+func CreateKeyPair(regionID, keyID, keySecret, KeyPairName string) (*types.CreateKeyPairResponse, *tea.SDKError) {
+	var out *types.CreateKeyPairResponse
+
+	client, err := newClient(regionID, keyID, keySecret)
+	if err != nil {
+		return out, err
+	}
+
+	createKeyPairRequest := &ecs20140526.CreateKeyPairRequest{
+		RegionId:    tea.String(regionID),
+		KeyPairName: tea.String(KeyPairName),
+	}
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		result, _e := client.CreateKeyPairWithOptions(createKeyPairRequest, runtime)
+		if _e != nil {
+			return _e
+		}
+		keyInfo := result.Body
+		out = &types.CreateKeyPairResponse{
+			KeyPairId:      *keyInfo.KeyPairId,
+			KeyPairName:    *keyInfo.KeyPairName,
+			PrivateKeyBody: *keyInfo.PrivateKeyBody,
+		}
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return out, errors
+	}
+	return out, nil
+}
+
+// AttachKeyPair Attach KeyPair
+func AttachKeyPair(regionID, keyID, keySecret, KeyPairName, instanceIds string) ([]*types.AttachKeyPairResponse, *tea.SDKError) {
+	var out []*types.AttachKeyPairResponse
+
+	client, err := newClient(regionID, keyID, keySecret)
+	if err != nil {
+		return out, err
+	}
+
+	attachKeyPairRequest := &ecs20140526.AttachKeyPairRequest{
+		RegionId:    tea.String(regionID),
+		KeyPairName: tea.String(KeyPairName),
+		// InstanceIds should be []string
+		InstanceIds: tea.String(instanceIds),
+	}
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		result, _e := client.AttachKeyPairWithOptions(attachKeyPairRequest, runtime)
+		if _e != nil {
+			return _e
+		}
+
+		for _, i := range result.Body.Results.Result {
+			var instanceInfo *types.AttachKeyPairResponse
+			instanceInfo.Code = *i.Code
+			instanceInfo.InstanceId = *i.InstanceId
+			instanceInfo.Message = *i.Message
+			instanceInfo.Success = *i.Success
+			out = append(out, instanceInfo)
+		}
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return out, errors
+	}
+	return out, nil
+}
+
+// RebootInstance  Reboot Instance
+func RebootInstance(regionID, keyID, keySecret, instanceId string) (*ecs20140526.RebootInstanceResponse, *tea.SDKError) {
+	var result *ecs20140526.RebootInstanceResponse
+
+	client, err := newClient(regionID, keyID, keySecret)
+	if err != nil {
+		return result, err
+	}
+
+	rebootInstanceRequest := &ecs20140526.RebootInstanceRequest{
+		InstanceId: tea.String(instanceId),
+	}
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		result, _e = client.RebootInstanceWithOptions(rebootInstanceRequest, runtime)
+		if _e != nil {
+			return _e
+		}
+
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return result, errors
+	}
+	return result, nil
+}
