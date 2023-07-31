@@ -28,6 +28,7 @@ type CreateInstanceResponse struct {
 	RequestId       string
 	TradePrice      float32
 	PublicIpAddress string
+	PrivateKey      string
 }
 type CreateKeyPairResponse struct {
 	KeyPairId      string

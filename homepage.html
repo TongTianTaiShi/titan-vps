@@ -133,7 +133,6 @@
         </div>
 
         <div style="padding: 10px; display:flex; align-items: center;">
-            <div>密码:</div>
             <input type="text" id="password" min="8" max="20">
 
             <el-button type="success" @click="getClick">购买</el-button>
@@ -163,6 +162,10 @@
             <div class="priceColor">
                 <div>IP地址: </div>
                 <div id="PublicIpAddress"></div>
+            </div>
+            <div class="priceColor">
+                <div>密钥: </div>
+                <div id="PrivateKey"></div>
             </div>
         </div>
     </div>
@@ -345,13 +348,13 @@
                     return true;
                 },
 
-                checkPassword (text) {
-                    if (!text) {
-                        this.$message('请输入密码');
-                        return false;
-                    }
-                    return true
-                },
+                // checkPassword (text) {
+                //     if (!text) {
+                //         this.$message('请输入密码');
+                //         return false;
+                //     }
+                //     return true
+                // },
 
                 getClick () {
                     document.getElementById("buyResults").style.display = "none";
@@ -360,15 +363,15 @@
                         return
                     }
 
-                    password = document.getElementById('password').value;
-                    if (!this.checkPassword(password)) {
-                        return
-                    }
-                    console.log(password)
+                    // password = document.getElementById('password').value;
+                    // if (!this.checkPassword(password)) {
+                    //     return
+                    // }
+                    // console.log(password)
 
                     this.showLoading()
 
-                    this.fetchData("CreateInstance", [this.regionValue, this.instanceValue, this.unitValue, this.imgValue, password, this.periodValue])
+                    this.fetchData("CreateInstance", [this.regionValue, this.instanceValue, this.unitValue, this.imgValue, this.periodValue])
                         .then(res => res.json())
                         .then(res => {
                             console.log(' Response:', res);
@@ -389,6 +392,8 @@
                             tradePriceLabel.innerHTML = res.result.TradePrice;
                             const publicIpAddressLabel = document.getElementById('PublicIpAddress');
                             publicIpAddressLabel.innerHTML = res.result.PublicIpAddress;
+                            const PrivateKeyLabel = document.getElementById('PrivateKey');
+                            PrivateKeyLabel.innerHTML = res.result.PrivateKey;
                         })
                         .catch(error => console.error(' Error:', error));
                 },

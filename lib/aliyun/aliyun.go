@@ -1,7 +1,9 @@
 package aliyun
 
 import (
+	"encoding/json"
 	"github.com/LMF709268224/titan-vps/api/types"
+	"github.com/opentracing/opentracing-go/log"
 
 	openapi "github.com/alibabacloud-go/darabonba-openapi/client"
 	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v2/client"
@@ -37,7 +39,7 @@ func newClient(regionID, keyID, keySecret string) (*ecs20140526.Client, *tea.SDK
 }
 
 // CreateInstance crate an instance
-func CreateInstance(regionID, keyID, keySecret, instanceType, imageID, password, securityGroupID, periodUnit string, period int32, dryRun bool) (*types.CreateInstanceResponse, *tea.SDKError) {
+func CreateInstance(regionID, keyID, keySecret, instanceType, imageID, securityGroupID, periodUnit string, period int32, dryRun bool) (*types.CreateInstanceResponse, *tea.SDKError) {
 	var out *types.CreateInstanceResponse
 
 	client, err := newClient(regionID, keyID, keySecret)
@@ -46,15 +48,15 @@ func CreateInstance(regionID, keyID, keySecret, instanceType, imageID, password,
 	}
 
 	createInstanceRequest := &ecs20140526.CreateInstanceRequest{
-		RegionId:                tea.String(regionID),
-		InstanceType:            tea.String(instanceType),
-		DryRun:                  tea.Bool(dryRun),
-		ImageId:                 tea.String(imageID),
-		SecurityGroupId:         tea.String(securityGroupID),
-		InstanceChargeType:      tea.String("PrePaid"),
-		PeriodUnit:              tea.String(periodUnit),
-		Period:                  tea.Int32(period),
-		Password:                tea.String(password),
+		RegionId:           tea.String(regionID),
+		InstanceType:       tea.String(instanceType),
+		DryRun:             tea.Bool(dryRun),
+		ImageId:            tea.String(imageID),
+		SecurityGroupId:    tea.String(securityGroupID),
+		InstanceChargeType: tea.String("PrePaid"),
+		PeriodUnit:         tea.String(periodUnit),
+		Period:             tea.Int32(period),
+		//Password:                tea.String(password),
 		InternetMaxBandwidthOut: tea.Int32(1),
 		InternetMaxBandwidthIn:  tea.Int32(1),
 		// TODO
@@ -668,19 +670,23 @@ func CreateKeyPair(regionID, keyID, keySecret, KeyPairName string) (*types.Creat
 }
 
 // AttachKeyPair Attach KeyPair
-func AttachKeyPair(regionID, keyID, keySecret, KeyPairName, instanceIds string) ([]*types.AttachKeyPairResponse, *tea.SDKError) {
+func AttachKeyPair(regionID, keyID, keySecret, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, *tea.SDKError) {
 	var out []*types.AttachKeyPairResponse
 
 	client, err := newClient(regionID, keyID, keySecret)
 	if err != nil {
 		return out, err
 	}
-
+	instanceIdsByte, e := json.Marshal(instanceIds)
+	if e != nil {
+		log.Error(e)
+	}
+	instanceIdSting := string(instanceIdsByte)
 	attachKeyPairRequest := &ecs20140526.AttachKeyPairRequest{
 		RegionId:    tea.String(regionID),
 		KeyPairName: tea.String(KeyPairName),
 		// InstanceIds should be []string
-		InstanceIds: tea.String(instanceIds),
+		InstanceIds: tea.String(instanceIdSting),
 	}
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {
@@ -693,13 +699,13 @@ func AttachKeyPair(regionID, keyID, keySecret, KeyPairName, instanceIds string) 
 		if _e != nil {
 			return _e
 		}
-
 		for _, i := range result.Body.Results.Result {
-			var instanceInfo *types.AttachKeyPairResponse
-			instanceInfo.Code = *i.Code
-			instanceInfo.InstanceId = *i.InstanceId
-			instanceInfo.Message = *i.Message
-			instanceInfo.Success = *i.Success
+			instanceInfo := &types.AttachKeyPairResponse{
+				Code:       *i.Code,
+				InstanceId: *i.InstanceId,
+				Message:    *i.Message,
+				Success:    *i.Success,
+			}
 			out = append(out, instanceInfo)
 		}
 		return nil

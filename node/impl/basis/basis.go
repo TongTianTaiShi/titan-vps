@@ -2,6 +2,8 @@ package basis
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api"
@@ -122,7 +124,7 @@ func (m *Manager) CreateKeyPair(ctx context.Context, regionID, KeyPairName strin
 	return keyInfo, nil
 }
 
-func (m *Manager) AttachKeyPair(ctx context.Context, regionID, KeyPairName, instanceIds string) ([]*types.AttachKeyPairResponse, error) {
+func (m *Manager) AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error) {
 	k, s := m.getAccessKeys()
 	AttachResult, err := aliyun.AttachKeyPair(regionID, k, s, KeyPairName, instanceIds)
 	if err != nil {
@@ -144,7 +146,7 @@ func (m *Manager) RebootInstance(ctx context.Context, regionID, instanceId strin
 	return RebootResult.Body.String(), nil
 }
 
-func (m *Manager) CreateInstance(ctx context.Context, regionID, instanceType, priceUnit, imageID, password string, period int32) (*types.CreateInstanceResponse, error) {
+func (m *Manager) CreateInstance(ctx context.Context, regionID, instanceType, priceUnit, imageID string, period int32) (*types.CreateInstanceResponse, error) {
 	k, s := m.getAccessKeys()
 
 	if priceUnit == "Year" {
@@ -167,7 +169,7 @@ func (m *Manager) CreateInstance(ctx context.Context, regionID, instanceType, pr
 
 	log.Debugf("securityGroupID : ", securityGroupID)
 
-	result, err := aliyun.CreateInstance(regionID, k, s, instanceType, imageID, password, securityGroupID, priceUnit, period, false)
+	result, err := aliyun.CreateInstance(regionID, k, s, instanceType, imageID, securityGroupID, priceUnit, period, false)
 	if err != nil {
 		log.Errorf("CreateInstance err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
@@ -184,7 +186,20 @@ func (m *Manager) CreateInstance(ctx context.Context, regionID, instanceType, pr
 	if err != nil {
 		log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
 	}
-
+	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
+	keyPairName := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
+	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairName)
+	if err != nil {
+		log.Errorf("CreateKeyPair err: %s", err.Error())
+	} else {
+		result.PrivateKey = keyInfo.PrivateKeyBody
+	}
+	var instanceIds []string
+	instanceIds = append(instanceIds, result.InstanceId)
+	_, err = aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
+	if err != nil {
+		log.Errorf("AttachKeyPair err: %s", err.Error())
+	}
 	// 一分钟后调用
 	go func() {
 		time.Sleep(1 * time.Minute)
