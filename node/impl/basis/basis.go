@@ -12,8 +12,10 @@ import (
 	"github.com/LMF709268224/titan-vps/node/common"
 	"github.com/LMF709268224/titan-vps/node/filecoin"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
+	"github.com/LMF709268224/titan-vps/node/orders"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
+	"github.com/jmoiron/sqlx"
 	"go.uber.org/fx"
 	"golang.org/x/xerrors"
 )
@@ -29,6 +31,8 @@ type Manager struct {
 	getConfigFunc dtypes.GetBasisConfigFunc
 	filecoinMgr   filecoin.Manager
 	notify        *pubsub.PubSub
+	db            *sqlx.DB
+	orderMgr      *orders.Manager
 }
 
 func (m *Manager) getAccessKeys() (string, string) {

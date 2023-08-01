@@ -33,6 +33,8 @@ type BasisCfg struct {
 	DryRun                bool
 	AliyunAccessKeyID     string
 	AliyunAccessKeySecret string
+
+	DatabaseAddress string
 }
 
 type RouteCfg struct {

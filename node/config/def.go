@@ -37,6 +37,7 @@ func DefaultBasisCfg() *BasisCfg {
 		DryRun:                true,
 		AliyunAccessKeyID:     "",
 		AliyunAccessKeySecret: "",
+		DatabaseAddress:       "",
 	}
 }
 

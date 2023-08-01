@@ -16,9 +16,21 @@ type SQLDB struct {
 	db *sqlx.DB
 }
 
-// NewSQLDB creates a new SQLDB instance.
-func NewSQLDB(db *sqlx.DB) (*SQLDB, error) {
-	s := &SQLDB{db}
+// NewSQLDB creates a new database connection using the given MySQL connection string.
+// The function returns a SQLDB pointer or an error if the connection failed.
+func NewSQLDB(path string) (*SQLDB, error) {
+	path = fmt.Sprintf("%s?parseTime=true&loc=Local", path)
+
+	client, err := sqlx.Open("mysql", path)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = client.Ping(); err != nil {
+		return nil, err
+	}
+
+	s := &SQLDB{client}
 
 	return s, nil
 }

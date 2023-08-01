@@ -2,6 +2,7 @@ package modules
 
 import (
 	"github.com/LMF709268224/titan-vps/node/config"
+	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/repo"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
@@ -72,4 +73,9 @@ func NewGetBasisConfigFunc(r repo.LockedRepo) func() (config.BasisCfg, error) {
 // NewPubSub returns a new pubsub instance with a buffer of 50
 func NewPubSub() *pubsub.PubSub {
 	return pubsub.New(50)
+}
+
+// NewDB returns an *sqlx.DB instance
+func NewDB(cfg *config.BasisCfg) (*db.SQLDB, error) {
+	return db.NewSQLDB(cfg.DatabaseAddress)
 }

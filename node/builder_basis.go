@@ -5,10 +5,12 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/config"
+	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/filecoin"
 	"github.com/LMF709268224/titan-vps/node/impl/basis"
 	"github.com/LMF709268224/titan-vps/node/modules"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
+	"github.com/LMF709268224/titan-vps/node/orders"
 	"github.com/LMF709268224/titan-vps/node/repo"
 	"github.com/filecoin-project/pubsub"
 	"go.uber.org/fx"
@@ -48,6 +50,8 @@ func ConfigBasis(c interface{}) Option {
 		Override(new(dtypes.SetBasisConfigFunc), modules.NewSetBasisConfigFunc),
 		Override(new(dtypes.GetBasisConfigFunc), modules.NewGetBasisConfigFunc),
 		Override(new(*pubsub.PubSub), modules.NewPubSub),
+		Override(new(*db.SQLDB), modules.NewDB),
 		Override(new(*filecoin.Manager), filecoin.NewManager),
+		Override(new(*orders.Manager), orders.NewManager),
 	)
 }
