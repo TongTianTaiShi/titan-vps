@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/LMF709268224/titan-vps/node/web"
 	"os"
 	"time"
 
@@ -205,6 +206,12 @@ var runCmd = &cli.Command{
 			node.ShutdownHandler{Component: "rpc server", StopFunc: rpcStopper},
 			node.ShutdownHandler{Component: "node", StopFunc: stop},
 		)
+		// gin router
+		srv, err := web.NewServer(bCfg)
+		if err != nil {
+			log.Fatalf("create api server: %v\n", err)
+		}
+		go srv.Run()
 		<-finishCh // fires when shutdown is complete.
 		return nil
 	},

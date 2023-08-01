@@ -6,7 +6,8 @@ package config
 
 // Common is common config between full node and miner
 type Common struct {
-	API API
+	API      API
+	RouteCfg RouteCfg
 }
 
 // API contains configs for API endpoint
@@ -32,4 +33,11 @@ type BasisCfg struct {
 	DryRun                bool
 	AliyunAccessKeyID     string
 	AliyunAccessKeySecret string
+}
+
+type RouteCfg struct {
+	EtcdAddress string
+	Mode        string
+	ApiListen   string
+	SecretKey   string
 }
