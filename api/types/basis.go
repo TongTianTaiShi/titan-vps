@@ -14,7 +14,7 @@ type User struct {
 	UserName string `db:"user_name" json:"user_name"`
 	PassHash string `db:"pass_hash" json:"pass_hash"`
 	// UserEmail string    `db:"user_email" json:"user_email"`
-	// Role      int32     `db:"role" json:"role"`
+	Role      int32     `db:"role" json:"role"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 

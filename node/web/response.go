@@ -2,7 +2,6 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
-	err "github.com/gnasnik/titan-explorer/core/errors"
 	"strings"
 )
 
@@ -16,7 +15,7 @@ func respJSON(v interface{}) gin.H {
 }
 func respErrorCode(code int, c *gin.Context) gin.H {
 	l := c.GetHeader("Lang")
-	errSplit := strings.Split(err.ErrMap[code], ":")
+	errSplit := strings.Split(ErrMap[code], ":")
 	var e string
 	switch l {
 	case "cn":
