@@ -10,7 +10,9 @@ import (
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/node/common"
+	"github.com/LMF709268224/titan-vps/node/filecoin"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
+	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
 	"go.uber.org/fx"
 	"golang.org/x/xerrors"
@@ -24,11 +26,13 @@ type Manager struct {
 
 	*common.CommonAPI
 
-	GetConfigFunc dtypes.GetBasisConfigFunc
+	getConfigFunc dtypes.GetBasisConfigFunc
+	filecoinMgr   filecoin.Manager
+	notify        *pubsub.PubSub
 }
 
 func (m *Manager) getAccessKeys() (string, string) {
-	cfg, err := m.GetConfigFunc()
+	cfg, err := m.getConfigFunc()
 	if err != nil {
 		log.Errorf("get config err:%s", err.Error())
 		return "", ""

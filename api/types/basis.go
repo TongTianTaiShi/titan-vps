@@ -1,6 +1,8 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 type Hellos struct {
 	Msg string
@@ -40,4 +42,24 @@ type AttachKeyPairResponse struct {
 	InstanceId string
 	Message    string
 	Success    string
+}
+
+// OrderRecord represents information about an asset record
+type OrderRecord struct {
+	CID                   string    `db:"cid"`
+	Hash                  string    `db:"hash"`
+	NeedEdgeReplica       int64     `db:"edge_replicas"`
+	TotalSize             int64     `db:"total_size"`
+	TotalBlocks           int64     `db:"total_blocks"`
+	Expiration            time.Time `db:"expiration"`
+	CreatedTime           time.Time `db:"created_time"`
+	EndTime               time.Time `db:"end_time"`
+	NeedCandidateReplicas int64     `db:"candidate_replicas"`
+	State                 string    `db:"state"`
+	NeedBandwidth         int64     `db:"bandwidth"` // unit:MiB/s
+
+	RetryCount        int64 `db:"retry_count"`
+	ReplenishReplicas int64 `db:"replenish_replicas"`
+
+	SPCount int64
 }
