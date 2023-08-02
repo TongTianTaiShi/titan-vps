@@ -219,32 +219,26 @@ func (m *Basis) CreateInstance(ctx context.Context, regionID, instanceType, pric
 }
 
 func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
-	address, err := m.FilecoinMgr.AllocatePayeeAddress("user")
-	if err != nil {
-		return "", err
-	}
-
 	info := &types.OrderRecord{
 		VpsID: req.Vps,
-		From:  "",
+		From:  req.User,
 		Value: 10,
-		To:    address,
 	}
 
-	err = m.OrderMgr.CreatedOrder(info)
+	err := m.OrderMgr.CreatedOrder(info)
 	if err != nil {
 		return "", err
 	}
 
-	return address, nil
+	return info.To, nil
 }
 
 func (m *Basis) PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) {
 	return "", nil
 }
 
-func (m *Basis) CancelOrder(ctx context.Context, id string) error {
-	return m.OrderMgr.CancelOrder(id)
+func (m *Basis) CancelOrder(ctx context.Context, orderID string) error {
+	return m.OrderMgr.CancelOrder(orderID)
 }
 
 var _ api.Basis = &Basis{}

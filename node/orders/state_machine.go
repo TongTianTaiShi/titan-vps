@@ -18,7 +18,7 @@ func (m *Manager) Plan(events []statemachine.Event, user interface{}) (interface
 	return func(ctx statemachine.Context, si OrderInfo) error {
 		err := next(ctx, si)
 		if err != nil {
-			log.Errorf("unhandled error (%s): %+v", si.Hash, err)
+			log.Errorf("unhandled error (%s): %+v", si.OrderID, err)
 			return nil
 		}
 
@@ -65,7 +65,7 @@ func (m *Manager) plan(events []statemachine.Event, state *OrderInfo) (func(stat
 		return nil, processed, xerrors.Errorf("running planner for state %s failed: %w", state.State, err)
 	}
 
-	log.Debugf("%s: %s", state.Hash, state.State)
+	log.Debugf("%s: %s", state.OrderID, state.State)
 
 	switch state.State {
 	// Happy path
@@ -103,7 +103,7 @@ func planOne(ts ...func() (mut mutator, next func(info *OrderInfo) (more bool, e
 				}
 
 				if err, isErr := event.User.(error); isErr {
-					log.Warnf("asset %s got error event %T: %+v", state.Hash, event.User, err)
+					log.Warnf("asset %s got error event %T: %+v", state.OrderID, event.User, err)
 				}
 
 				event.User.(mutator).apply(state)
@@ -156,15 +156,13 @@ func (m *Manager) initStateMachines(ctx context.Context) error {
 		return err
 	}
 
-	for _, asset := range list {
-		if asset.State == Done {
+	for _, order := range list {
+		if err := m.assetStateMachines.Send(order.OrderID, OrderRestart{}); err != nil {
+			log.Errorf("initStateMachines asset send %s , err %s", order.OrderID, err.Error())
 			continue
 		}
 
-		if err := m.assetStateMachines.Send(asset.Hash, OrderRestart{}); err != nil {
-			log.Errorf("initStateMachines asset send %s , err %s", asset.Hash, err.Error())
-			continue
-		}
+		m.recoverOutstandingOrders(order)
 	}
 
 	return nil
@@ -176,5 +174,6 @@ func (m *Manager) ListAssets() ([]OrderInfo, error) {
 	if err := m.assetStateMachines.List(&list); err != nil {
 		return nil, err
 	}
+
 	return list, nil
 }

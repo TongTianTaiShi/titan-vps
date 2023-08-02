@@ -19,5 +19,5 @@ type Basis interface {
 	RebootInstance(ctx context.Context, regionID, instanceId string) (string, error)                                                            //perm:read
 	CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error)                                                                  //perm:read
 	PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error)                                                        //perm:read
-	CancelOrder(ctx context.Context, id string) error                                                                                           //perm:read
+	CancelOrder(ctx context.Context, orderID string) error                                                                                      //perm:read
 }

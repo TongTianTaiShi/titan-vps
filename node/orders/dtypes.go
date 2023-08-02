@@ -14,7 +14,7 @@ func (c OrderHash) String() string {
 // OrderInfo represents asset pull information
 type OrderInfo struct {
 	State         OrderState
-	Hash          OrderHash
+	OrderID       OrderHash
 	From          string
 	To            string
 	Value         int64
@@ -27,7 +27,7 @@ type OrderInfo struct {
 // ToOrderRecord converts AssetPullingInfo to types.AssetRecord
 func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 	return &types.OrderRecord{
-		Hash:          state.Hash.String(),
+		OrderID:       state.OrderID.String(),
 		State:         int64(state.State),
 		From:          state.From,
 		To:            state.To,
@@ -43,7 +43,7 @@ func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 func orderInfoFrom(info *types.OrderRecord) *OrderInfo {
 	cInfo := &OrderInfo{
 		State:         OrderState(info.State),
-		Hash:          OrderHash(info.Hash),
+		OrderID:       OrderHash(info.OrderID),
 		DoneState:     info.DoneState,
 		DoneHeight:    info.DoneHeight,
 		CreatedHeight: info.CreatedHeight,

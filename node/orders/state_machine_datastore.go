@@ -91,7 +91,7 @@ func (d *Datastore) Query(ctx context.Context, q query.Query) (query.Results, er
 
 		prefix := "/"
 		entry := query.Entry{
-			Key: prefix + asset.Hash.String(), Size: len(valueBuf.Bytes()),
+			Key: prefix + asset.OrderID.String(), Size: len(valueBuf.Bytes()),
 		}
 
 		if !q.KeysOnly {
@@ -114,9 +114,9 @@ func (d *Datastore) Put(ctx context.Context, key datastore.Key, value []byte) er
 		return err
 	}
 
-	aInfo.Hash = OrderHash(trimPrefix(key))
+	aInfo.OrderID = OrderHash(trimPrefix(key))
 
-	return d.orderDB.UpdateOrderInfo(aInfo.Hash.String(), aInfo.State.Int(), aInfo.DoneState, aInfo.DoneHeight)
+	return d.orderDB.UpdateOrderInfo(aInfo.OrderID.String(), aInfo.State.Int(), aInfo.DoneState, aInfo.DoneHeight)
 }
 
 // Delete delete asset record info (This func has no place to call it)

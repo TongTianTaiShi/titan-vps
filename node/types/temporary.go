@@ -27,15 +27,3 @@ type KeyStore interface {
 	// Delete removes a key from keystore
 	Delete(string) error
 }
-
-// EventTopics represents topics for pub/sub events
-type EventTopics string
-
-const (
-	// EventTransfer node online event
-	EventTransfer EventTopics = "transfer"
-)
-
-func (t EventTopics) String() string {
-	return string(t)
-}

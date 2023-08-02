@@ -18,7 +18,7 @@ var (
 func failedCoolDown(ctx statemachine.Context, info OrderInfo) error {
 	retryStart := time.Now().Add(MinRetryTime)
 	if time.Now().Before(retryStart) {
-		log.Debugf("%s(%s), waiting %s before retrying", info.State, info.Hash, time.Until(retryStart))
+		log.Debugf("%s(%s), waiting %s before retrying", info.State, info.OrderID, time.Until(retryStart))
 		select {
 		case <-time.After(time.Until(retryStart)):
 		case <-ctx.Context().Done():
@@ -31,28 +31,31 @@ func failedCoolDown(ctx statemachine.Context, info OrderInfo) error {
 
 // handleCreated handles the selection of seed nodes for asset pull
 func (m *Manager) handleCreated(ctx statemachine.Context, info OrderInfo) error {
-	log.Debugf("handle select seed: %s", info.Hash)
+	log.Debugf("handle select seed: %s", info.OrderID)
 
 	return ctx.Send(WaitingPaymentSent{})
 }
 
 // handleWaitingPayment handles the asset pulling process of seed nodes
 func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo) error {
-	log.Debugf("handle seed pulling, %s", info.Hash)
+	log.Debugf("handle seed pulling, %s", info.OrderID)
 
 	return nil
 }
 
 // handleBuyGoods handles the upload init
 func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error {
-	log.Debugf("handle upload init: %s", info.Hash)
+	log.Debugf("handle upload init: %s", info.OrderID)
 
 	return ctx.Send(WaitingPaymentSent{})
 }
 
 // handleDone handles the asset upload process of seed nodes
 func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
-	log.Debugf("handle seed upload, %s", info.Hash)
+	log.Debugf("handle seed upload, %s", info.OrderID)
+
+	m.revertPayeeAddress(info.To)
+	m.deleteOrderFromUser(info.From)
 
 	return nil
 }

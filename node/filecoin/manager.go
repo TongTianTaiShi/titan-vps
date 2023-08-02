@@ -4,11 +4,10 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
-	"sync"
 	"time"
 
-	"github.com/LMF709268224/titan-vps/lib/fvm"
-	"github.com/LMF709268224/titan-vps/node/types"
+	"github.com/LMF709268224/titan-vps/api/types"
+	"github.com/LMF709268224/titan-vps/lib/filecoinfvm"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -35,23 +34,13 @@ const (
 // Manager is the node manager responsible for managing the online nodes
 type Manager struct {
 	notify *pubsub.PubSub
-
-	usabilityAddrs map[string]string
-	usedAddrs      map[string]string
-	lock           *sync.Mutex
 }
 
 // NewManager creates a new instance of the node manager
 func NewManager(pb *pubsub.PubSub) *Manager {
 	manager := &Manager{
 		notify: pb,
-
-		usabilityAddrs: make(map[string]string),
-		usedAddrs:      make(map[string]string),
-		lock:           &sync.Mutex{},
 	}
-
-	manager.usabilityAddrs["0x5feaAc40B8eB3575794518bC0761cB4A95838ccF"] = ""
 
 	go manager.watchTransfer()
 
@@ -66,12 +55,12 @@ func (m *Manager) watchTransfer() error {
 
 	tokenAddress := common.HexToAddress(contractorAddr)
 
-	myAbi, err := fvm.NewAbi(tokenAddress, client)
+	myAbi, err := filecoinfvm.NewAbi(tokenAddress, client)
 	if err != nil {
 		return xerrors.Errorf("NewAbi err:%s", err.Error())
 	}
 
-	sink := make(chan *fvm.AbiTransfer)
+	sink := make(chan *filecoinfvm.AbiTransfer)
 
 	sub, err := myAbi.WatchTransfer(nil, sink, nil, nil)
 	if err != nil {
@@ -125,7 +114,7 @@ func (m *Manager) Transfer(toAddr, valueStr string) (string, error) {
 	tokenAddress := common.HexToAddress(contractorAddr)
 	transferFnSignature := []byte("transfer(address,uint256)")
 
-	myAbi, err := fvm.NewAbi(tokenAddress, client)
+	myAbi, err := filecoinfvm.NewAbi(tokenAddress, client)
 	if err != nil {
 		return "", xerrors.Errorf("NewAbi err:%s", err.Error())
 	}
@@ -170,27 +159,4 @@ func (m *Manager) Transfer(toAddr, valueStr string) (string, error) {
 
 	log.Infof("tx sent: %s \n", signedTx.Hash().Hex())
 	return signedTx.Hash().Hex(), nil
-}
-
-func (m *Manager) AllocatePayeeAddress(user string) (string, error) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	if len(m.usabilityAddrs) > 0 {
-		for addr := range m.usabilityAddrs {
-			m.usedAddrs[addr] = user
-			delete(m.usabilityAddrs, addr)
-			return addr, nil
-		}
-	}
-
-	return "", xerrors.New("not found address")
-}
-
-func (m *Manager) RevertPayeeAddress(addr string) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	delete(m.usedAddrs, addr)
-	m.usabilityAddrs[addr] = ""
 }

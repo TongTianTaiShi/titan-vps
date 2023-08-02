@@ -10,7 +10,7 @@ import (
 )
 
 // UpdateOrderInfo update asset information
-func (n *SQLDB) UpdateOrderInfo(hash string, state, doneState, doneHeight int64) error {
+func (n *SQLDB) UpdateOrderInfo(orderID string, state, doneState, doneHeight int64) error {
 	tx, err := n.db.Beginx()
 	if err != nil {
 		return err
@@ -26,8 +26,8 @@ func (n *SQLDB) UpdateOrderInfo(hash string, state, doneState, doneHeight int64)
 	fmt.Println("UpdateAssetInfo state : ", state)
 
 	// update record table
-	dQuery := fmt.Sprintf(`UPDATE %s SET state=?, done_height=?, done_state=?, done_time=NOW() WHERE hash=?`, orderRecordTable)
-	_, err = tx.Exec(dQuery, state, doneHeight, doneState, hash)
+	dQuery := fmt.Sprintf(`UPDATE %s SET state=?, done_height=?, done_state=?, done_time=NOW() WHERE order_id=?`, orderRecordTable)
+	_, err = tx.Exec(dQuery, state, doneHeight, doneState, orderID)
 	if err != nil {
 		return err
 	}
@@ -36,10 +36,10 @@ func (n *SQLDB) UpdateOrderInfo(hash string, state, doneState, doneHeight int64)
 }
 
 // LoadOrderRecord load asset record information
-func (n *SQLDB) LoadOrderRecord(hash string) (*types.OrderRecord, error) {
+func (n *SQLDB) LoadOrderRecord(orderID string) (*types.OrderRecord, error) {
 	var info types.OrderRecord
-	query := fmt.Sprintf("SELECT * FROM %s WHERE hash=?", orderRecordTable)
-	err := n.db.Get(&info, query, hash)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE order_id=?", orderRecordTable)
+	err := n.db.Get(&info, query, orderID)
 	if err != nil {
 		return nil, err
 	}
@@ -48,10 +48,10 @@ func (n *SQLDB) LoadOrderRecord(hash string) (*types.OrderRecord, error) {
 }
 
 // AssetExists checks if an asset exists in the state machine table of the specified server.
-func (n *SQLDB) AssetExists(hash string) (bool, error) {
+func (n *SQLDB) AssetExists(orderID string) (bool, error) {
 	var total int64
-	countSQL := fmt.Sprintf(`SELECT count(hash) FROM %s WHERE hash=? `, orderRecordTable)
-	if err := n.db.Get(&total, countSQL, hash); err != nil {
+	countSQL := fmt.Sprintf(`SELECT count(order_id) FROM %s WHERE order_id=? `, orderRecordTable)
+	if err := n.db.Get(&total, countSQL, orderID); err != nil {
 		return false, err
 	}
 
@@ -63,7 +63,7 @@ func (n *SQLDB) LoadAssetRecords(statuses []int64, limit, offset int) (*sqlx.Row
 	if limit > loadAssetRecordsDefaultLimit || limit == 0 {
 		limit = loadAssetRecordsDefaultLimit
 	}
-	sQuery := fmt.Sprintf(`SELECT * FROM %s WHERE state in (?) order by hash asc LIMIT ? OFFSET ?`, orderRecordTable)
+	sQuery := fmt.Sprintf(`SELECT * FROM %s WHERE state in (?) order by order_id asc LIMIT ? OFFSET ?`, orderRecordTable)
 	query, args, err := sqlx.In(sQuery, statuses, limit, offset)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (n *SQLDB) LoadAssetRecords(statuses []int64, limit, offset int) (*sqlx.Row
 // LoadAssetCount count asset
 func (n *SQLDB) LoadAssetCount() (int, error) {
 	var size int
-	cmd := fmt.Sprintf("SELECT count(hash) FROM %s", orderRecordTable)
+	cmd := fmt.Sprintf("SELECT count(order_id) FROM %s", orderRecordTable)
 	err := n.db.Get(&size, cmd)
 	if err != nil {
 		return 0, err
@@ -86,7 +86,7 @@ func (n *SQLDB) LoadAssetCount() (int, error) {
 
 // LoadAllAssetRecords loads all asset records for a given server ID.
 func (n *SQLDB) LoadAllAssetRecords(limit, offset int, statuses []int64) (*sqlx.Rows, error) {
-	sQuery := fmt.Sprintf(`SELECT * FROM %s WHERE state in (?) order by hash asc limit ? offset ?`, orderRecordTable)
+	sQuery := fmt.Sprintf(`SELECT * FROM %s WHERE state in (?) order by order_id asc limit ? offset ?`, orderRecordTable)
 	query, args, err := sqlx.In(sQuery, statuses, limit, offset)
 	if err != nil {
 		return nil, err
@@ -99,8 +99,8 @@ func (n *SQLDB) LoadAllAssetRecords(limit, offset int, statuses []int64) (*sqlx.
 // SaveOrderRecord  saves an asset record into the database.
 func (n *SQLDB) SaveOrderRecord(rInfo *types.OrderRecord) error {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (hash, from_addr, to_addr, value, created_height, done_height, state, done_state, vps_id) 
-				VALUES (:hash, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :done_state, :vps_id)`, orderRecordTable)
+		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, done_state, vps_id) 
+				VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :done_state, :vps_id)`, orderRecordTable)
 
 	_, err := n.db.NamedExec(query, rInfo)
 

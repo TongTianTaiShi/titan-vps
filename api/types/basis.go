@@ -46,7 +46,7 @@ type AttachKeyPairResponse struct {
 
 // OrderRecord represents information about an asset record
 type OrderRecord struct {
-	Hash          string    `db:"hash"`
+	OrderID       string    `db:"order_id"`
 	From          string    `db:"from_addr"`
 	To            string    `db:"to_addr"`
 	Value         int64     `db:"value"`
@@ -60,9 +60,10 @@ type OrderRecord struct {
 }
 
 type CreateOrderReq struct {
-	Vps string
+	Vps  string
+	User string
 }
 
 type PaymentCompletedReq struct {
-	Hash string
+	OrderID string
 }

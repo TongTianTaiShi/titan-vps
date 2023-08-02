@@ -88,14 +88,14 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	if len(t.Hash) > cbg.MaxLength {
+	if len(t.OrderID) > cbg.MaxLength {
 		return xerrors.Errorf("Value in field t.Hash was too long")
 	}
 
-	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.Hash))); err != nil {
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.OrderID))); err != nil {
 		return err
 	}
-	if _, err := io.WriteString(w, string(t.Hash)); err != nil {
+	if _, err := io.WriteString(w, string(t.OrderID)); err != nil {
 		return err
 	}
 
@@ -303,7 +303,7 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 					return err
 				}
 
-				t.Hash = OrderHash(sval)
+				t.OrderID = OrderHash(sval)
 			}
 			// t.State (orders.OrderState) (int64)
 		case "State":

@@ -9,10 +9,18 @@ import (
 
 // BasisCMDs Basis cmd
 var BasisCMDs = []*cli.Command{
+	WithCategory("order", orderCmds),
 	describeRegionsCmd,
-	createOrderCmd,
-	cancelOrderCmd,
-	paymentCompletedCmd,
+}
+
+var orderCmds = &cli.Command{
+	Name:  "order",
+	Usage: "Manage order",
+	Subcommands: []*cli.Command{
+		createOrderCmd,
+		cancelOrderCmd,
+		paymentCompletedCmd,
+	},
 }
 
 var describeRegionsCmd = &cli.Command{
@@ -45,9 +53,12 @@ var describeRegionsCmd = &cli.Command{
 var createOrderCmd = &cli.Command{
 	Name:  "create",
 	Usage: "create order",
-
-	Before: func(cctx *cli.Context) error {
-		return nil
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "user",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
 	},
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
@@ -59,7 +70,9 @@ var createOrderCmd = &cli.Command{
 
 		defer closer()
 
-		address, err := api.CreateOrder(ctx, types.CreateOrderReq{Vps: "123456"})
+		user := cctx.String("user")
+
+		address, err := api.CreateOrder(ctx, types.CreateOrderReq{Vps: "123456", User: user})
 		if err != nil {
 			return err
 		}
@@ -116,7 +129,7 @@ var paymentCompletedCmd = &cli.Command{
 
 		hash := cctx.String("hash")
 
-		str, err := api.PaymentCompleted(ctx, types.PaymentCompletedReq{Hash: hash})
+		str, err := api.PaymentCompleted(ctx, types.PaymentCompletedReq{OrderID: hash})
 		if err != nil {
 			return err
 		}
