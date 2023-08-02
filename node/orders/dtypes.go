@@ -4,14 +4,14 @@ import (
 	"github.com/LMF709268224/titan-vps/api/types"
 )
 
-// OrderHash is an identifier for a asset.
+// OrderHash is an identifier for a order.
 type OrderHash string
 
 func (c OrderHash) String() string {
 	return string(c)
 }
 
-// OrderInfo represents asset pull information
+// OrderInfo represents order information
 type OrderInfo struct {
 	State         OrderState
 	OrderID       OrderHash
@@ -24,7 +24,7 @@ type OrderInfo struct {
 	VpsID         string
 }
 
-// ToOrderRecord converts AssetPullingInfo to types.AssetRecord
+// ToOrderRecord converts order info to types.orderRecord
 func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 	return &types.OrderRecord{
 		OrderID:       state.OrderID.String(),
@@ -39,7 +39,7 @@ func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 	}
 }
 
-// orderInfoFrom converts types.AssetRecord to AssetPullingInfo
+// orderInfoFrom converts types.orderRecord to order info
 func orderInfoFrom(info *types.OrderRecord) *OrderInfo {
 	cInfo := &OrderInfo{
 		State:         OrderState(info.State),

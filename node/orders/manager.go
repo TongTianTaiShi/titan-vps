@@ -18,7 +18,7 @@ import (
 	logging "github.com/ipfs/go-log/v2"
 )
 
-var log = logging.Logger("asset")
+var log = logging.Logger("orders")
 
 const (
 	checkOrderInterval = 10 * time.Second
@@ -26,46 +26,55 @@ const (
 	orderTimeoutTime   = 5 * time.Minute
 )
 
-// Manager manages asset replicas
+// Manager manager order
 type Manager struct {
 	stateMachineWait   sync.WaitGroup
-	assetStateMachines *statemachine.StateGroup
+	orderStateMachines *statemachine.StateGroup
 	*db.SQLDB
 
 	notify *pubsub.PubSub
 
-	userOrderMap  map[string]string
-	userOrderLock *sync.Mutex
+	ongoingOrders map[string]string
+	orderLock     *sync.Mutex
 
 	usabilityAddrs map[string]string
 	usedAddrs      map[string]string
 	addrLock       *sync.Mutex
 }
 
-// NewManager returns a new AssetManager instance
+// NewManager returns a new manager instance
 func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub) *Manager {
 	m := &Manager{
 		SQLDB:          sdb,
 		notify:         pb,
-		userOrderMap:   make(map[string]string),
-		userOrderLock:  &sync.Mutex{},
+		ongoingOrders:  make(map[string]string),
+		orderLock:      &sync.Mutex{},
 		usabilityAddrs: make(map[string]string),
 		usedAddrs:      make(map[string]string),
 		addrLock:       &sync.Mutex{},
 	}
 
-	m.usabilityAddrs["0x5feaAc40B8eB3575794518bC0761cB4A95838ccF"] = ""
-	m.usabilityAddrs["0xddfa8C217a0Fb51a6319e2D863743807d07C9e81"] = ""
-
 	// state machine initialization
 	m.stateMachineWait.Add(1)
-	m.assetStateMachines = statemachine.New(ds, m, OrderInfo{})
+	m.orderStateMachines = statemachine.New(ds, m, OrderInfo{})
 
 	return m
 }
 
-// Start initializes and starts the asset state machine and associated tickers
+func (m *Manager) initAddress(as []string) {
+	for _, addr := range as {
+		m.usabilityAddrs[addr] = ""
+	}
+}
+
+// Start initializes and starts the order state machine and associated tickers
 func (m *Manager) Start(ctx context.Context) {
+	// TODO
+	m.initAddress([]string{
+		"0x5feaAc40B8eB3575794518bC0761cB4A95838ccF",
+		"0xddfa8C217a0Fb51a6319e2D863743807d07C9e81",
+	})
+
 	if err := m.initStateMachines(ctx); err != nil {
 		log.Errorf("restartStateMachines err: %s", err.Error())
 	}
@@ -84,14 +93,18 @@ func (m *Manager) checkOrderTimeout() {
 		for addr, hash := range m.usedAddrs {
 			info, err := m.LoadOrderRecord(hash)
 			if err != nil {
-				log.Errorf("LoadOrderRecord %s , %s err:%s", addr, hash, err.Error())
+				log.Errorf("checkOrderTimeout LoadOrderRecord %s , %s err:%s", addr, hash, err.Error())
 				continue
 			}
 
 			log.Debugf("checkout %s , %s ", addr, hash)
 
 			if info.State != int64(Done) && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
-				m.assetStateMachines.Send(OrderHash(hash), OrderTimeOut{})
+				err = m.orderStateMachines.Send(OrderHash(hash), OrderTimeOut{})
+				if err != nil {
+					log.Errorf("checkOrderTimeout Send %s , %s err:%s", addr, hash, err.Error())
+					continue
+				}
 			}
 		}
 	}
@@ -109,29 +122,35 @@ func (m *Manager) subscribeNodeEvents() {
 				tr := u.(*filecoinfvm.AbiTransfer)
 				log.Debugf("to hex", tr.To.Hex())
 				if hash, exist := m.usedAddrs[tr.To.Hex()]; exist {
-					m.assetStateMachines.Send(OrderHash(hash), PaymentSucceed{})
+					err := m.orderStateMachines.Send(OrderHash(hash), PaymentSucceed{})
+					if err != nil {
+						log.Errorf("subscribeNodeEvents Send %s err:%s", hash, err.Error())
+						continue
+					}
 				}
 			}
 		}
 	}()
 }
 
-// Terminate stops the asset state machine
+// Terminate stops the order state machine
 func (m *Manager) Terminate(ctx context.Context) error {
-	return m.assetStateMachines.Stop(ctx)
+	return m.orderStateMachines.Stop(ctx)
 }
 
+// CancelOrder cancel vps order
 func (m *Manager) CancelOrder(orderID string) error {
-	return m.assetStateMachines.Send(OrderHash(orderID), OrderCancel{})
+	return m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{})
 }
 
+// CreatedOrder create vps order
 func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 	m.stateMachineWait.Wait()
 
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
 
-	err := m.addOrderToUser(req.From, orderID)
+	err := m.addOrder(req.From, orderID)
 	if err != nil {
 		return err
 	}
@@ -149,28 +168,28 @@ func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 		return err
 	}
 
-	// create asset task
-	return m.assetStateMachines.Send(OrderHash(orderID), WaitingPaymentSent{})
+	// create order task
+	return m.orderStateMachines.Send(OrderHash(orderID), WaitingPaymentSent{})
 }
 
-func (m *Manager) addOrderToUser(user, orderID string) error {
-	m.userOrderLock.Lock()
-	defer m.userOrderLock.Unlock()
+func (m *Manager) addOrder(userID, orderID string) error {
+	m.orderLock.Lock()
+	defer m.orderLock.Unlock()
 
-	if _, exist := m.userOrderMap[user]; exist {
+	if _, exist := m.ongoingOrders[userID]; exist {
 		return xerrors.New("user have order")
 	}
 
-	m.userOrderMap[user] = orderID
+	m.ongoingOrders[userID] = orderID
 
 	return nil
 }
 
-func (m *Manager) deleteOrderFromUser(user string) {
-	m.userOrderLock.Lock()
-	defer m.userOrderLock.Unlock()
+func (m *Manager) removeOrder(userID string) {
+	m.orderLock.Lock()
+	defer m.orderLock.Unlock()
 
-	delete(m.userOrderMap, user)
+	delete(m.ongoingOrders, userID)
 }
 
 func (m *Manager) allocatePayeeAddress(orderID string) (string, error) {
@@ -203,5 +222,5 @@ func (m *Manager) recoverOutstandingOrders(info OrderInfo) {
 	m.usedAddrs[info.To] = info.OrderID.String()
 	delete(m.usabilityAddrs, info.To)
 
-	m.addOrderToUser(info.From, info.OrderID.String())
+	m.addOrder(info.From, info.OrderID.String())
 }

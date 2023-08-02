@@ -55,7 +55,7 @@ func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle seed upload, %s", info.OrderID)
 
 	m.revertPayeeAddress(info.To)
-	m.deleteOrderFromUser(info.From)
+	m.removeOrder(info.From)
 
 	return nil
 }

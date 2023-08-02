@@ -12,19 +12,19 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// Datastore represents the asset datastore
+// Datastore represents the order datastore
 type Datastore struct {
 	orderDB *db.SQLDB
 }
 
-// NewDatastore creates a new AssetDatastore
+// NewDatastore creates a new datastore
 func NewDatastore(db *db.SQLDB) *Datastore {
 	return &Datastore{
 		orderDB: db,
 	}
 }
 
-// Close closes the asset datastore
+// Close closes the order datastore
 func (d *Datastore) Close() error {
 	return nil
 }
@@ -40,10 +40,10 @@ func (d *Datastore) Get(ctx context.Context, key datastore.Key) (value []byte, e
 		return nil, err
 	}
 
-	asset := orderInfoFrom(cInfo)
+	order := orderInfoFrom(cInfo)
 
 	valueBuf := new(bytes.Buffer)
-	if err := asset.MarshalCBOR(valueBuf); err != nil {
+	if err := order.MarshalCBOR(valueBuf); err != nil {
 		return nil, err
 	}
 

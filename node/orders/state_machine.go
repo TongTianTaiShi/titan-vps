@@ -157,7 +157,7 @@ func (m *Manager) initStateMachines(ctx context.Context) error {
 	}
 
 	for _, order := range list {
-		if err := m.assetStateMachines.Send(order.OrderID, OrderRestart{}); err != nil {
+		if err := m.orderStateMachines.Send(order.OrderID, OrderRestart{}); err != nil {
 			log.Errorf("initStateMachines asset send %s , err %s", order.OrderID, err.Error())
 			continue
 		}
@@ -171,7 +171,7 @@ func (m *Manager) initStateMachines(ctx context.Context) error {
 // ListAssets load asset pull infos from state machine
 func (m *Manager) ListAssets() ([]OrderInfo, error) {
 	var list []OrderInfo
-	if err := m.assetStateMachines.List(&list); err != nil {
+	if err := m.orderStateMachines.List(&list); err != nil {
 		return nil, err
 	}
 

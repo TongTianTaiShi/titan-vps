@@ -1,23 +1,23 @@
 package orders
 
-// OrderState represents the state of an asset in the process of being pulled.
+// OrderState represents the state of an order in the process of being pulled.
 type OrderState int64
 
-// Constants defining various states of the asset pulling process.
+// Constants defining various states of the order process.
 const (
-	// Created select first candidate to pull seed asset
+	// Created order
 	Created OrderState = iota
-	// WaitingPayment Waiting for candidate nodes to pull seed asset
+	// WaitingPayment Waiting for user to payment order
 	WaitingPayment
-	// BuyGoods Initialize user upload preparation
+	// BuyGoods buy goods
 	BuyGoods
-	// Done Waiting for user to upload asset to candidate node
+	// Done the order done
 	Done
 	// BuyGoodsFailed Unable to select candidate nodes or failed to pull asset
 	BuyGoodsFailed
 )
 
-// String returns the string representation of the AssetState.
+// String returns the string representation of the order state.
 func (s OrderState) String() string {
 	switch s {
 	case 0:
