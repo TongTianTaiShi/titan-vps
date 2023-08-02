@@ -35,7 +35,7 @@ func trimPrefix(key datastore.Key) string {
 
 // Get retrieves data from the datastore
 func (d *Datastore) Get(ctx context.Context, key datastore.Key) (value []byte, err error) {
-	cInfo, err := d.orderDB.LoadAssetRecord(trimPrefix(key))
+	cInfo, err := d.orderDB.LoadOrderRecord(trimPrefix(key))
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (d *Datastore) Has(ctx context.Context, key datastore.Key) (exists bool, er
 
 // GetSize gets the data size from the datastore
 func (d *Datastore) GetSize(ctx context.Context, key datastore.Key) (size int, err error) {
-	return d.orderDB.LoadAssetCount(Remove.String())
+	return d.orderDB.LoadAssetCount()
 }
 
 // Query queries asset records from the datastore
@@ -116,7 +116,7 @@ func (d *Datastore) Put(ctx context.Context, key datastore.Key, value []byte) er
 
 	aInfo.Hash = OrderHash(trimPrefix(key))
 
-	return d.orderDB.UpdateAssetInfo(aInfo.Hash.String(), aInfo.State.String())
+	return d.orderDB.UpdateOrderInfo(aInfo.Hash.String(), aInfo.State.Int(), aInfo.DoneState, aInfo.DoneHeight)
 }
 
 // Delete delete asset record info (This func has no place to call it)

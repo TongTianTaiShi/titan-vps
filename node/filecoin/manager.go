@@ -51,6 +51,8 @@ func NewManager(pb *pubsub.PubSub) *Manager {
 		lock:           &sync.Mutex{},
 	}
 
+	manager.usabilityAddrs["0x5feaAc40B8eB3575794518bC0761cB4A95838ccF"] = ""
+
 	go manager.watchTransfer()
 
 	return manager
@@ -170,7 +172,7 @@ func (m *Manager) Transfer(toAddr, valueStr string) (string, error) {
 	return signedTx.Hash().Hex(), nil
 }
 
-func (m *Manager) AllocatePayeeAddress(user string) string {
+func (m *Manager) AllocatePayeeAddress(user string) (string, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -178,11 +180,11 @@ func (m *Manager) AllocatePayeeAddress(user string) string {
 		for addr := range m.usabilityAddrs {
 			m.usedAddrs[addr] = user
 			delete(m.usabilityAddrs, addr)
-			return addr
+			return addr, nil
 		}
 	}
 
-	return ""
+	return "", xerrors.New("not found address")
 }
 
 func (m *Manager) RevertPayeeAddress(addr string) {

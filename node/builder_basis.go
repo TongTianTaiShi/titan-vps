@@ -54,5 +54,6 @@ func ConfigBasis(c interface{}) Option {
 		Override(new(*db.SQLDB), modules.NewDB),
 		Override(new(*filecoin.Manager), filecoin.NewManager),
 		Override(new(*orders.Manager), modules.NewStorageManager),
+		Override(InitDataTables, db.InitTables),
 	)
 }

@@ -1,45 +1,58 @@
 package orders
 
 // OrderState represents the state of an asset in the process of being pulled.
-type OrderState string
+type OrderState int64
 
 // Constants defining various states of the asset pulling process.
 const (
 	// Created select first candidate to pull seed asset
-	Created OrderState = ""
+	Created OrderState = iota
 	// WaitingPayment Waiting for candidate nodes to pull seed asset
-	WaitingPayment OrderState = "WaitingPayment"
+	WaitingPayment
 	// BuyGoods Initialize user upload preparation
-	BuyGoods OrderState = "BuyGoods"
+	BuyGoods
 	// Done Waiting for user to upload asset to candidate node
-	Done OrderState = "Done"
-	// PaymentFailed Unable to select candidate nodes or failed to pull seed asset
-	PaymentFailed OrderState = "PaymentFailed"
+	Done
 	// BuyGoodsFailed Unable to select candidate nodes or failed to pull asset
-	BuyGoodsFailed OrderState = "BuyGoodsFailed"
-	// Remove remove
-	Remove OrderState = "Remove"
+	BuyGoodsFailed
 )
 
 // String returns the string representation of the AssetState.
 func (s OrderState) String() string {
-	return string(s)
+	switch s {
+	case 0:
+		return ""
+	case 1:
+		return "WaitingPayment"
+	case 2:
+		return "BuyGoods"
+	case 3:
+		return "Done"
+	case 4:
+		return "BuyGoodsFailed"
+	}
+
+	return "Not found"
+}
+
+// Int returns the int representation of the AssetState.
+func (s OrderState) Int() int64 {
+	return int64(s)
 }
 
 var (
 	// FailedStates contains a list of asset pull states that represent failures.
-	FailedStates = []string{
-		PaymentFailed.String(),
-		BuyGoodsFailed.String(),
+	FailedStates = []int64{
+		BuyGoodsFailed.Int(),
 	}
 
 	// PullingStates contains a list of asset pull states that represent pulling.
-	PullingStates = []string{
-		Created.String(),
-		WaitingPayment.String(),
-		BuyGoods.String(),
+	PullingStates = []int64{
+		Created.Int(),
+		WaitingPayment.Int(),
+		BuyGoods.Int(),
 	}
 
 	// ActiveStates contains a list of asset pull states that represent active.
-	ActiveStates = append(append([]string{Done.String()}, FailedStates...), PullingStates...)
+	ActiveStates = append(append([]int64{Done.Int()}, FailedStates...), PullingStates...)
 )

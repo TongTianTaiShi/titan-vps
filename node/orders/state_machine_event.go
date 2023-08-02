@@ -1,9 +1,5 @@
 package orders
 
-import (
-	"golang.org/x/xerrors"
-)
-
 type mutator interface {
 	apply(state *OrderInfo)
 }
@@ -29,30 +25,6 @@ func (evt OrderRestart) applyGlobal(state *OrderInfo) bool {
 	return false
 }
 
-// PullAssetFatalError represents a fatal error in asset pulling
-type PullAssetFatalError struct{ error }
-
-// FormatError Format error
-func (evt PullAssetFatalError) FormatError(xerrors.Printer) (next error) { return evt.error }
-
-func (evt PullAssetFatalError) applyGlobal(state *OrderInfo) bool {
-	log.Errorf("Fatal error on asset %s: %+v", state.Hash, evt.error)
-	return true
-}
-
-// AssetForceState forces an asset state
-type AssetForceState struct {
-	State      OrderState
-	Requester  string
-	Details    string
-	SeedNodeID string
-}
-
-func (evt AssetForceState) applyGlobal(state *OrderInfo) bool {
-	state.State = evt.State
-	return true
-}
-
 // InfoUpdate update asset info
 type InfoUpdate struct {
 	Size   int64
@@ -66,64 +38,43 @@ func (evt InfoUpdate) applyGlobal(state *OrderInfo) bool {
 func (evt InfoUpdate) Ignore() {
 }
 
-// PulledResult represents the result of node pulling
-type PulledResult struct {
+// PaymentResult represents the result of node pulling
+type PaymentResult struct {
 	BlocksCount int64
 	Size        int64
 }
 
-func (evt PulledResult) apply(state *OrderInfo) {
+func (evt PaymentResult) apply(state *OrderInfo) {
 }
 
-func (evt PulledResult) Ignore() {
+func (evt PaymentResult) Ignore() {
 }
 
-// PullRequestSent indicates that a pull request has been sent
-type PullRequestSent struct{}
+// WaitingPaymentSent indicates that a pull request has been sent
+type WaitingPaymentSent struct{}
 
-func (evt PullRequestSent) apply(state *OrderInfo) {
+func (evt WaitingPaymentSent) apply(state *OrderInfo) {}
+
+// OrderTimeOut indicates that a pull request has been sent
+type OrderTimeOut struct{}
+
+func (evt OrderTimeOut) apply(state *OrderInfo) {}
+
+// OrderCancel indicates that a pull request has been sent
+type OrderCancel struct{}
+
+func (evt OrderCancel) apply(state *OrderInfo) {}
+
+// PaymentSucceed indicates that a node has successfully pulled an asset
+type PaymentSucceed struct{}
+
+func (evt PaymentSucceed) apply(state *OrderInfo) {
 }
 
-// AssetRePull re-pull the asset
-type AssetRePull struct{}
-
-func (evt AssetRePull) apply(state *OrderInfo) {
+func (evt PaymentSucceed) Ignore() {
 }
 
-func (evt AssetRePull) Ignore() {
-}
+// BuySucceed skips the current step
+type BuySucceed struct{}
 
-// PullSucceed indicates that a node has successfully pulled an asset
-type PullSucceed struct{}
-
-func (evt PullSucceed) apply(state *OrderInfo) {
-}
-
-func (evt PullSucceed) Ignore() {
-}
-
-// SkipStep skips the current step
-type SkipStep struct{}
-
-func (evt SkipStep) apply(state *OrderInfo) {}
-
-// PullFailed indicates that a node has failed to pull an asset
-type PullFailed struct{ error }
-
-// FormatError Format error
-func (evt PullFailed) FormatError(xerrors.Printer) (next error) { return evt.error }
-
-func (evt PullFailed) apply(state *OrderInfo) {
-}
-
-func (evt PullFailed) Ignore() {
-}
-
-// SelectFailed  indicates that node selection has failed
-type SelectFailed struct{ error }
-
-// FormatError Format error
-func (evt SelectFailed) FormatError(xerrors.Printer) (next error) { return evt.error }
-
-func (evt SelectFailed) apply(state *OrderInfo) {
-}
+func (evt BuySucceed) apply(state *OrderInfo) {}

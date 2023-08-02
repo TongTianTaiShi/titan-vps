@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -19,9 +20,13 @@ type BasisStruct struct {
 	Internal struct {
 		AttachKeyPair func(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) `perm:"read"`
 
+		CancelOrder func(p0 context.Context, p1 string) error `perm:"read"`
+
 		CreateInstance func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.CreateInstanceResponse, error) `perm:"read"`
 
 		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"read"`
+
+		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"read"`
 
 		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]string, error) `perm:"read"`
 
@@ -30,6 +35,8 @@ type BasisStruct struct {
 		DescribePrice func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) `perm:"read"`
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"read"`
+
+		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"read"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
 	}
@@ -89,6 +96,17 @@ func (s *BasisStub) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 [
 	return *new([]*types.AttachKeyPairResponse), ErrNotSupported
 }
 
+func (s *BasisStruct) CancelOrder(p0 context.Context, p1 string) error {
+	if s.Internal.CancelOrder == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.CancelOrder(p0, p1)
+}
+
+func (s *BasisStub) CancelOrder(p0 context.Context, p1 string) error {
+	return ErrNotSupported
+}
+
 func (s *BasisStruct) CreateInstance(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.CreateInstanceResponse, error) {
 	if s.Internal.CreateInstance == nil {
 		return nil, ErrNotSupported
@@ -109,6 +127,17 @@ func (s *BasisStruct) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*
 
 func (s *BasisStub) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) {
 	return nil, ErrNotSupported
+}
+
+func (s *BasisStruct) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
+	if s.Internal.CreateOrder == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.CreateOrder(p0, p1)
+}
+
+func (s *BasisStub) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
+	return "", ErrNotSupported
 }
 
 func (s *BasisStruct) DescribeImages(p0 context.Context, p1 string, p2 string) ([]string, error) {
@@ -153,6 +182,17 @@ func (s *BasisStruct) DescribeRegions(p0 context.Context) ([]string, error) {
 
 func (s *BasisStub) DescribeRegions(p0 context.Context) ([]string, error) {
 	return *new([]string), ErrNotSupported
+}
+
+func (s *BasisStruct) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
+	if s.Internal.PaymentCompleted == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.PaymentCompleted(p0, p1)
+}
+
+func (s *BasisStub) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
+	return "", ErrNotSupported
 }
 
 func (s *BasisStruct) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {

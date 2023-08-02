@@ -39,7 +39,7 @@ func NewSQLDB(path string) (*SQLDB, error) {
 
 const (
 	// Database table names.
-	assetRecordTable = "asset_record"
+	orderRecordTable = "order_record"
 
 	// Default limits for loading table entries.
 	loadNodeInfosDefaultLimit           = 100
@@ -68,7 +68,7 @@ func InitTables(d *SQLDB) error {
 	}()
 
 	// Execute table creation statements
-	tx.MustExec(fmt.Sprintf(cAssetRecordTable, assetRecordTable))
+	tx.MustExec(fmt.Sprintf(cOrderRecordTable, orderRecordTable))
 
 	return tx.Commit()
 }

@@ -13,23 +13,44 @@ func (c OrderHash) String() string {
 
 // OrderInfo represents asset pull information
 type OrderInfo struct {
-	State OrderState
-	Hash  OrderHash
+	State         OrderState
+	Hash          OrderHash
+	From          string
+	To            string
+	Value         int64
+	DoneState     int64
+	CreatedHeight int64
+	DoneHeight    int64
+	VpsID         string
 }
 
 // ToOrderRecord converts AssetPullingInfo to types.AssetRecord
 func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 	return &types.OrderRecord{
-		Hash:  state.Hash.String(),
-		State: state.State.String(),
+		Hash:          state.Hash.String(),
+		State:         int64(state.State),
+		From:          state.From,
+		To:            state.To,
+		Value:         state.Value,
+		DoneState:     state.DoneState,
+		DoneHeight:    state.DoneHeight,
+		CreatedHeight: state.CreatedHeight,
+		VpsID:         state.VpsID,
 	}
 }
 
 // orderInfoFrom converts types.AssetRecord to AssetPullingInfo
 func orderInfoFrom(info *types.OrderRecord) *OrderInfo {
 	cInfo := &OrderInfo{
-		State: OrderState(info.State),
-		Hash:  OrderHash(info.Hash),
+		State:         OrderState(info.State),
+		Hash:          OrderHash(info.Hash),
+		DoneState:     info.DoneState,
+		DoneHeight:    info.DoneHeight,
+		CreatedHeight: info.CreatedHeight,
+		Value:         info.Value,
+		From:          info.From,
+		To:            info.To,
+		VpsID:         info.VpsID,
 	}
 
 	return cInfo

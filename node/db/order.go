@@ -4,14 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/jmoiron/sqlx"
 )
 
-// UpdateAssetInfo update asset information
-func (n *SQLDB) UpdateAssetInfo(hash, state string) error {
+// UpdateOrderInfo update asset information
+func (n *SQLDB) UpdateOrderInfo(hash string, state, doneState, doneHeight int64) error {
 	tx, err := n.db.Beginx()
 	if err != nil {
 		return err
@@ -27,8 +26,8 @@ func (n *SQLDB) UpdateAssetInfo(hash, state string) error {
 	fmt.Println("UpdateAssetInfo state : ", state)
 
 	// update record table
-	dQuery := fmt.Sprintf(`UPDATE %s SET total_size=?, total_blocks=?, end_time=NOW() WHERE hash=?`, assetRecordTable)
-	_, err = tx.Exec(dQuery, hash)
+	dQuery := fmt.Sprintf(`UPDATE %s SET state=?, done_height=?, done_state=?, done_time=NOW() WHERE hash=?`, orderRecordTable)
+	_, err = tx.Exec(dQuery, state, doneHeight, doneState, hash)
 	if err != nil {
 		return err
 	}
@@ -36,10 +35,10 @@ func (n *SQLDB) UpdateAssetInfo(hash, state string) error {
 	return tx.Commit()
 }
 
-// LoadAssetRecord load asset record information
-func (n *SQLDB) LoadAssetRecord(hash string) (*types.OrderRecord, error) {
+// LoadOrderRecord load asset record information
+func (n *SQLDB) LoadOrderRecord(hash string) (*types.OrderRecord, error) {
 	var info types.OrderRecord
-	query := fmt.Sprintf("SELECT * FROM %s WHERE hash=?", assetRecordTable)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE hash=?", orderRecordTable)
 	err := n.db.Get(&info, query, hash)
 	if err != nil {
 		return nil, err
@@ -51,7 +50,7 @@ func (n *SQLDB) LoadAssetRecord(hash string) (*types.OrderRecord, error) {
 // AssetExists checks if an asset exists in the state machine table of the specified server.
 func (n *SQLDB) AssetExists(hash string) (bool, error) {
 	var total int64
-	countSQL := fmt.Sprintf(`SELECT count(hash) FROM %s WHERE hash=? `, assetRecordTable)
+	countSQL := fmt.Sprintf(`SELECT count(hash) FROM %s WHERE hash=? `, orderRecordTable)
 	if err := n.db.Get(&total, countSQL, hash); err != nil {
 		return false, err
 	}
@@ -60,11 +59,11 @@ func (n *SQLDB) AssetExists(hash string) (bool, error) {
 }
 
 // LoadAssetRecords load the asset records from the incoming scheduler
-func (n *SQLDB) LoadAssetRecords(statuses []string, limit, offset int) (*sqlx.Rows, error) {
+func (n *SQLDB) LoadAssetRecords(statuses []int64, limit, offset int) (*sqlx.Rows, error) {
 	if limit > loadAssetRecordsDefaultLimit || limit == 0 {
 		limit = loadAssetRecordsDefaultLimit
 	}
-	sQuery := fmt.Sprintf(`SELECT * FROM %s a LEFT JOIN %s b ON a.hash = b.hash WHERE state in (?) order by a.hash asc LIMIT ? OFFSET ?`, assetRecordTable, assetRecordTable)
+	sQuery := fmt.Sprintf(`SELECT * FROM %s WHERE state in (?) order by hash asc LIMIT ? OFFSET ?`, orderRecordTable)
 	query, args, err := sqlx.In(sQuery, statuses, limit, offset)
 	if err != nil {
 		return nil, err
@@ -75,27 +74,19 @@ func (n *SQLDB) LoadAssetRecords(statuses []string, limit, offset int) (*sqlx.Ro
 }
 
 // LoadAssetCount count asset
-func (n *SQLDB) LoadAssetCount(filterState string) (int, error) {
+func (n *SQLDB) LoadAssetCount() (int, error) {
 	var size int
-	cmd := fmt.Sprintf("SELECT count(hash) FROM %s WHERE state!=?", assetRecordTable)
-	err := n.db.Get(&size, cmd, filterState)
+	cmd := fmt.Sprintf("SELECT count(hash) FROM %s", orderRecordTable)
+	err := n.db.Get(&size, cmd)
 	if err != nil {
 		return 0, err
 	}
 	return size, nil
 }
 
-// UpdateAssetRecordExpiration resets asset record expiration time based on hash and eTime
-func (n *SQLDB) UpdateAssetRecordExpiration(hash string, eTime time.Time) error {
-	query := fmt.Sprintf(`UPDATE %s SET expiration=? WHERE hash=?`, assetRecordTable)
-	_, err := n.db.Exec(query, eTime, hash)
-
-	return err
-}
-
 // LoadAllAssetRecords loads all asset records for a given server ID.
-func (n *SQLDB) LoadAllAssetRecords(limit, offset int, statuses []string) (*sqlx.Rows, error) {
-	sQuery := fmt.Sprintf(`SELECT * FROM %s a LEFT JOIN %s b ON a.hash = b.hash WHERE a.state in (?) order by a.hash asc limit ? offset ?`, assetRecordTable, assetRecordTable)
+func (n *SQLDB) LoadAllAssetRecords(limit, offset int, statuses []int64) (*sqlx.Rows, error) {
+	sQuery := fmt.Sprintf(`SELECT * FROM %s WHERE state in (?) order by hash asc limit ? offset ?`, orderRecordTable)
 	query, args, err := sqlx.In(sQuery, statuses, limit, offset)
 	if err != nil {
 		return nil, err
@@ -105,30 +96,13 @@ func (n *SQLDB) LoadAllAssetRecords(limit, offset int, statuses []string) (*sqlx
 	return n.db.QueryxContext(context.Background(), query, args...)
 }
 
-// SaveAssetRecord  saves an asset record into the database.
-func (n *SQLDB) SaveAssetRecord(rInfo *types.OrderRecord) error {
-	tx, err := n.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		err = tx.Rollback()
-		if err != nil && err != sql.ErrTxDone {
-			log.Errorf("SaveAssetRecord Rollback err:%s", err.Error())
-		}
-	}()
-
-	// asset record
+// SaveOrderRecord  saves an asset record into the database.
+func (n *SQLDB) SaveOrderRecord(rInfo *types.OrderRecord) error {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (hash, scheduler_sid, cid, edge_replicas, candidate_replicas, expiration, bandwidth, total_size, created_time) 
-		        VALUES (:hash, :scheduler_sid, :cid, :edge_replicas, :candidate_replicas, :expiration, :bandwidth, :total_size, :created_time)
-				ON DUPLICATE KEY UPDATE scheduler_sid=:scheduler_sid, edge_replicas=:edge_replicas, created_time=:created_time,
-				candidate_replicas=:candidate_replicas, expiration=:expiration, bandwidth=:bandwidth, total_size=:total_size`, assetRecordTable)
-	_, err = tx.NamedExec(query, rInfo)
-	if err != nil {
-		return err
-	}
+		`INSERT INTO %s (hash, from_addr, to_addr, value, created_height, done_height, state, done_state, vps_id) 
+				VALUES (:hash, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :done_state, :vps_id)`, orderRecordTable)
 
-	return tx.Commit()
+	_, err := n.db.NamedExec(query, rInfo)
+
+	return err
 }

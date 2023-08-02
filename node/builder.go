@@ -33,6 +33,8 @@ const (
 
 	ExtractAPIKey
 
+	InitDataTables
+
 	CheckFDLimit
 
 	SetApiEndpointKey

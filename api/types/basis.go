@@ -46,20 +46,23 @@ type AttachKeyPairResponse struct {
 
 // OrderRecord represents information about an asset record
 type OrderRecord struct {
-	CID                   string    `db:"cid"`
-	Hash                  string    `db:"hash"`
-	NeedEdgeReplica       int64     `db:"edge_replicas"`
-	TotalSize             int64     `db:"total_size"`
-	TotalBlocks           int64     `db:"total_blocks"`
-	Expiration            time.Time `db:"expiration"`
-	CreatedTime           time.Time `db:"created_time"`
-	EndTime               time.Time `db:"end_time"`
-	NeedCandidateReplicas int64     `db:"candidate_replicas"`
-	State                 string    `db:"state"`
-	NeedBandwidth         int64     `db:"bandwidth"` // unit:MiB/s
+	Hash          string    `db:"hash"`
+	From          string    `db:"from_addr"`
+	To            string    `db:"to_addr"`
+	Value         int64     `db:"value"`
+	State         int64     `db:"state"`
+	DoneState     int64     `db:"done_state"`
+	CreatedHeight int64     `db:"created_height"`
+	CreatedTime   time.Time `db:"created_time"`
+	DoneTime      time.Time `db:"done_time"`
+	DoneHeight    int64     `db:"done_height"`
+	VpsID         string    `db:"vps_id"`
+}
 
-	RetryCount        int64 `db:"retry_count"`
-	ReplenishReplicas int64 `db:"replenish_replicas"`
+type CreateOrderReq struct {
+	Vps string
+}
 
-	SPCount int64
+type PaymentCompletedReq struct {
+	Hash string
 }

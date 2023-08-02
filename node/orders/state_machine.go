@@ -30,26 +30,18 @@ func (m *Manager) Plan(events []statemachine.Event, user interface{}) (interface
 var planners = map[OrderState]func(events []statemachine.Event, state *OrderInfo) (uint64, error){
 	// external import
 	Created: planOne(
-		on(PullRequestSent{}, WaitingPayment),
+		on(WaitingPaymentSent{}, WaitingPayment),
 	),
 	WaitingPayment: planOne(
-		on(PullFailed{}, PaymentFailed),
-		apply(PulledResult{}),
+		on(OrderTimeOut{}, Done),
+		on(OrderCancel{}, Done),
+		on(PaymentSucceed{}, BuyGoods),
+		apply(PaymentResult{}),
 	),
 	BuyGoods: planOne(
-		on(PullRequestSent{}, Done),
-		on(SelectFailed{}, BuyGoodsFailed),
+		on(BuySucceed{}, Done),
 	),
-	Done: planOne(
-		apply(PulledResult{}),
-	),
-	PaymentFailed: planOne(
-		on(AssetRePull{}, WaitingPayment),
-	),
-	BuyGoodsFailed: planOne(
-		on(AssetRePull{}, BuyGoods),
-	),
-	Remove: planOne(),
+	Done: planOne(),
 }
 
 // plan creates a plan for the next asset pulling action based on the given events and asset state
@@ -85,10 +77,6 @@ func (m *Manager) plan(events []statemachine.Event, state *OrderInfo) (func(stat
 		return m.handleBuyGoods, processed, nil
 	case Done:
 		return m.handleDone, processed, nil
-	case PaymentFailed, BuyGoodsFailed:
-		return m.handlePullsFailed, processed, nil
-	case Remove:
-		return m.handleRemove, processed, nil
 	// Fatal errors
 	default:
 		log.Errorf("unexpected asset update state: %s", state.State)
@@ -169,7 +157,7 @@ func (m *Manager) initStateMachines(ctx context.Context) error {
 	}
 
 	for _, asset := range list {
-		if asset.State == Remove || asset.State == Done {
+		if asset.State == Done {
 			continue
 		}
 
