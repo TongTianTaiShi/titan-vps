@@ -29,30 +29,36 @@ func failedCoolDown(ctx statemachine.Context, info OrderInfo) error {
 	return nil
 }
 
-// handleCreated handles the selection of seed nodes for asset pull
+// handleCreated handles the order create
 func (m *Manager) handleCreated(ctx statemachine.Context, info OrderInfo) error {
-	log.Debugf("handle select seed: %s", info.OrderID)
+	log.Debugf("handle order created , %s", info.OrderID)
 
 	return ctx.Send(WaitingPaymentSent{})
 }
 
-// handleWaitingPayment handles the asset pulling process of seed nodes
+// handleWaitingPayment handles the order wait for user payment
 func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo) error {
-	log.Debugf("handle seed pulling, %s", info.OrderID)
+	log.Debugf("handle wait payment, %s , info : %v", info.OrderID, info.PaymentInfo)
+
+	if info.PaymentInfo != nil {
+		if info.To == info.PaymentInfo.To && info.Value <= info.PaymentInfo.Value {
+			return ctx.Send(PaymentSucceed{})
+		}
+	}
 
 	return nil
 }
 
-// handleBuyGoods handles the upload init
+// handleBuyGoods handles the order to buy goods
 func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error {
-	log.Debugf("handle upload init: %s", info.OrderID)
+	log.Debugf("handle buy goods: %s", info.OrderID)
 
-	return ctx.Send(WaitingPaymentSent{})
+	return nil
 }
 
-// handleDone handles the asset upload process of seed nodes
+// handleDone handles the order done
 func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
-	log.Debugf("handle seed upload, %s", info.OrderID)
+	log.Debugf("handle done, %s", info.OrderID)
 
 	m.revertPayeeAddress(info.To)
 	m.removeOrder(info.From)

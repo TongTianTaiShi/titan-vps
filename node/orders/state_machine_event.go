@@ -40,11 +40,11 @@ func (evt InfoUpdate) Ignore() {
 
 // PaymentResult represents the result of node pulling
 type PaymentResult struct {
-	BlocksCount int64
-	Size        int64
+	Info *PaymentInfo
 }
 
 func (evt PaymentResult) apply(state *OrderInfo) {
+	state.PaymentInfo = evt.Info
 }
 
 func (evt PaymentResult) Ignore() {

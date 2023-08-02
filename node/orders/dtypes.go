@@ -11,6 +11,13 @@ func (c OrderHash) String() string {
 	return string(c)
 }
 
+type PaymentInfo struct {
+	ID    string
+	From  string
+	To    string
+	Value int64
+}
+
 // OrderInfo represents order information
 type OrderInfo struct {
 	State         OrderState
@@ -22,6 +29,8 @@ type OrderInfo struct {
 	CreatedHeight int64
 	DoneHeight    int64
 	VpsID         string
+
+	PaymentInfo *PaymentInfo
 }
 
 // ToOrderRecord converts order info to types.orderRecord
