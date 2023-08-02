@@ -105,15 +105,15 @@ func (basis) Config() interface{} {
 }
 
 func (basis) APIFlags() []string {
-	return []string{"base-api-url"}
+	return []string{"basis-api-url"}
 }
 
 func (basis) RepoFlags() []string {
-	return []string{"base-repo"}
+	return []string{"basis-repo"}
 }
 
 func (basis) APIInfoEnvVars() (primary string, fallbacks []string, deprecated []string) {
-	return "BASE_API_INFO", nil, nil
+	return "BASIS_API_INFO", nil, nil
 }
 
 var log = logging.Logger("repo")

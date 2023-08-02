@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/LMF709268224/titan-vps/node/web"
 	"os"
 	"time"
+
+	"github.com/LMF709268224/titan-vps/node/web"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/types"
@@ -42,6 +43,9 @@ func main() {
 		initCmd,
 		runCmd,
 	}
+
+	local = append(local, lcli.BasisCMDs...)
+
 	if AdvanceBlockCmd != nil {
 		local = append(local, AdvanceBlockCmd)
 	}

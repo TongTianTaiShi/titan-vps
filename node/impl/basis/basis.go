@@ -10,33 +10,33 @@ import (
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/node/common"
+	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/filecoin"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/orders"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
-	"github.com/jmoiron/sqlx"
 	"go.uber.org/fx"
 	"golang.org/x/xerrors"
 )
 
 var log = logging.Logger("basis")
 
-// Manager represents a base service in a cloud computing system.
-type Manager struct {
+// Basis represents a base service in a cloud computing system.
+type Basis struct {
 	fx.In
 
 	*common.CommonAPI
 
-	getConfigFunc dtypes.GetBasisConfigFunc
-	filecoinMgr   filecoin.Manager
-	notify        *pubsub.PubSub
-	db            *sqlx.DB
-	orderMgr      *orders.Manager
+	FilecoinMgr *filecoin.Manager
+	Notify      *pubsub.PubSub
+	*db.SQLDB
+	OrderMgr *orders.Manager
+	dtypes.GetBasisConfigFunc
 }
 
-func (m *Manager) getAccessKeys() (string, string) {
-	cfg, err := m.getConfigFunc()
+func (m *Basis) getAccessKeys() (string, string) {
+	cfg, err := m.GetBasisConfigFunc()
 	if err != nil {
 		log.Errorf("get config err:%s", err.Error())
 		return "", ""
@@ -45,7 +45,7 @@ func (m *Manager) getAccessKeys() (string, string) {
 	return cfg.AliyunAccessKeyID, cfg.AliyunAccessKeySecret
 }
 
-func (m *Manager) DescribeRegions(ctx context.Context) ([]string, error) {
+func (m *Basis) DescribeRegions(ctx context.Context) ([]string, error) {
 	rsp, err := aliyun.DescribeRegions(m.getAccessKeys())
 	if err != nil {
 		log.Errorf("DescribeRegions err: %s", err.Error())
@@ -62,7 +62,7 @@ func (m *Manager) DescribeRegions(ctx context.Context) ([]string, error) {
 	return rpsData, nil
 }
 
-func (m *Manager) DescribeInstanceType(ctx context.Context, regionID string, cores int32, memory float32) ([]string, error) {
+func (m *Basis) DescribeInstanceType(ctx context.Context, regionID string, cores int32, memory float32) ([]string, error) {
 	k, s := m.getAccessKeys()
 
 	rsp, err := aliyun.DescribeRecommendInstanceType(regionID, k, s, cores, memory)
@@ -88,7 +88,7 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, regionID string, cor
 	return rpsData, nil
 }
 
-func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType string) ([]string, error) {
+func (m *Basis) DescribeImages(ctx context.Context, regionID, instanceType string) ([]string, error) {
 	k, s := m.getAccessKeys()
 
 	rsp, err := aliyun.DescribeImages(regionID, k, s, instanceType)
@@ -108,7 +108,7 @@ func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType str
 	return rpsData, nil
 }
 
-func (m *Manager) DescribePrice(ctx context.Context, regionID, instanceType, priceUnit, imageID string, period int32) (*types.DescribePriceResponse, error) {
+func (m *Basis) DescribePrice(ctx context.Context, regionID, instanceType, priceUnit, imageID string, period int32) (*types.DescribePriceResponse, error) {
 	k, s := m.getAccessKeys()
 
 	price, err := aliyun.DescribePrice(regionID, k, s, instanceType, priceUnit, imageID, period)
@@ -120,7 +120,7 @@ func (m *Manager) DescribePrice(ctx context.Context, regionID, instanceType, pri
 	return price, nil
 }
 
-func (m *Manager) CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error) {
+func (m *Basis) CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error) {
 	k, s := m.getAccessKeys()
 
 	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, KeyPairName)
@@ -132,7 +132,7 @@ func (m *Manager) CreateKeyPair(ctx context.Context, regionID, KeyPairName strin
 	return keyInfo, nil
 }
 
-func (m *Manager) AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error) {
+func (m *Basis) AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error) {
 	k, s := m.getAccessKeys()
 	AttachResult, err := aliyun.AttachKeyPair(regionID, k, s, KeyPairName, instanceIds)
 	if err != nil {
@@ -143,7 +143,7 @@ func (m *Manager) AttachKeyPair(ctx context.Context, regionID, KeyPairName strin
 	return AttachResult, nil
 }
 
-func (m *Manager) RebootInstance(ctx context.Context, regionID, instanceId string) (string, error) {
+func (m *Basis) RebootInstance(ctx context.Context, regionID, instanceId string) (string, error) {
 	k, s := m.getAccessKeys()
 	RebootResult, err := aliyun.RebootInstance(regionID, k, s, instanceId)
 	if err != nil {
@@ -154,7 +154,7 @@ func (m *Manager) RebootInstance(ctx context.Context, regionID, instanceId strin
 	return RebootResult.Body.String(), nil
 }
 
-func (m *Manager) CreateInstance(ctx context.Context, regionID, instanceType, priceUnit, imageID string, period int32) (*types.CreateInstanceResponse, error) {
+func (m *Basis) CreateInstance(ctx context.Context, regionID, instanceType, priceUnit, imageID string, period int32) (*types.CreateInstanceResponse, error) {
 	k, s := m.getAccessKeys()
 
 	if priceUnit == "Year" {
@@ -218,4 +218,4 @@ func (m *Manager) CreateInstance(ctx context.Context, regionID, instanceType, pr
 	return result, nil
 }
 
-var _ api.Basis = &Manager{}
+var _ api.Basis = &Basis{}

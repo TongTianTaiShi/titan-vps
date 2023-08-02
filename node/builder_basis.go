@@ -30,7 +30,7 @@ func Basis(out *api.Basis) Option {
 		},
 
 		func(s *Settings) error {
-			resAPI := &basis.Manager{}
+			resAPI := &basis.Basis{}
 			s.invokes[ExtractAPIKey] = fx.Populate(resAPI)
 			*out = resAPI
 			return nil
@@ -50,8 +50,9 @@ func ConfigBasis(c interface{}) Option {
 		Override(new(dtypes.SetBasisConfigFunc), modules.NewSetBasisConfigFunc),
 		Override(new(dtypes.GetBasisConfigFunc), modules.NewGetBasisConfigFunc),
 		Override(new(*pubsub.PubSub), modules.NewPubSub),
+		Override(new(dtypes.MetadataDS), modules.Datastore),
 		Override(new(*db.SQLDB), modules.NewDB),
 		Override(new(*filecoin.Manager), filecoin.NewManager),
-		Override(new(*orders.Manager), orders.NewManager),
+		Override(new(*orders.Manager), modules.NewStorageManager),
 	)
 }
