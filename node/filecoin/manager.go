@@ -69,8 +69,6 @@ func (m *Manager) watchTransfer() error {
 		return xerrors.Errorf("Transfer err:%s", err.Error())
 	}
 
-	log.Debugf("tx sent: %s \n", sub)
-
 	for {
 		select {
 		case err := <-sub.Err():
