@@ -243,7 +243,7 @@ func (m *Basis) CancelOrder(ctx context.Context, orderID string) error {
 }
 
 func (m *Basis) GetBalance(ctx context.Context, address string) (*big.Int, error) {
-	return m.FilecoinMgr.Balance(address)
+	return m.FilecoinMgr.GetBalance(address)
 }
 
 var _ api.Basis = &Basis{}

@@ -50,7 +50,7 @@ func DefaultTransactionCfg() *TransactionCfg {
 				RemoteListenAddress: "",
 			},
 		},
-		DatabaseAddress: "mysql_user:mysql_password@tcp(127.0.0.1:3306)/titan",
+		DatabaseAddress: "",
 	}
 }
 
