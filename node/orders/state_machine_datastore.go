@@ -52,46 +52,46 @@ func (d *Datastore) Get(ctx context.Context, key datastore.Key) (value []byte, e
 
 // Has  checks if the key exists in the datastore
 func (d *Datastore) Has(ctx context.Context, key datastore.Key) (exists bool, err error) {
-	return d.orderDB.AssetExists(trimPrefix(key))
+	return d.orderDB.OrderExists(trimPrefix(key))
 }
 
 // GetSize gets the data size from the datastore
 func (d *Datastore) GetSize(ctx context.Context, key datastore.Key) (size int, err error) {
-	return d.orderDB.LoadAssetCount()
+	return d.orderDB.LoadOrderCount()
 }
 
-// Query queries asset records from the datastore
+// Query queries order records from the datastore
 func (d *Datastore) Query(ctx context.Context, q query.Query) (query.Results, error) {
 	var rows *sqlx.Rows
 	var err error
 
-	rows, err = d.orderDB.LoadAllAssetRecords(checkLimit, 0, PullingStates)
+	rows, err = d.orderDB.LoadAllOrderRecords(checkLimit, 0, PullingStates)
 	if err != nil {
-		log.Errorf("LoadAssets :%s", err.Error())
+		log.Errorf("LoadAllOrderRecords :%s", err.Error())
 		return nil, err
 	}
 	defer rows.Close()
 
 	re := make([]query.Entry, 0)
-	// loading assets to local
+	// loading orders to local
 	for rows.Next() {
 		cInfo := &types.OrderRecord{}
 		err = rows.StructScan(cInfo)
 		if err != nil {
-			log.Errorf("asset StructScan err: %s", err.Error())
+			log.Errorf("StructScan err: %s", err.Error())
 			continue
 		}
 
-		asset := orderInfoFrom(cInfo)
+		order := orderInfoFrom(cInfo)
 		valueBuf := new(bytes.Buffer)
-		if err = asset.MarshalCBOR(valueBuf); err != nil {
-			log.Errorf("asset marshal cbor: %s", err.Error())
+		if err = order.MarshalCBOR(valueBuf); err != nil {
+			log.Errorf("order marshal cbor: %s", err.Error())
 			continue
 		}
 
 		prefix := "/"
 		entry := query.Entry{
-			Key: prefix + asset.OrderID.String(), Size: len(valueBuf.Bytes()),
+			Key: prefix + order.OrderID.String(), Size: len(valueBuf.Bytes()),
 		}
 
 		if !q.KeysOnly {
@@ -107,7 +107,7 @@ func (d *Datastore) Query(ctx context.Context, q query.Query) (query.Results, er
 	return r, nil
 }
 
-// Put update asset record info
+// Put update order record info
 func (d *Datastore) Put(ctx context.Context, key datastore.Key, value []byte) error {
 	aInfo := &OrderInfo{}
 	if err := aInfo.UnmarshalCBOR(bytes.NewReader(value)); err != nil {
@@ -116,10 +116,10 @@ func (d *Datastore) Put(ctx context.Context, key datastore.Key, value []byte) er
 
 	aInfo.OrderID = OrderHash(trimPrefix(key))
 
-	return d.orderDB.UpdateOrderInfo(aInfo.OrderID.String(), aInfo.State.Int(), aInfo.DoneState, aInfo.DoneHeight)
+	return d.orderDB.UpdateOrderInfo(aInfo.OrderID.String(), aInfo.State.Int(), aInfo.DoneState.Int(), aInfo.DoneHeight)
 }
 
-// Delete delete asset record info (This func has no place to call it)
+// Delete delete order record info (This func has no place to call it)
 func (d *Datastore) Delete(ctx context.Context, key datastore.Key) error {
 	return nil
 }

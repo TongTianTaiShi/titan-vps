@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"math/big"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 )
@@ -17,7 +18,9 @@ type Basis interface {
 	CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error)                                      //perm:read
 	AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)              //perm:read
 	RebootInstance(ctx context.Context, regionID, instanceId string) (string, error)                                                            //perm:read
-	CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error)                                                                  //perm:read
-	PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error)                                                        //perm:read
-	CancelOrder(ctx context.Context, orderID string) error                                                                                      //perm:read
+
+	CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error)           //perm:read
+	PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) //perm:read
+	CancelOrder(ctx context.Context, orderID string) error                               //perm:read
+	GetBalance(ctx context.Context, address string) (*big.Int, error)                    //perm:read
 }

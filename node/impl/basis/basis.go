@@ -3,6 +3,7 @@ package basis
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"math/rand"
 	"time"
 
@@ -234,11 +235,15 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (stri
 }
 
 func (m *Basis) PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) {
-	return "", nil
+	return "", m.FilecoinMgr.CheckMessage(req.TransactionID)
 }
 
 func (m *Basis) CancelOrder(ctx context.Context, orderID string) error {
 	return m.OrderMgr.CancelOrder(orderID)
+}
+
+func (m *Basis) GetBalance(ctx context.Context, address string) (*big.Int, error) {
+	return m.FilecoinMgr.Balance(address)
 }
 
 var _ api.Basis = &Basis{}

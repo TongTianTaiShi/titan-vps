@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+	"math/big"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
@@ -35,6 +36,8 @@ type BasisStruct struct {
 		DescribePrice func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) `perm:"read"`
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"read"`
+
+		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"read"`
 
 		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"read"`
 
@@ -182,6 +185,17 @@ func (s *BasisStruct) DescribeRegions(p0 context.Context) ([]string, error) {
 
 func (s *BasisStub) DescribeRegions(p0 context.Context) ([]string, error) {
 	return *new([]string), ErrNotSupported
+}
+
+func (s *BasisStruct) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
+	if s.Internal.GetBalance == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetBalance(p0, p1)
+}
+
+func (s *BasisStub) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
+	return nil, ErrNotSupported
 }
 
 func (s *BasisStruct) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {

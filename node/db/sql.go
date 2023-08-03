@@ -42,14 +42,7 @@ const (
 	orderRecordTable = "order_record"
 
 	// Default limits for loading table entries.
-	loadNodeInfosDefaultLimit           = 100
-	loadValidationResultsDefaultLimit   = 100
-	loadAssetRecordsDefaultLimit        = 100
-	loadExpiredAssetRecordsDefaultLimit = 100
-	loadWorkloadDefaultLimit            = 100
-	loadReplicaEventDefaultLimit        = 100
-	loadRetrieveDefaultLimit            = 100
-	loadReplicaDefaultLimit             = 100
+	loadOrderRecordsDefaultLimit = 100
 )
 
 // InitTables initializes data tables.

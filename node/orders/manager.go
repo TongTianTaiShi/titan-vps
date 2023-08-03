@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
-	"github.com/LMF709268224/titan-vps/lib/filecoinfvm"
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/filecoin-project/go-statemachine"
 	"github.com/filecoin-project/pubsub"
@@ -79,7 +78,7 @@ func (m *Manager) Start(ctx context.Context) {
 		log.Errorf("restartStateMachines err: %s", err.Error())
 	}
 
-	go m.subscribeNodeEvents()
+	go m.subscribeEvents()
 	go m.checkOrderTimeout()
 }
 
@@ -110,27 +109,24 @@ func (m *Manager) checkOrderTimeout() {
 	}
 }
 
-func (m *Manager) subscribeNodeEvents() {
+func (m *Manager) subscribeEvents() {
 	subTransfer := m.notify.Sub(types.EventTransfer.String())
+	defer m.notify.Unsub(subTransfer)
 
-	go func() {
-		defer m.notify.Unsub(subTransfer)
+	for {
+		select {
+		case u := <-subTransfer:
+			tr := u.(*types.FvmTransfer)
 
-		for {
-			select {
-			case u := <-subTransfer:
-				tr := u.(*filecoinfvm.AbiTransfer)
-				log.Debugf("to hex", tr.To.Hex())
-				if hash, exist := m.usedAddrs[tr.To.Hex()]; exist {
-					err := m.orderStateMachines.Send(OrderHash(hash), PaymentSucceed{})
-					if err != nil {
-						log.Errorf("subscribeNodeEvents Send %s err:%s", hash, err.Error())
-						continue
-					}
+			if hash, exist := m.usedAddrs[tr.To]; exist {
+				err := m.orderStateMachines.Send(OrderHash(hash), PaymentSucceed{})
+				if err != nil {
+					log.Errorf("subscribeNodeEvents Send %s err:%s", hash, err.Error())
+					continue
 				}
 			}
 		}
-	}()
+	}
 }
 
 // Terminate stops the order state machine

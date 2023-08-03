@@ -8,7 +8,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-// Plan prepares a plan for asset pulling
+// Plan prepares a plan for order
 func (m *Manager) Plan(events []statemachine.Event, user interface{}) (interface{}, uint64, error) {
 	next, processed, err := m.plan(events, user.(*OrderInfo))
 	if err != nil || next == nil {
@@ -26,7 +26,7 @@ func (m *Manager) Plan(events []statemachine.Event, user interface{}) (interface
 	}, processed, nil
 }
 
-// maps asset states to their corresponding planner functions
+// maps order states to their corresponding planner functions
 var planners = map[OrderState]func(events []statemachine.Event, state *OrderInfo) (uint64, error){
 	// external import
 	Created: planOne(
@@ -44,7 +44,7 @@ var planners = map[OrderState]func(events []statemachine.Event, state *OrderInfo
 	Done: planOne(),
 }
 
-// plan creates a plan for the next asset pulling action based on the given events and asset state
+// plan creates a plan for the next order action based on the given events and order state
 func (m *Manager) plan(events []statemachine.Event, state *OrderInfo) (func(statemachine.Context, OrderInfo) error, uint64, error) {
 	log.Debugf("state:%s , events:%v", state.State, events)
 	p := planners[state.State]
@@ -79,13 +79,13 @@ func (m *Manager) plan(events []statemachine.Event, state *OrderInfo) (func(stat
 		return m.handleDone, processed, nil
 	// Fatal errors
 	default:
-		log.Errorf("unexpected asset update state: %s", state.State)
+		log.Errorf("unexpected order update state: %s", state.State)
 	}
 
 	return nil, processed, nil
 }
 
-// prepares a single plan for a given asset state, allowing for one event at a time
+// prepares a single plan for a given order state, allowing for one event at a time
 func planOne(ts ...func() (mut mutator, next func(info *OrderInfo) (more bool, err error))) func(events []statemachine.Event, state *OrderInfo) (uint64, error) {
 	return func(events []statemachine.Event, state *OrderInfo) (uint64, error) {
 	eloop:
@@ -103,7 +103,7 @@ func planOne(ts ...func() (mut mutator, next func(info *OrderInfo) (more bool, e
 				}
 
 				if err, isErr := event.User.(error); isErr {
-					log.Warnf("asset %s got error event %T: %+v", state.OrderID, event.User, err)
+					log.Warnf("order %s got error event %T: %+v", state.OrderID, event.User, err)
 				}
 
 				event.User.(mutator).apply(state)
@@ -146,19 +146,19 @@ func apply(mut mutator) func() (mutator, func(*OrderInfo) (bool, error)) {
 	}
 }
 
-// initStateMachines init all asset state machines
+// initStateMachines init all order state machines
 func (m *Manager) initStateMachines(ctx context.Context) error {
 	// initialization
 	defer m.stateMachineWait.Done()
 
-	list, err := m.ListAssets()
+	list, err := m.ListOrders()
 	if err != nil {
 		return err
 	}
 
 	for _, order := range list {
 		if err := m.orderStateMachines.Send(order.OrderID, OrderRestart{}); err != nil {
-			log.Errorf("initStateMachines asset send %s , err %s", order.OrderID, err.Error())
+			log.Errorf("initStateMachines order send %s , err %s", order.OrderID, err.Error())
 			continue
 		}
 
@@ -168,8 +168,8 @@ func (m *Manager) initStateMachines(ctx context.Context) error {
 	return nil
 }
 
-// ListAssets load asset pull infos from state machine
-func (m *Manager) ListAssets() ([]OrderInfo, error) {
+// ListOrders load order infos from state machine
+func (m *Manager) ListOrders() ([]OrderInfo, error) {
 	var list []OrderInfo
 	if err := m.orderStateMachines.List(&list); err != nil {
 		return nil, err

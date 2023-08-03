@@ -14,4 +14,4 @@ var cOrderRecordTable = `
 		done_height        INT          DEFAULT 0,
 		vps_id             VARCHAR(128) NOT NULL,
 		PRIMARY KEY (order_id)
-	) ENGINE=InnoDB COMMENT='asset record';`
+	) ENGINE=InnoDB COMMENT='order record';`

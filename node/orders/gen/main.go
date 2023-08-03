@@ -12,6 +12,7 @@ func main() {
 	err := gen.WriteMapEncodersToFile("../cbor_gen.go", "orders",
 		orders.OrderInfo{},
 		orders.PaymentInfo{},
+		orders.GoodsInfo{},
 	)
 	if err != nil {
 		fmt.Println(err)

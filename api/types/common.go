@@ -26,3 +26,9 @@ const (
 func (t EventTopics) String() string {
 	return string(t)
 }
+
+type FvmTransfer struct {
+	From  string
+	To    string
+	Value int64
+}

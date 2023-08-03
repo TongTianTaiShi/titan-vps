@@ -10,6 +10,7 @@ import (
 // BasisCMDs Basis cmd
 var BasisCMDs = []*cli.Command{
 	WithCategory("order", orderCmds),
+	WithCategory("user", userCmds),
 	describeRegionsCmd,
 }
 
@@ -20,6 +21,14 @@ var orderCmds = &cli.Command{
 		createOrderCmd,
 		cancelOrderCmd,
 		paymentCompletedCmd,
+	},
+}
+
+var userCmds = &cli.Command{
+	Name:  "user",
+	Usage: "Manage user",
+	Subcommands: []*cli.Command{
+		getBalanceCmd,
 	},
 }
 
@@ -87,7 +96,7 @@ var cancelOrderCmd = &cli.Command{
 	Usage: "cancel order",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "hash",
+			Name:  "order_id",
 			Usage: "node type: edge 1, update 6",
 			Value: "",
 		},
@@ -101,9 +110,9 @@ var cancelOrderCmd = &cli.Command{
 		}
 		defer closer()
 
-		hash := cctx.String("hash")
+		orderID := cctx.String("order_id")
 
-		return api.CancelOrder(ctx, hash)
+		return api.CancelOrder(ctx, orderID)
 	},
 }
 
@@ -112,7 +121,12 @@ var paymentCompletedCmd = &cli.Command{
 	Usage: "payment completed",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "hash",
+			Name:  "order_id",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "tr_id",
 			Usage: "node type: edge 1, update 6",
 			Value: "",
 		},
@@ -127,9 +141,42 @@ var paymentCompletedCmd = &cli.Command{
 
 		defer closer()
 
-		hash := cctx.String("hash")
+		orderID := cctx.String("order_id")
+		trID := cctx.String("tr_id")
 
-		str, err := api.PaymentCompleted(ctx, types.PaymentCompletedReq{OrderID: hash})
+		str, err := api.PaymentCompleted(ctx, types.PaymentCompletedReq{OrderID: orderID, TransactionID: trID})
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(str)
+		return nil
+	},
+}
+
+var getBalanceCmd = &cli.Command{
+	Name:  "gb",
+	Usage: "get balance",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "address",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		address := cctx.String("address")
+
+		str, err := api.GetBalance(ctx, address)
 		if err != nil {
 			return err
 		}

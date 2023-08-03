@@ -15,20 +15,19 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/filecoin-project/pubsub"
+	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log/v2"
 	"golang.org/x/crypto/sha3"
 	"golang.org/x/xerrors"
 )
 
-var log = logging.Logger("fvm")
+var log = logging.Logger("filecoin")
 
 const (
 	contractorAddr = "0x08906C7e01Bfb25483D9d411f1Fc18Df6b70a2F8"
-	wsAddr         = "wss://wss.calibration.node.glif.io/apigw/lotus/rpc/v0"
+	wsAddr         = "wss://wss.calibration.node.glif.io/apigw/lotus/rpc/v1"
 	httpsAddr      = "https://api.calibration.node.glif.io/rpc/v1"
 	privateKeyStr  = "3c3633bfaa3f8cfc2df9169d763eda6a8fb06d632e553f969f9dd2edd64dd11b"
-
-	payeeAddress = "0xeb549F0B9887F4150dbD3bD0A257d99d5E316dBA" // need []string
 )
 
 // Manager is the node manager responsible for managing the online nodes
@@ -82,14 +81,65 @@ func (m *Manager) watchTransfer() error {
 		case tr := <-sink:
 			log.Infof("from:%s,to:%s,value:%d, RawTxHash:%s,RawBlockNumber:%d, Removed:%v \n", tr.From.String(), tr.To.String(), tr.Value, tr.Raw.TxHash.String(), tr.Raw.BlockNumber, tr.Raw.Removed)
 			if !tr.Raw.Removed {
-				m.notify.Pub(tr, types.EventTransfer.String())
+				m.notify.Pub(&types.FvmTransfer{
+					From:  tr.From.Hex(),
+					To:    tr.To.Hex(),
+					Value: tr.Value.Int64(),
+				}, types.EventTransfer.String())
 			}
 		}
 	}
 }
 
-func (m *Manager) Check(tx string) error {
-	return chainGetMessage(tx)
+func (m *Manager) Balance(addr string) (*big.Int, error) {
+	client, err := ethclient.Dial(httpsAddr)
+	if err != nil {
+		return big.NewInt(0), xerrors.Errorf("Dial err:%s", err.Error())
+	}
+
+	tokenAddress := common.HexToAddress(contractorAddr)
+
+	myAbi, err := filecoinfvm.NewAbi(tokenAddress, client)
+	if err != nil {
+		return big.NewInt(0), xerrors.Errorf("NewAbi err:%s", err.Error())
+	}
+
+	return myAbi.BalanceOf(nil, common.HexToAddress(addr))
+}
+
+func (m *Manager) CheckMessage(tx string) error {
+	log.Debugf("tx:%s \n", tx)
+	var cid cid.Cid
+	err := filecoinfvm.EthGetMessageCidByTransactionHash(&cid, tx, httpsAddr)
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("cid:%s \n", cid.String())
+
+	var msg message
+	err = filecoinfvm.ChainGetMessage(&msg, cid, httpsAddr)
+	if err != nil {
+		return err
+	}
+
+	var info lookup
+	err = filecoinfvm.StateSearchMsg(&info, cid, httpsAddr)
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("Height:%d,ExitCode:%d,GasUsed:%d \n", info.Height, info.Receipt.ExitCode, info.Receipt.GasUsed)
+
+	if info.Receipt.ExitCode == 0 {
+		m.notify.Pub(&types.FvmTransfer{
+			From:  msg.From.String(),
+			To:    msg.To.String(),
+			Value: msg.Value.Int64(),
+		}, types.EventTransfer.String())
+	}
+
+	return nil
 }
 
 func (m *Manager) Transfer(toAddr, valueStr string) (string, error) {

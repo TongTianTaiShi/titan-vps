@@ -13,8 +13,6 @@ const (
 	BuyGoods
 	// Done the order done
 	Done
-	// BuyGoodsFailed Unable to select candidate nodes or failed to pull asset
-	BuyGoodsFailed
 )
 
 // String returns the string representation of the order state.
@@ -28,31 +26,60 @@ func (s OrderState) String() string {
 		return "BuyGoods"
 	case 3:
 		return "Done"
-	case 4:
-		return "BuyGoodsFailed"
 	}
 
 	return "Not found"
 }
 
-// Int returns the int representation of the AssetState.
+// Int returns the int representation of the order state.
 func (s OrderState) Int() int64 {
 	return int64(s)
 }
 
 var (
-	// FailedStates contains a list of asset pull states that represent failures.
-	FailedStates = []int64{
-		BuyGoodsFailed.Int(),
-	}
-
-	// PullingStates contains a list of asset pull states that represent pulling.
+	// PullingStates contains a list of order states that represent pulling.
 	PullingStates = []int64{
 		Created.Int(),
 		WaitingPayment.Int(),
 		BuyGoods.Int(),
 	}
 
-	// ActiveStates contains a list of asset pull states that represent active.
-	ActiveStates = append(append([]int64{Done.Int()}, FailedStates...), PullingStates...)
+	// ActiveStates contains a list of order states that represent active.
+	ActiveStates = append([]int64{Done.Int()}, PullingStates...)
 )
+
+// OrderDoneState represents the state of an order in the process of being pulled.
+type OrderDoneState int64
+
+// Constants defining various states of the done order process.
+const (
+	// Success order
+	Success OrderDoneState = iota
+	// Timeout timeout state
+	Timeout
+	// Cancel user cancel state
+	Cancel
+	// PurchaseFailed Purchase failed
+	PurchaseFailed
+)
+
+// String returns the string representation of the order state.
+func (s OrderDoneState) String() string {
+	switch s {
+	case 0:
+		return "Success"
+	case 1:
+		return "Timeout"
+	case 2:
+		return "Cancel"
+	case 3:
+		return "PurchaseFailed"
+	}
+
+	return "Not found"
+}
+
+// Int returns the int representation of the order done state.
+func (s OrderDoneState) Int() int64 {
+	return int64(s)
+}

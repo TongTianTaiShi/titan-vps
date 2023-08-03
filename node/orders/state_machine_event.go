@@ -18,14 +18,14 @@ type Ignorable interface {
 
 // Global events
 
-// OrderRestart restarts asset pulling
+// OrderRestart restarts incomplete orders
 type OrderRestart struct{}
 
 func (evt OrderRestart) applyGlobal(state *OrderInfo) bool {
 	return false
 }
 
-// InfoUpdate update asset info
+// InfoUpdate update order info
 type InfoUpdate struct {
 	Size   int64
 	Blocks int64
@@ -38,34 +38,38 @@ func (evt InfoUpdate) applyGlobal(state *OrderInfo) bool {
 func (evt InfoUpdate) Ignore() {
 }
 
-// PaymentResult represents the result of node pulling
+// PaymentResult User payment result
 type PaymentResult struct {
-	Info *PaymentInfo
+	*PaymentInfo
 }
 
 func (evt PaymentResult) apply(state *OrderInfo) {
-	state.PaymentInfo = evt.Info
+	state.PaymentInfo = evt.PaymentInfo
 }
 
 func (evt PaymentResult) Ignore() {
 }
 
-// WaitingPaymentSent indicates that a pull request has been sent
+// WaitingPaymentSent Waiting for user to pay
 type WaitingPaymentSent struct{}
 
 func (evt WaitingPaymentSent) apply(state *OrderInfo) {}
 
-// OrderTimeOut indicates that a pull request has been sent
+// OrderTimeOut order timeout
 type OrderTimeOut struct{}
 
-func (evt OrderTimeOut) apply(state *OrderInfo) {}
+func (evt OrderTimeOut) apply(state *OrderInfo) {
+	state.DoneState = Timeout
+}
 
-// OrderCancel indicates that a pull request has been sent
+// OrderCancel cancel the order
 type OrderCancel struct{}
 
-func (evt OrderCancel) apply(state *OrderInfo) {}
+func (evt OrderCancel) apply(state *OrderInfo) {
+	state.DoneState = Cancel
+}
 
-// PaymentSucceed indicates that a node has successfully pulled an asset
+// PaymentSucceed Order paid successfully
 type PaymentSucceed struct{}
 
 func (evt PaymentSucceed) apply(state *OrderInfo) {
@@ -74,7 +78,12 @@ func (evt PaymentSucceed) apply(state *OrderInfo) {
 func (evt PaymentSucceed) Ignore() {
 }
 
-// BuySucceed skips the current step
-type BuySucceed struct{}
+// BuySucceed Successful purchase
+type BuySucceed struct {
+	*GoodsInfo
+}
 
-func (evt BuySucceed) apply(state *OrderInfo) {}
+func (evt BuySucceed) apply(state *OrderInfo) {
+	state.GoodsInfo = evt.GoodsInfo
+	state.DoneState = Success
+}
