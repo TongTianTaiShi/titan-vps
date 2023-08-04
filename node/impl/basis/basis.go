@@ -161,9 +161,13 @@ func (m *Basis) RebootInstance(ctx context.Context, regionID, instanceId string)
 	return RebootResult.Body.String(), nil
 }
 
-func (m *Basis) CreateInstance(ctx context.Context, regionID, instanceType, priceUnit, imageID string, period int32) (*types.CreateInstanceResponse, error) {
+func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
 	k, s := m.getAccessKeys()
-
+	priceUnit := vpsInfo.PeriodUnit
+	period := vpsInfo.Period
+	regionID := vpsInfo.RegionId
+	instanceType := vpsInfo.InstanceType
+	imageID := vpsInfo.ImageId
 	if priceUnit == "Year" {
 		priceUnit = "Month"
 		period = period * 12
