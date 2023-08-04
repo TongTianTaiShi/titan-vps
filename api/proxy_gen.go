@@ -109,7 +109,7 @@ type UserAPIStruct struct {
 
 		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"read"`
 
-		Logout func(p0 context.Context, p1 *types.UserReq) error ``
+		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"read"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
 

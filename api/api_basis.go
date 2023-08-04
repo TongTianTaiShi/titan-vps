@@ -39,5 +39,5 @@ type UserAPI interface {
 	RebootInstance(ctx context.Context, regionID, instanceId string) (string, error) //perm:read
 	SignCode(ctx context.Context, userId string) (string, error)                     //perm:read
 	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)     //perm:read
-	Logout(ctx context.Context, user *types.UserReq) error
+	Logout(ctx context.Context, user *types.UserReq) error                           //perm:read
 }
