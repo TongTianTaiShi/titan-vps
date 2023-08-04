@@ -57,7 +57,9 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 
 	// Save To DB
 
-	return ctx.Send(BuySucceed{&GoodsInfo{ID: "vps_id", Password: "abc"}})
+	height := m.filecoinMgr.GetHeight()
+
+	return ctx.Send(BuySucceed{GoodsInfo: &GoodsInfo{ID: "vps_id", Password: "abc"}, Height: height})
 }
 
 // handleDone handles the order done

@@ -2,35 +2,23 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/jmoiron/sqlx"
 )
 
-// UpdateOrderInfo update order information
-func (n *SQLDB) UpdateOrderInfo(orderID string, state, doneState, doneHeight int64) error {
-	tx, err := n.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		err = tx.Rollback()
-		if err != nil && err != sql.ErrTxDone {
-			log.Errorf("UpdateOrderInfo Rollback err:%s", err.Error())
-		}
-	}()
-
+// SaveOrderInfo save order information
+func (n *SQLDB) SaveOrderInfo(rInfo *types.OrderRecord) error {
 	// update record table
-	dQuery := fmt.Sprintf(`UPDATE %s SET state=?, done_height=?, done_state=?, done_time=NOW() WHERE order_id=?`, orderRecordTable)
-	_, err = tx.Exec(dQuery, state, doneHeight, doneState, orderID)
-	if err != nil {
-		return err
-	}
+	query := fmt.Sprintf(
+		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, done_state, vps_id) 
+		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :done_state, :vps_id)
+				ON DUPLICATE KEY UPDATE state=:state, done_height=:done_height, done_state=:done_state, done_time=NOW(),
+				from_addr=:from_addr, to_addr=:to_addr, value=:value, vps_id=:vps_id, created_height=:created_height`, orderRecordTable)
+	_, err := n.db.NamedExec(query, rInfo)
 
-	return tx.Commit()
+	return err
 }
 
 // LoadOrderRecord load order record information
@@ -92,15 +80,4 @@ func (n *SQLDB) LoadAllOrderRecords(limit, offset int, statuses []int64) (*sqlx.
 
 	query = n.db.Rebind(query)
 	return n.db.QueryxContext(context.Background(), query, args...)
-}
-
-// SaveOrderRecord  saves an order record into the database.
-func (n *SQLDB) SaveOrderRecord(rInfo *types.OrderRecord) error {
-	query := fmt.Sprintf(
-		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, done_state, vps_id) 
-				VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :done_state, :vps_id)`, orderRecordTable)
-
-	_, err := n.db.NamedExec(query, rInfo)
-
-	return err
 }

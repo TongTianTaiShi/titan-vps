@@ -9,6 +9,7 @@ import (
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
+	"github.com/LMF709268224/titan-vps/node/filecoin"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/filecoin-project/go-statemachine"
 	"github.com/filecoin-project/pubsub"
@@ -42,11 +43,12 @@ type Manager struct {
 	usedAddrs      map[string]string
 	addrLock       *sync.Mutex
 
-	cfg config.BasisCfg
+	cfg         config.BasisCfg
+	filecoinMgr *filecoin.Manager
 }
 
 // NewManager returns a new manager instance
-func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc) (*Manager, error) {
+func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, fm *filecoin.Manager) (*Manager, error) {
 	cfg, err := getCfg()
 	if err != nil {
 		return nil, err
@@ -61,6 +63,7 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg 
 		usedAddrs:      make(map[string]string),
 		addrLock:       &sync.Mutex{},
 		cfg:            cfg,
+		filecoinMgr:    fm,
 	}
 
 	// state machine initialization
@@ -104,8 +107,11 @@ func (m *Manager) checkOrderTimeout() {
 
 			log.Debugf("checkout %s , %s ", addr, hash)
 
-			if info.State != int64(Done) && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
-				err = m.orderStateMachines.Send(OrderHash(hash), OrderTimeOut{})
+			if info.State != Done.Int() && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
+
+				height := m.filecoinMgr.GetHeight()
+
+				err = m.orderStateMachines.Send(OrderHash(hash), OrderTimeOut{Height: height})
 				if err != nil {
 					log.Errorf("checkOrderTimeout Send %s , %s err:%s", addr, hash, err.Error())
 					continue
@@ -142,7 +148,9 @@ func (m *Manager) Terminate(ctx context.Context) error {
 
 // CancelOrder cancel vps order
 func (m *Manager) CancelOrder(orderID string) error {
-	return m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{})
+	height := m.filecoinMgr.GetHeight()
+
+	return m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{Height: height})
 }
 
 // CreatedOrder create vps order
@@ -164,14 +172,10 @@ func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 
 	req.To = address
 	req.OrderID = orderID
-
-	err = m.SaveOrderRecord(req)
-	if err != nil {
-		return err
-	}
+	req.CreatedHeight = m.filecoinMgr.GetHeight()
 
 	// create order task
-	return m.orderStateMachines.Send(OrderHash(orderID), WaitingPaymentSent{})
+	return m.orderStateMachines.Send(OrderHash(orderID), CreateOrder{orderInfoFrom(req)})
 }
 
 func (m *Manager) addOrder(userID, orderID string) error {

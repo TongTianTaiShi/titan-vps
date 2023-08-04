@@ -5,6 +5,7 @@ import (
 
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
+	"github.com/LMF709268224/titan-vps/node/filecoin"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/modules/helpers"
 	"github.com/LMF709268224/titan-vps/node/orders"
@@ -96,6 +97,7 @@ type StorageManagerParams struct {
 	*db.SQLDB
 	*pubsub.PubSub
 	dtypes.GetBasisConfigFunc
+	*filecoin.Manager
 }
 
 // Datastore returns a new metadata datastore
@@ -112,10 +114,11 @@ func NewStorageManager(params StorageManagerParams) (*orders.Manager, error) {
 		sdb  = params.SQLDB
 		pb   = params.PubSub
 		gc   = params.GetBasisConfigFunc
+		fm   = params.Manager
 	)
 
 	ctx := helpers.LifecycleCtx(mctx, lc)
-	m, err := orders.NewManager(ds, sdb, pb, gc)
+	m, err := orders.NewManager(ds, sdb, pb, gc, fm)
 	if err != nil {
 		return nil, err
 	}

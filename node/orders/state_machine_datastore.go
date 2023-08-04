@@ -116,7 +116,7 @@ func (d *Datastore) Put(ctx context.Context, key datastore.Key, value []byte) er
 
 	aInfo.OrderID = OrderHash(trimPrefix(key))
 
-	return d.orderDB.UpdateOrderInfo(aInfo.OrderID.String(), aInfo.State.Int(), aInfo.DoneState.Int(), aInfo.DoneHeight)
+	return d.orderDB.SaveOrderInfo(aInfo.ToOrderRecord())
 }
 
 // Delete delete order record info (This func has no place to call it)

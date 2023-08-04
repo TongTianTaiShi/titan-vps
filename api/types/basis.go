@@ -49,6 +49,7 @@ type CreateInstanceResponse struct {
 	PublicIpAddress string
 	PrivateKey      string
 }
+
 type CreateKeyPairResponse struct {
 	KeyPairId      string
 	KeyPairName    string

@@ -65,7 +65,7 @@ func (m *Manager) plan(events []statemachine.Event, state *OrderInfo) (func(stat
 		return nil, processed, xerrors.Errorf("running planner for state %s failed: %w", state.State, err)
 	}
 
-	log.Debugf("%s: %s", state.OrderID, state.State)
+	log.Debugf("Order: %s , State: %s \n", state.OrderID, state.State)
 
 	switch state.State {
 	// Happy path

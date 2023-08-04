@@ -50,23 +50,47 @@ func (evt PaymentResult) apply(state *OrderInfo) {
 func (evt PaymentResult) Ignore() {
 }
 
+type CreateOrder struct {
+	*OrderInfo
+}
+
+func (evt CreateOrder) applyGlobal(state *OrderInfo) bool {
+	state.CreatedHeight = evt.CreatedHeight
+	state.To = evt.To
+	state.State = evt.State
+	state.OrderID = evt.OrderID
+	state.From = evt.From
+	state.Value = evt.Value
+	state.DoneState = evt.DoneState
+	state.DoneHeight = evt.DoneHeight
+	state.VpsID = evt.VpsID
+
+	return true
+}
+
 // WaitingPaymentSent Waiting for user to pay
 type WaitingPaymentSent struct{}
 
 func (evt WaitingPaymentSent) apply(state *OrderInfo) {}
 
 // OrderTimeOut order timeout
-type OrderTimeOut struct{}
+type OrderTimeOut struct {
+	Height int64
+}
 
 func (evt OrderTimeOut) apply(state *OrderInfo) {
 	state.DoneState = Timeout
+	state.DoneHeight = evt.Height
 }
 
 // OrderCancel cancel the order
-type OrderCancel struct{}
+type OrderCancel struct {
+	Height int64
+}
 
 func (evt OrderCancel) apply(state *OrderInfo) {
 	state.DoneState = Cancel
+	state.DoneHeight = evt.Height
 }
 
 // PaymentSucceed Order paid successfully
@@ -81,9 +105,11 @@ func (evt PaymentSucceed) Ignore() {
 // BuySucceed Successful purchase
 type BuySucceed struct {
 	*GoodsInfo
+	Height int64
 }
 
 func (evt BuySucceed) apply(state *OrderInfo) {
 	state.GoodsInfo = evt.GoodsInfo
 	state.DoneState = Success
+	state.DoneHeight = evt.Height
 }

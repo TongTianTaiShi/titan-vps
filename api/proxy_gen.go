@@ -4,12 +4,13 @@ package api
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/google/uuid"
 	"golang.org/x/xerrors"
-	"math/big"
 )
 
 var ErrNotSupported = xerrors.New("method not supported")
@@ -24,7 +25,7 @@ type BasisStruct struct {
 	Internal struct {
 		AttachKeyPair func(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) `perm:"read"`
 
-		CreateInstance func(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) `perm:"read"`
+		CreateInstance func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.CreateInstanceResponse, error) `perm:"read"`
 
 		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"read"`
 
@@ -108,7 +109,7 @@ type UserAPIStruct struct {
 
 		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"read"`
 
-		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"read"`
+		Logout func(p0 context.Context, p1 *types.UserReq) error ``
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
 
@@ -130,14 +131,14 @@ func (s *BasisStub) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 [
 	return *new([]*types.AttachKeyPairResponse), ErrNotSupported
 }
 
-func (s *BasisStruct) CreateInstance(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
+func (s *BasisStruct) CreateInstance(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.CreateInstanceResponse, error) {
 	if s.Internal.CreateInstance == nil {
 		return nil, ErrNotSupported
 	}
-	return s.Internal.CreateInstance(p0, p1)
+	return s.Internal.CreateInstance(p0, p1, p2, p3, p4, p5)
 }
 
-func (s *BasisStub) CreateInstance(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
+func (s *BasisStub) CreateInstance(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.CreateInstanceResponse, error) {
 	return nil, ErrNotSupported
 }
 

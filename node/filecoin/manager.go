@@ -92,6 +92,17 @@ func (m *Manager) watchTransfer() error {
 	}
 }
 
+func (m *Manager) GetHeight() int64 {
+	var msg tipSet
+	err := filecoinfvm.ChainHead(&msg, m.cfg.LotusHTTPSAddr)
+	if err != nil {
+		log.Errorf("ChainHead err:%s", err.Error())
+		return 0
+	}
+
+	return msg.Height
+}
+
 // GetBalance get balance
 func (m *Manager) GetBalance(addr string) (*big.Int, error) {
 	client, err := ethclient.Dial(m.cfg.LotusHTTPSAddr)

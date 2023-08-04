@@ -110,6 +110,18 @@ func ChainGetMessage(out interface{}, c cid.Cid, addr string) error {
 	return requestLotus(out, req, addr)
 }
 
+// ChainHead lotus ChainHead api
+func ChainHead(out interface{}, addr string) error {
+	req := request{
+		Jsonrpc: "2.0",
+		Method:  "Filecoin.ChainHead",
+		Params:  nil,
+		ID:      1,
+	}
+
+	return requestLotus(out, req, addr)
+}
+
 // StateSearchMsg lotus stateSearchMsg api
 func StateSearchMsg(out interface{}, c cid.Cid, addr string) error {
 	serializedParams, err := json.Marshal(params{
