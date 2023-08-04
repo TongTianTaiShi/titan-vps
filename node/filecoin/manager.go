@@ -83,6 +83,7 @@ func (m *Manager) watchTransfer() error {
 			log.Infof("from:%s,to:%s,value:%d, RawTxHash:%s,RawBlockNumber:%d, Removed:%v \n", tr.From.String(), tr.To.String(), tr.Value, tr.Raw.TxHash.String(), tr.Raw.BlockNumber, tr.Raw.Removed)
 			if !tr.Raw.Removed {
 				m.notify.Pub(&types.FvmTransfer{
+					ID:    tr.Raw.TxHash.Hex(),
 					From:  tr.From.Hex(),
 					To:    tr.To.Hex(),
 					Value: tr.Value.Int64(),
@@ -147,6 +148,7 @@ func (m *Manager) CheckMessage(tx string) error {
 
 	if info.Receipt.ExitCode == 0 {
 		m.notify.Pub(&types.FvmTransfer{
+			ID:    tx,
 			From:  msg.From.String(),
 			To:    msg.To.String(),
 			Value: msg.Value.Int64(),

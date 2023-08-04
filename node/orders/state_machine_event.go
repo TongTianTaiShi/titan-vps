@@ -60,6 +60,7 @@ func (evt CreateOrder) applyGlobal(state *OrderInfo) bool {
 	state.State = evt.State
 	state.OrderID = evt.OrderID
 	state.From = evt.From
+	state.User = evt.User
 	state.Value = evt.Value
 	state.DoneState = evt.DoneState
 	state.DoneHeight = evt.DoneHeight
@@ -94,12 +95,13 @@ func (evt OrderCancel) apply(state *OrderInfo) {
 }
 
 // PaymentSucceed Order paid successfully
-type PaymentSucceed struct{}
-
-func (evt PaymentSucceed) apply(state *OrderInfo) {
+type PaymentSucceed struct {
+	*PaymentInfo
 }
 
-func (evt PaymentSucceed) Ignore() {
+func (evt PaymentSucceed) apply(state *OrderInfo) {
+	state.From = evt.From
+	state.TxHash = evt.ID
 }
 
 // BuySucceed Successful purchase

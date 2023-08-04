@@ -67,6 +67,7 @@ type AttachKeyPairResponse struct {
 type OrderRecord struct {
 	OrderID       string    `db:"order_id"`
 	From          string    `db:"from_addr"`
+	User          string    `db:"user_addr"`
 	To            string    `db:"to_addr"`
 	Value         int64     `db:"value"`
 	State         int64     `db:"state"`
@@ -77,6 +78,7 @@ type OrderRecord struct {
 	DoneHeight    int64     `db:"done_height"`
 	VpsID         int64     `db:"vps_id"`
 	Msg           string    `db:"msg"`
+	TxHash        string    `db:"tx_hash"`
 }
 
 type CreateOrderReq struct {
@@ -124,6 +126,7 @@ func (t EventTopics) String() string {
 }
 
 type FvmTransfer struct {
+	ID    string
 	From  string
 	To    string
 	Value int64

@@ -42,7 +42,7 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 
 	if info.PaymentInfo != nil {
 		if info.To == info.PaymentInfo.To && info.Value <= info.PaymentInfo.Value {
-			return ctx.Send(PaymentSucceed{})
+			return ctx.Send(PaymentSucceed{PaymentInfo: info.PaymentInfo})
 		}
 	}
 
@@ -80,7 +80,7 @@ func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle done, %s, goods info:%v", info.OrderID, info.GoodsInfo)
 
 	m.revertPayeeAddress(info.To)
-	m.removeOrder(info.From)
+	m.removeOrder(info.User)
 
 	return nil
 }

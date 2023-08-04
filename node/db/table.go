@@ -5,6 +5,8 @@ var cOrderRecordTable = `
 		order_id           VARCHAR(128) NOT NULL UNIQUE,
 		from_addr          VARCHAR(128) DEFAULT "",
 		to_addr            VARCHAR(128) NOT NULL,
+		user_addr          VARCHAR(128) DEFAULT "",
+		tx_hash            VARCHAR(128) DEFAULT "",
 		value              BIGINT       DEFAULT 0,
 		created_height     INT          DEFAULT 0,
 		created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
@@ -15,7 +17,7 @@ var cOrderRecordTable = `
 		vps_id             BIGINT(20)   NOT NULL,
 		msg                VARCHAR(2048) DEFAULT "",
 		PRIMARY KEY (order_id),
-		KEY idx_from (from_addr),
+		KEY idx_user (user_addr),
 		KEY idx_to (to_addr)
 	) ENGINE=InnoDB COMMENT='order record';`
 

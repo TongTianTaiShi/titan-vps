@@ -26,7 +26,7 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 
 	cw := cbg.NewCborWriter(w)
 
-	if _, err := cw.Write([]byte{172}); err != nil {
+	if _, err := cw.Write([]byte{174}); err != nil {
 		return err
 	}
 
@@ -99,6 +99,29 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
+	// t.User (string) (string)
+	if len("User") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"User\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("User"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string("User")); err != nil {
+		return err
+	}
+
+	if len(t.User) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.User was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.User))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.User)); err != nil {
+		return err
+	}
+
 	// t.State (orders.OrderState) (int64)
 	if len("State") > cbg.MaxLength {
 		return xerrors.Errorf("Value in field \"State\" was too long")
@@ -163,6 +186,29 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		if err := cw.WriteMajorTypeHeader(cbg.MajNegativeInt, uint64(-t.VpsID-1)); err != nil {
 			return err
 		}
+	}
+
+	// t.TxHash (string) (string)
+	if len("TxHash") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"TxHash\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("TxHash"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string("TxHash")); err != nil {
+		return err
+	}
+
+	if len(t.TxHash) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.TxHash was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.TxHash))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.TxHash)); err != nil {
+		return err
 	}
 
 	// t.OrderID (orders.OrderHash) (string)
@@ -359,6 +405,17 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 
 				t.From = string(sval)
 			}
+			// t.User (string) (string)
+		case "User":
+
+			{
+				sval, err := cbg.ReadString(cr)
+				if err != nil {
+					return err
+				}
+
+				t.User = string(sval)
+			}
 			// t.State (orders.OrderState) (int64)
 		case "State":
 			{
@@ -436,6 +493,17 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 				}
 
 				t.VpsID = int64(extraI)
+			}
+			// t.TxHash (string) (string)
+		case "TxHash":
+
+			{
+				sval, err := cbg.ReadString(cr)
+				if err != nil {
+					return err
+				}
+
+				t.TxHash = string(sval)
 			}
 			// t.OrderID (orders.OrderHash) (string)
 		case "OrderID":

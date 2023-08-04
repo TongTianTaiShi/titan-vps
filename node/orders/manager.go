@@ -134,7 +134,14 @@ func (m *Manager) subscribeEvents() {
 			tr := u.(*types.FvmTransfer)
 
 			if hash, exist := m.usedAddrs[tr.To]; exist {
-				err := m.orderStateMachines.Send(OrderHash(hash), PaymentSucceed{})
+				err := m.orderStateMachines.Send(OrderHash(hash), PaymentResult{
+					&PaymentInfo{
+						ID:    tr.ID,
+						From:  tr.From,
+						To:    tr.To,
+						Value: tr.Value,
+					},
+				})
 				if err != nil {
 					log.Errorf("subscribeNodeEvents Send %s err:%s", hash, err.Error())
 					continue
@@ -163,7 +170,7 @@ func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
 
-	err := m.addOrder(req.From, orderID)
+	err := m.addOrder(req.User, orderID)
 	if err != nil {
 		return err
 	}
@@ -231,7 +238,7 @@ func (m *Manager) recoverOutstandingOrders(info OrderInfo) {
 	m.usedAddrs[info.To] = info.OrderID.String()
 	delete(m.usabilityAddrs, info.To)
 
-	m.addOrder(info.From, info.OrderID.String())
+	m.addOrder(info.User, info.OrderID.String())
 }
 
 func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {

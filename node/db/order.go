@@ -12,10 +12,10 @@ import (
 func (n *SQLDB) SaveOrderInfo(rInfo *types.OrderRecord) error {
 	// update record table
 	query := fmt.Sprintf(
-		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, done_state, vps_id, msg) 
-		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :done_state, :vps_id, :msg)
-				ON DUPLICATE KEY UPDATE state=:state, done_height=:done_height, done_state=:done_state, done_time=NOW(),
-				from_addr=:from_addr, to_addr=:to_addr, value=:value, vps_id=:vps_id, created_height=:created_height, msg=:msg`, orderRecordTable)
+		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, done_state, vps_id, msg, user_addr, tx_hash) 
+		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :done_state, :vps_id, :msg, :user_addr, :tx_hash)
+				ON DUPLICATE KEY UPDATE state=:state, done_height=:done_height, done_state=:done_state, done_time=NOW(), user_addr=:user_addr,
+				from_addr=:from_addr, to_addr=:to_addr, value=:value, vps_id=:vps_id, created_height=:created_height, msg=:msg, tx_hash=:tx_hash`, orderRecordTable)
 	_, err := n.db.NamedExec(query, rInfo)
 
 	return err

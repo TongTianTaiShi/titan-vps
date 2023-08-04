@@ -14,7 +14,7 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (stri
 
 	info := &types.OrderRecord{
 		VpsID: id,
-		From:  req.User,
+		User:  req.User,
 		Value: 10,
 	}
 
