@@ -12,6 +12,7 @@ var BasisCMDs = []*cli.Command{
 	WithCategory("order", orderCmds),
 	WithCategory("user", userCmds),
 	describeRegionsCmd,
+	mintCmd,
 }
 
 var orderCmds = &cli.Command{
@@ -84,7 +85,7 @@ var createOrderCmd = &cli.Command{
 
 		user := cctx.String("user")
 
-		address, err := api.CreateOrder(ctx, types.CreateOrderReq{Vps: "123456", User: user})
+		address, err := api.CreateOrder(ctx, types.CreateOrderReq{Vps: types.CreateInstanceReq{}, User: user})
 		if err != nil {
 			return err
 		}
@@ -185,6 +186,38 @@ var getBalanceCmd = &cli.Command{
 		}
 
 		fmt.Println(str)
+		return nil
+	},
+}
+
+var mintCmd = &cli.Command{
+	Name:  "mint",
+	Usage: "mint token",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "address",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		address := cctx.String("address")
+
+		info, err := api.MintToken(ctx, address)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(info)
 		return nil
 	},
 }

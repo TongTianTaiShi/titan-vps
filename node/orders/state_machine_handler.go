@@ -53,6 +53,10 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle buy goods: %s", info.OrderID)
 
+	// Buy VPS
+
+	// Save To DB
+
 	return ctx.Send(BuySucceed{&GoodsInfo{ID: "vps_id", Password: "abc"}})
 }
 

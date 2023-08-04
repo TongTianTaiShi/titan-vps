@@ -4,16 +4,13 @@ package api
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"math/big"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
-	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/google/uuid"
 	"golang.org/x/xerrors"
-	"math/big"
-	"reflect"
 )
 
 var ErrNotSupported = xerrors.New("method not supported")
@@ -42,15 +39,11 @@ type BasisStruct struct {
 
 		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"read"`
 
-		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"read"`
-
-		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"read"`
+		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"read"`
 
 		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"read"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
-
-		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"read"`
 	}
 }
 
@@ -207,26 +200,15 @@ func (s *BasisStub) GetBalance(p0 context.Context, p1 string) (*big.Int, error) 
 	return nil, ErrNotSupported
 }
 
-func (s *BasisStruct) Login(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {
-	if s.Internal.Login == nil {
-		return nil, ErrNotSupported
+func (s *BasisStruct) MintToken(p0 context.Context, p1 string) (string, error) {
+	if s.Internal.MintToken == nil {
+		return "", ErrNotSupported
 	}
-	return s.Internal.Login(p0, p1)
+	return s.Internal.MintToken(p0, p1)
 }
 
-func (s *BasisStub) Login(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {
-	return nil, ErrNotSupported
-}
-
-func (s *BasisStruct) Logout(p0 context.Context, p1 *types.UserReq) error {
-	if s.Internal.Logout == nil {
-		return ErrNotSupported
-	}
-	return s.Internal.Logout(p0, p1)
-}
-
-func (s *BasisStub) Logout(p0 context.Context, p1 *types.UserReq) error {
-	return ErrNotSupported
+func (s *BasisStub) MintToken(p0 context.Context, p1 string) (string, error) {
+	return "", ErrNotSupported
 }
 
 func (s *BasisStruct) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
@@ -248,17 +230,6 @@ func (s *BasisStruct) RebootInstance(p0 context.Context, p1 string, p2 string) (
 }
 
 func (s *BasisStub) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
-	return "", ErrNotSupported
-}
-
-func (s *BasisStruct) SignCode(p0 context.Context, p1 string) (string, error) {
-	if s.Internal.SignCode == nil {
-		return "", ErrNotSupported
-	}
-	return s.Internal.SignCode(p0, p1)
-}
-
-func (s *BasisStub) SignCode(p0 context.Context, p1 string) (string, error) {
 	return "", ErrNotSupported
 }
 

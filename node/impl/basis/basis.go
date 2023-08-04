@@ -31,6 +31,7 @@ var log = logging.Logger("basis")
 // Basis represents a base service in a cloud computing system.
 type Basis struct {
 	fx.In
+
 	*common.CommonAPI
 	User        map[string]*types.UserInfoTmp
 	FilecoinMgr *filecoin.Manager
@@ -224,6 +225,9 @@ func (m *Basis) CreateInstance(ctx context.Context, regionID, instanceType, pric
 	return result, nil
 }
 
+func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
+	return m.FilecoinMgr.Mint(address)
+}
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
 	m.User[userId].UserLogin.SignCode = "abc123"
 	return "abc123", nil

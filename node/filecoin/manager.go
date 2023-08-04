@@ -145,6 +145,76 @@ func (m *Manager) CheckMessage(tx string) error {
 	return nil
 }
 
+func (m *Manager) Mint(toAddr string) (string, error) {
+	client, err := ethclient.Dial(m.cfg.LotusHTTPSAddr)
+	if err != nil {
+		return "", xerrors.Errorf("Dial err:%s", err.Error())
+	}
+
+	tokenAddress := common.HexToAddress(m.cfg.ContractorAddr)
+
+	myAbi, err := filecoinfvm.NewAbi(tokenAddress, client)
+	if err != nil {
+		return "", xerrors.Errorf("NewAbi err:%s", err.Error())
+	}
+
+	privateKey, err := crypto.HexToECDSA(m.cfg.PrivateKeyStr)
+	if err != nil {
+		return "", xerrors.Errorf("HexToECDSA err:%s", err.Error())
+	}
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		return "", xerrors.New("publicKey err:")
+	}
+
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	toAddress := common.HexToAddress(toAddr)
+	transferFnSignature := []byte("transfer(address,uint256)")
+
+	hash := sha3.NewLegacyKeccak256()
+	hash.Write(transferFnSignature)
+	methodID := hash.Sum(nil)[:4]
+	log.Debugln(hexutil.Encode(methodID)) // 0xa9059cbb
+
+	paddedAddress := common.LeftPadBytes(toAddress.Bytes(), 32)
+	log.Debugln(hexutil.Encode(paddedAddress))
+
+	amount := big.NewInt(9000000000000000000)
+	paddedAmount := common.LeftPadBytes(amount.Bytes(), 32)
+	log.Debugln(hexutil.Encode(paddedAmount))
+
+	var data []byte
+	data = append(data, methodID...)
+	data = append(data, paddedAddress...)
+	data = append(data, paddedAmount...)
+
+	chainID, err := client.NetworkID(context.Background())
+	if err != nil {
+		return "", xerrors.Errorf("NetworkID err:%s", err.Error())
+	}
+
+	signer := etypes.LatestSignerForChainID(chainID)
+	to := &bind.TransactOpts{
+		Signer: func(address common.Address, transaction *etypes.Transaction) (*etypes.Transaction, error) {
+			return etypes.SignTx(transaction, signer, privateKey)
+		},
+		From:    fromAddress,
+		Context: context.Background(),
+		// GasLimit: gasLimit,
+	}
+
+	tr, err := myAbi.Mint(to, common.HexToAddress(toAddr), amount)
+	if err != nil {
+		return "", xerrors.Errorf("Mint err:%s", err.Error())
+	}
+
+	log.Infoln(tr)
+
+	return tr.Hash().Hex(), nil
+}
+
 // Transfer transfer to
 func (m *Manager) Transfer(toAddr, valueStr string) (string, error) {
 	client, err := ethclient.Dial(m.cfg.LotusHTTPSAddr)
