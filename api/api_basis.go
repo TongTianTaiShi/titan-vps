@@ -25,7 +25,7 @@ type Basis interface {
 }
 
 // OrderAPI is an interface for order
-type OrderAPI interface { 	//perm:read
+type OrderAPI interface { //perm:read
 	// order
 	CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error)           //perm:read
 	PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) //perm:read
@@ -35,9 +35,9 @@ type OrderAPI interface { 	//perm:read
 // UserAPI is an interface for user
 type UserAPI interface {
 	// user
-	GetBalance(ctx context.Context, address string) (*big.Int, error) //perm:read
-	RebootInstance(ctx context.Context, regionID, instanceId string) (string, error)                                                            //perm:read
-	SignCode(ctx context.Context, userId string) (string, error)                                                                                //perm:read
-	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)                                                                //perm:read
-	Logout(ctx context.Context, user *types.UserReq) error
+	GetBalance(ctx context.Context, address string) (*big.Int, error)                //perm:read
+	RebootInstance(ctx context.Context, regionID, instanceId string) (string, error) //perm:read
+	SignCode(ctx context.Context, userId string) (string, error)                     //perm:read
+	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)     //perm:read
+	Logout(ctx context.Context, user *types.UserReq) error                           //perm:read
 }

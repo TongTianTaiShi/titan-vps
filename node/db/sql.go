@@ -40,6 +40,7 @@ func NewSQLDB(path string) (*SQLDB, error) {
 const (
 	// Database table names.
 	orderRecordTable = "order_record"
+	vpsInstanceTable = "vps_instance"
 
 	// Default limits for loading table entries.
 	loadOrderRecordsDefaultLimit = 100
@@ -62,6 +63,7 @@ func InitTables(d *SQLDB) error {
 
 	// Execute table creation statements
 	tx.MustExec(fmt.Sprintf(cOrderRecordTable, orderRecordTable))
+	tx.MustExec(fmt.Sprintf(cVpsInstanceTable, vpsInstanceTable))
 
 	return tx.Commit()
 }

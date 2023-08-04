@@ -2,6 +2,7 @@ package node
 
 import (
 	"errors"
+	"github.com/LMF709268224/titan-vps/node/user"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/config"
@@ -54,6 +55,7 @@ func ConfigBasis(c interface{}) Option {
 		Override(new(*db.SQLDB), modules.NewDB),
 		Override(new(*filecoin.Manager), filecoin.NewManager),
 		Override(new(*orders.Manager), modules.NewStorageManager),
+		Override(new(*user.Manager), user.NewManager),
 		Override(InitDataTables, db.InitTables),
 	)
 }

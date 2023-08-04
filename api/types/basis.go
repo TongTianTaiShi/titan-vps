@@ -26,17 +26,19 @@ type DescribePriceResponse struct {
 	TradePrice    float32
 }
 
+// todo
 type CreateInstanceReq struct {
-	RegionId                string
-	InstanceType            string
-	DryRun                  bool
-	ImageId                 string
-	SecurityGroupId         string
-	InstanceChargeType      string
-	PeriodUnit              string
-	Period                  int32
-	InternetMaxBandwidthOut int32
-	InternetMaxBandwidthIn  int32
+	Id                      string `db:"id"`
+	RegionId                string `db:"region_id"`
+	InstanceType            string `db:"instance_type"`
+	DryRun                  bool   `db:"dry_run"`
+	ImageId                 string `db:"image_id"`
+	SecurityGroupId         string `db:"security_group_id"`
+	InstanceChargeType      string `db:"instanceCharge_type"`
+	PeriodUnit              string `db:"period_unit"`
+	Period                  int32  `db:"period"`
+	InternetMaxBandwidthOut int32  `db:"bandwidth_out"`
+	InternetMaxBandwidthIn  int32  `db:"bandwidth_in"`
 }
 
 type CreateInstanceResponse struct {

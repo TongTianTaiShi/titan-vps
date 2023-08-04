@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/LMF709268224/titan-vps/api"
+	"github.com/LMF709268224/titan-vps/node/user"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -31,15 +32,14 @@ var log = logging.Logger("basis")
 // Basis represents a base service in a cloud computing system.
 type Basis struct {
 	fx.In
-
 	*common.CommonAPI
-	User        map[string]*types.UserInfoTmp
 	FilecoinMgr *filecoin.Manager
 	Notify      *pubsub.PubSub
 	*db.SQLDB
 	OrderMgr *orders.Manager
 	dtypes.GetBasisConfigFunc
-	Key *dtypes.APIAlg
+	Key     *dtypes.APIAlg
+	UserMgr *user.Manager
 }
 
 func (m *Basis) getAccessKeys() (string, string) {
@@ -229,16 +229,16 @@ func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
 	return m.FilecoinMgr.Mint(address)
 }
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
-	m.User[userId].UserLogin.SignCode = "abc123"
+	m.UserMgr.User[userId].UserLogin.SignCode = "abc123"
 	return "abc123", nil
 }
 
 func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
 	userId := user.UserId
-	code := m.User[userId].UserLogin.SignCode
+	code := m.UserMgr.User[userId].UserLogin.SignCode
 	signature := user.Signature
 	address := user.Address
-	m.User[userId].UserLogin.SignCode = ""
+	m.UserMgr.User[userId].UserLogin.SignCode = ""
 	publicKey, err := VerifyMessage(code, signature)
 	address = strings.ToUpper(address)
 	publicKey = strings.ToUpper(publicKey)
@@ -260,7 +260,7 @@ func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResp
 }
 
 func (m *Basis) Logout(ctx context.Context, user *types.UserReq) error {
-	delete(m.User, user.UserId)
+	delete(m.UserMgr.User, user.UserId)
 	return nil
 }
 

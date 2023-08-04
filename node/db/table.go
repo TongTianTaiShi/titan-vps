@@ -15,3 +15,19 @@ var cOrderRecordTable = `
 		vps_id             VARCHAR(128) NOT NULL,
 		PRIMARY KEY (order_id)
 	) ENGINE=InnoDB COMMENT='order record';`
+
+var cVpsInstanceTable = `
+	CREATE TABLE if not exists %s (
+		id          		BIGINT(20) NOT NULL AUTO_INCREMENT,
+		region_id          	VARCHAR(128) ,
+		instance_type       VARCHAR(128) NOT NULL,
+		dry_run             TINYINT(1) NOT NULL DEFAULT 0,
+		image_id      		VARCHAR(128) NOT NULL,
+		security_group_id   VARCHAR(128) NOT NULL,
+		instanceCharge_type VARCHAR(128) NOT NULL,
+		period_unit         VARCHAR(128) NOT NULL,
+		period          	INT          DEFAULT 0,
+		bandwidth_out       INT          DEFAULT 0,
+		bandwidth_in        INT          DEFAULT 0,
+		PRIMARY KEY (id)
+	) ENGINE=InnoDB COMMENT='vps instance';`

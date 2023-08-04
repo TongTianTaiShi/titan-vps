@@ -4,13 +4,12 @@ package api
 
 import (
 	"context"
-	"math/big"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/google/uuid"
 	"golang.org/x/xerrors"
+	"math/big"
 )
 
 var ErrNotSupported = xerrors.New("method not supported")
@@ -18,16 +17,16 @@ var ErrNotSupported = xerrors.New("method not supported")
 type BasisStruct struct {
 	CommonStruct
 
+	OrderAPIStruct
+
+	UserAPIStruct
+
 	Internal struct {
 		AttachKeyPair func(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) `perm:"read"`
-
-		CancelOrder func(p0 context.Context, p1 string) error `perm:"read"`
 
 		CreateInstance func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.CreateInstanceResponse, error) `perm:"read"`
 
 		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"read"`
-
-		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"read"`
 
 		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]string, error) `perm:"read"`
 
@@ -37,11 +36,7 @@ type BasisStruct struct {
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"read"`
 
-		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"read"`
-
 		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"read"`
-
-		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"read"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
 	}
@@ -49,6 +44,10 @@ type BasisStruct struct {
 
 type BasisStub struct {
 	CommonStub
+
+	OrderAPIStub
+
+	UserAPIStub
 }
 
 type CommonStruct struct {
@@ -78,6 +77,19 @@ type CommonStruct struct {
 type CommonStub struct {
 }
 
+type OrderAPIStruct struct {
+	Internal struct {
+		CancelOrder func(p0 context.Context, p1 string) error `perm:"read"`
+
+		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"read"`
+
+		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"read"`
+	}
+}
+
+type OrderAPIStub struct {
+}
+
 type TransactionStruct struct {
 	CommonStruct
 
@@ -90,6 +102,23 @@ type TransactionStub struct {
 	CommonStub
 }
 
+type UserAPIStruct struct {
+	Internal struct {
+		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"read"`
+
+		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"read"`
+
+		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"read"`
+
+		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
+
+		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"read"`
+	}
+}
+
+type UserAPIStub struct {
+}
+
 func (s *BasisStruct) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) {
 	if s.Internal.AttachKeyPair == nil {
 		return *new([]*types.AttachKeyPairResponse), ErrNotSupported
@@ -99,17 +128,6 @@ func (s *BasisStruct) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3
 
 func (s *BasisStub) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) {
 	return *new([]*types.AttachKeyPairResponse), ErrNotSupported
-}
-
-func (s *BasisStruct) CancelOrder(p0 context.Context, p1 string) error {
-	if s.Internal.CancelOrder == nil {
-		return ErrNotSupported
-	}
-	return s.Internal.CancelOrder(p0, p1)
-}
-
-func (s *BasisStub) CancelOrder(p0 context.Context, p1 string) error {
-	return ErrNotSupported
 }
 
 func (s *BasisStruct) CreateInstance(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.CreateInstanceResponse, error) {
@@ -132,17 +150,6 @@ func (s *BasisStruct) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*
 
 func (s *BasisStub) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) {
 	return nil, ErrNotSupported
-}
-
-func (s *BasisStruct) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
-	if s.Internal.CreateOrder == nil {
-		return "", ErrNotSupported
-	}
-	return s.Internal.CreateOrder(p0, p1)
-}
-
-func (s *BasisStub) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
-	return "", ErrNotSupported
 }
 
 func (s *BasisStruct) DescribeImages(p0 context.Context, p1 string, p2 string) ([]string, error) {
@@ -189,17 +196,6 @@ func (s *BasisStub) DescribeRegions(p0 context.Context) ([]string, error) {
 	return *new([]string), ErrNotSupported
 }
 
-func (s *BasisStruct) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
-	if s.Internal.GetBalance == nil {
-		return nil, ErrNotSupported
-	}
-	return s.Internal.GetBalance(p0, p1)
-}
-
-func (s *BasisStub) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
-	return nil, ErrNotSupported
-}
-
 func (s *BasisStruct) MintToken(p0 context.Context, p1 string) (string, error) {
 	if s.Internal.MintToken == nil {
 		return "", ErrNotSupported
@@ -208,17 +204,6 @@ func (s *BasisStruct) MintToken(p0 context.Context, p1 string) (string, error) {
 }
 
 func (s *BasisStub) MintToken(p0 context.Context, p1 string) (string, error) {
-	return "", ErrNotSupported
-}
-
-func (s *BasisStruct) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
-	if s.Internal.PaymentCompleted == nil {
-		return "", ErrNotSupported
-	}
-	return s.Internal.PaymentCompleted(p0, p1)
-}
-
-func (s *BasisStub) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
 	return "", ErrNotSupported
 }
 
@@ -343,6 +328,39 @@ func (s *CommonStub) Version(p0 context.Context) (APIVersion, error) {
 	return *new(APIVersion), ErrNotSupported
 }
 
+func (s *OrderAPIStruct) CancelOrder(p0 context.Context, p1 string) error {
+	if s.Internal.CancelOrder == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.CancelOrder(p0, p1)
+}
+
+func (s *OrderAPIStub) CancelOrder(p0 context.Context, p1 string) error {
+	return ErrNotSupported
+}
+
+func (s *OrderAPIStruct) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
+	if s.Internal.CreateOrder == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.CreateOrder(p0, p1)
+}
+
+func (s *OrderAPIStub) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
+	return "", ErrNotSupported
+}
+
+func (s *OrderAPIStruct) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
+	if s.Internal.PaymentCompleted == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.PaymentCompleted(p0, p1)
+}
+
+func (s *OrderAPIStub) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
+	return "", ErrNotSupported
+}
+
 func (s *TransactionStruct) Hello(p0 context.Context) error {
 	if s.Internal.Hello == nil {
 		return ErrNotSupported
@@ -354,6 +372,63 @@ func (s *TransactionStub) Hello(p0 context.Context) error {
 	return ErrNotSupported
 }
 
+func (s *UserAPIStruct) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
+	if s.Internal.GetBalance == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetBalance(p0, p1)
+}
+
+func (s *UserAPIStub) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *UserAPIStruct) Login(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {
+	if s.Internal.Login == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.Login(p0, p1)
+}
+
+func (s *UserAPIStub) Login(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *UserAPIStruct) Logout(p0 context.Context, p1 *types.UserReq) error {
+	if s.Internal.Logout == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.Logout(p0, p1)
+}
+
+func (s *UserAPIStub) Logout(p0 context.Context, p1 *types.UserReq) error {
+	return ErrNotSupported
+}
+
+func (s *UserAPIStruct) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
+	if s.Internal.RebootInstance == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.RebootInstance(p0, p1, p2)
+}
+
+func (s *UserAPIStub) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
+	return "", ErrNotSupported
+}
+
+func (s *UserAPIStruct) SignCode(p0 context.Context, p1 string) (string, error) {
+	if s.Internal.SignCode == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.SignCode(p0, p1)
+}
+
+func (s *UserAPIStub) SignCode(p0 context.Context, p1 string) (string, error) {
+	return "", ErrNotSupported
+}
+
 var _ Basis = new(BasisStruct)
 var _ Common = new(CommonStruct)
+var _ OrderAPI = new(OrderAPIStruct)
 var _ Transaction = new(TransactionStruct)
+var _ UserAPI = new(UserAPIStruct)
