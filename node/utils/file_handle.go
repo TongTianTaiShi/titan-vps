@@ -16,6 +16,7 @@ func CreateFile(fileName string) (*os.File, error) {
 	return file, nil
 
 }
+
 func ChmodFile(fileName string) {
 	err := os.Chmod(fileName, 0600)
 	if err != nil {

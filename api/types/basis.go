@@ -10,10 +10,12 @@ type Hellos struct {
 
 // User user info
 type User struct {
-	UUID     string `db:"uuid" json:"uuid"`
-	UserName string `db:"user_name" json:"user_name"`
-	PassHash string `db:"pass_hash" json:"pass_hash"`
-	// UserEmail string    `db:"user_email" json:"user_email"`
+	UUID      string    `db:"uuid" json:"uuid"`
+	UserName  string    `db:"user_name" json:"user_name"`
+	PassHash  string    `db:"pass_hash" json:"pass_hash"`
+	Address   string    `db:"address" json:"address"`
+	Public    string    `db:"public" json:"public"`
+	Token     string    `db:"token" json:"token"`
 	Role      int32     `db:"role" json:"role"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
@@ -66,4 +68,26 @@ type CreateOrderReq struct {
 
 type PaymentCompletedReq struct {
 	OrderID string
+}
+type UserReq struct {
+	UserId    string
+	Signature string
+	Address   string
+	PublicKey string
+	Token     string
+}
+type UserResponse struct {
+	UserId   string
+	SignCode string
+	Token    string
+}
+
+type UserInfoTmp struct {
+	UserLogin UserResponse
+	OrderInfo OrderRecord
+}
+type Token struct {
+	TokenString string
+	UserId      string
+	Expiration  time.Time
 }

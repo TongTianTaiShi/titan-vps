@@ -10,6 +10,7 @@ import (
 // BasisCMDs Basis cmd
 var BasisCMDs = []*cli.Command{
 	WithCategory("order", orderCmds),
+	WithCategory("user", userCmds),
 	describeRegionsCmd,
 }
 
@@ -20,6 +21,16 @@ var orderCmds = &cli.Command{
 		createOrderCmd,
 		cancelOrderCmd,
 		paymentCompletedCmd,
+	},
+}
+
+var userCmds = &cli.Command{
+	Name:  "user",
+	Usage: "Manage user",
+	Subcommands: []*cli.Command{
+		signCodeCmd,
+		loginCmd,
+		logoutCmd,
 	},
 }
 
@@ -135,6 +146,111 @@ var paymentCompletedCmd = &cli.Command{
 		}
 
 		fmt.Println(str)
+		return nil
+	},
+}
+
+var signCodeCmd = &cli.Command{
+	Name:  "sc",
+	Usage: "user get code",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "",
+			Usage: "",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		userId := cctx.String("user_id")
+
+		str, err := api.SignCode(ctx, userId)
+
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(str)
+		return nil
+	},
+}
+
+var loginCmd = &cli.Command{
+	Name:  "login",
+	Usage: "user login",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "",
+			Usage: "",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		userId := cctx.String("user_id")
+		publicKey := cctx.String("public_key")
+		signature := cctx.String("signature")
+
+		str, err := api.Login(ctx, &types.UserReq{
+			UserId:    userId,
+			PublicKey: publicKey,
+			Signature: signature,
+		})
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(str)
+		return nil
+	},
+}
+
+var logoutCmd = &cli.Command{
+	Name:  "logout",
+	Usage: "user logout",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "",
+			Usage: "",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		userId := cctx.String("user_id")
+		token := cctx.String("token")
+
+		err = api.Logout(ctx, &types.UserReq{
+			UserId: userId,
+			Token:  token,
+		})
+		if err != nil {
+			return err
+		}
 		return nil
 	},
 }

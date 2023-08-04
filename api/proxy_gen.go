@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -36,9 +35,15 @@ type BasisStruct struct {
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"read"`
 
+		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"read"`
+
+		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"read"`
+
 		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"read"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
+
+		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"read"`
 	}
 }
 
@@ -184,6 +189,28 @@ func (s *BasisStub) DescribeRegions(p0 context.Context) ([]string, error) {
 	return *new([]string), ErrNotSupported
 }
 
+func (s *BasisStruct) Login(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {
+	if s.Internal.Login == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.Login(p0, p1)
+}
+
+func (s *BasisStub) Login(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *BasisStruct) Logout(p0 context.Context, p1 *types.UserReq) error {
+	if s.Internal.Logout == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.Logout(p0, p1)
+}
+
+func (s *BasisStub) Logout(p0 context.Context, p1 *types.UserReq) error {
+	return ErrNotSupported
+}
+
 func (s *BasisStruct) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
 	if s.Internal.PaymentCompleted == nil {
 		return "", ErrNotSupported
@@ -203,6 +230,17 @@ func (s *BasisStruct) RebootInstance(p0 context.Context, p1 string, p2 string) (
 }
 
 func (s *BasisStub) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
+	return "", ErrNotSupported
+}
+
+func (s *BasisStruct) SignCode(p0 context.Context, p1 string) (string, error) {
+	if s.Internal.SignCode == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.SignCode(p0, p1)
+}
+
+func (s *BasisStub) SignCode(p0 context.Context, p1 string) (string, error) {
 	return "", ErrNotSupported
 }
 

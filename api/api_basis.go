@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 )
 
@@ -20,4 +19,7 @@ type Basis interface {
 	CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error)                                                                  //perm:read
 	PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error)                                                        //perm:read
 	CancelOrder(ctx context.Context, orderID string) error                                                                                      //perm:read
+	SignCode(ctx context.Context, userId string) (string, error)                                                                                //perm:read
+	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)                                                                //perm:read
+	Logout(ctx context.Context, user *types.UserReq) error                                                                                      //perm:read
 }

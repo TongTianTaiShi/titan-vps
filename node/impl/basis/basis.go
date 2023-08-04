@@ -3,10 +3,16 @@ package basis
 import (
 	"context"
 	"fmt"
+	"github.com/LMF709268224/titan-vps/api"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/filecoin-project/go-jsonrpc/auth"
+	"github.com/gbrlsnchs/jwt/v3"
 	"math/rand"
+	"strconv"
+	"strings"
 	"time"
 
-	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/node/common"
@@ -25,14 +31,14 @@ var log = logging.Logger("basis")
 // Basis represents a base service in a cloud computing system.
 type Basis struct {
 	fx.In
-
 	*common.CommonAPI
-
+	User        map[string]*types.UserInfoTmp
 	FilecoinMgr *filecoin.Manager
 	Notify      *pubsub.PubSub
 	*db.SQLDB
 	OrderMgr *orders.Manager
 	dtypes.GetBasisConfigFunc
+	Key *dtypes.APIAlg
 }
 
 func (m *Basis) getAccessKeys() (string, string) {
@@ -241,4 +247,67 @@ func (m *Basis) CancelOrder(ctx context.Context, orderID string) error {
 	return m.OrderMgr.CancelOrder(orderID)
 }
 
+func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
+	m.User[userId].UserLogin.SignCode = "abc123"
+	return "abc123", nil
+}
+
+func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
+	userId := user.UserId
+	code := m.User[userId].UserLogin.SignCode
+	signature := user.Signature
+	address := user.Address
+	m.User[userId].UserLogin.SignCode = ""
+	publicKey, err := VerifyMessage(code, signature)
+	address = strings.ToUpper(address)
+	publicKey = strings.ToUpper(publicKey)
+	if publicKey != address {
+		return nil, err
+	}
+	payload := &types.Token{
+		UserId:     userId,
+		Expiration: time.Now().Add(time.Hour),
+	}
+	var rsp *types.UserResponse
+	tk, err := jwt.Sign(&payload, (*jwt.HMACSHA)(m.Key))
+	if err != nil {
+		return rsp, err
+	}
+	rsp.UserId = userId
+	rsp.Token = string(tk)
+	return rsp, nil
+}
+
+func (m *Basis) Logout(ctx context.Context, user *types.UserReq) error {
+	delete(m.User, user.UserId)
+	return nil
+}
+
 var _ api.Basis = &Basis{}
+
+// JwtPayload represents the payload of a JWT token.
+type JwtPayload struct {
+	Allow []auth.Permission
+}
+
+func VerifyMessage(message string, signedMessage string) (string, error) {
+	// Hash the unsigned message using EIP-191
+	hashedMessage := []byte("\x19Ethereum Signed Message:\n" + strconv.Itoa(len(message)) + message)
+	hash := crypto.Keccak256Hash(hashedMessage)
+	// Get the bytes of the signed message
+	decodedMessage := hexutil.MustDecode(signedMessage)
+	// Handles cases where EIP-115 is not implemented (most wallets don't implement it)
+	if decodedMessage[64] == 27 || decodedMessage[64] == 28 {
+		decodedMessage[64] -= 27
+	}
+	// Recover a public key from the signed message
+	sigPublicKeyECDSA, err := crypto.SigToPub(hash.Bytes(), decodedMessage)
+	if sigPublicKeyECDSA == nil {
+		log.Errorf("Could not get a public get from the message signature")
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return crypto.PubkeyToAddress(*sigPublicKeyECDSA).String(), nil
+}

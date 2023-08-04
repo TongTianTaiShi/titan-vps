@@ -200,6 +200,29 @@ func GetBasisAPI(ctx *cli.Context) (api.Basis, jsonrpc.ClientCloser, error) {
 	return a, c, e
 }
 
+func APIGate(ctx *cli.Context) (api.Basis, jsonrpc.ClientCloser, error) {
+	addr, headers, err := GetRawAPI(ctx, repo.Basis, "v0")
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if IsVeryVerbose {
+		_, _ = fmt.Fprintln(ctx.App.Writer, "using basis API v0 endpoint:", addr)
+	}
+
+	a, c, e := client.NewBasis(ctx.Context, addr, headers)
+	v, err := a.Version(ctx.Context)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !v.APIVersion.EqMajorMinor(api.BasisAPIVersion0) {
+		return nil, nil, xerrors.Errorf("Remote API version didn't match (expected %s, remote %s)", api.BasisAPIVersion0, v.APIVersion)
+	}
+
+	return a, c, e
+}
+
 func DaemonContext(cctx *cli.Context) context.Context {
 	if mtCtx, ok := cctx.App.Metadata[metadataTraceContext]; ok {
 		return mtCtx.(context.Context)
