@@ -34,6 +34,7 @@ type OrderInfo struct {
 	CreatedHeight int64
 	DoneHeight    int64
 	VpsID         int64
+	Msg           string
 
 	*PaymentInfo
 	*GoodsInfo
@@ -51,6 +52,7 @@ func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 		DoneHeight:    state.DoneHeight,
 		CreatedHeight: state.CreatedHeight,
 		VpsID:         state.VpsID,
+		Msg:           state.Msg,
 	}
 }
 
@@ -66,6 +68,7 @@ func orderInfoFrom(info *types.OrderRecord) *OrderInfo {
 		From:          info.From,
 		To:            info.To,
 		VpsID:         info.VpsID,
+		Msg:           info.Msg,
 	}
 
 	return cInfo

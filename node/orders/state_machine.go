@@ -39,6 +39,7 @@ var planners = map[OrderState]func(events []statemachine.Event, state *OrderInfo
 		apply(PaymentResult{}),
 	),
 	BuyGoods: planOne(
+		on(BuyFailed{}, Done),
 		on(BuySucceed{}, Done),
 	),
 	Done: planOne(),

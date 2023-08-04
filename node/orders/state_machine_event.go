@@ -113,3 +113,15 @@ func (evt BuySucceed) apply(state *OrderInfo) {
 	state.DoneState = Success
 	state.DoneHeight = evt.Height
 }
+
+// BuyFailed buy vps failed
+type BuyFailed struct {
+	Height int64
+	Msg    string
+}
+
+func (evt BuyFailed) apply(state *OrderInfo) {
+	state.DoneState = PurchaseFailed
+	state.DoneHeight = evt.Height
+	state.Msg = evt.Msg
+}

@@ -53,16 +53,19 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle buy goods: %s", info.OrderID)
 
+	height := m.filecoinMgr.GetHeight()
+
 	// Buy Vps
 	vInfo, err := m.LoadVpsInfo(info.VpsID)
 	if err != nil {
-		return err
+		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
 	}
 
 	_, err = m.createAliyunInstance(vInfo)
+	if err != nil {
+		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
+	}
 	// Save To DB
-
-	height := m.filecoinMgr.GetHeight()
 
 	return ctx.Send(BuySucceed{GoodsInfo: &GoodsInfo{ID: "vps_id", Password: "abc"}, Height: height})
 }

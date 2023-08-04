@@ -3,7 +3,7 @@ package db
 var cOrderRecordTable = `
 	CREATE TABLE if not exists %s (
 		order_id           VARCHAR(128) NOT NULL UNIQUE,
-		from_addr          VARCHAR(128) ,
+		from_addr          VARCHAR(128) DEFAULT "",
 		to_addr            VARCHAR(128) NOT NULL,
 		value              BIGINT       DEFAULT 0,
 		created_height     INT          DEFAULT 0,
@@ -13,7 +13,10 @@ var cOrderRecordTable = `
 		done_time          DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		done_height        INT          DEFAULT 0,
 		vps_id             BIGINT(20)   NOT NULL,
-		PRIMARY KEY (order_id)
+		msg                VARCHAR(256) DEFAULT "",
+		PRIMARY KEY (order_id),
+		KEY idx_from (from_addr),
+		KEY idx_to (to_addr)
 	) ENGINE=InnoDB COMMENT='order record';`
 
 var cVpsInstanceTable = `
