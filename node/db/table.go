@@ -12,7 +12,7 @@ var cOrderRecordTable = `
 		done_state         INT          DEFAULT 0,
 		done_time          DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		done_height        INT          DEFAULT 0,
-		vps_id             VARCHAR(128) NOT NULL,
+		vps_id             BIGINT(20)   NOT NULL,
 		PRIMARY KEY (order_id)
 	) ENGINE=InnoDB COMMENT='order record';`
 
