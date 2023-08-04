@@ -95,6 +95,7 @@ type StorageManagerParams struct {
 	MetadataDS dtypes.MetadataDS
 	*db.SQLDB
 	*pubsub.PubSub
+	dtypes.GetBasisConfigFunc
 }
 
 // Datastore returns a new metadata datastore
@@ -103,17 +104,21 @@ func Datastore(db *db.SQLDB) (dtypes.MetadataDS, error) {
 }
 
 // NewStorageManager creates a new storage manager instance
-func NewStorageManager(params StorageManagerParams) *orders.Manager {
+func NewStorageManager(params StorageManagerParams) (*orders.Manager, error) {
 	var (
 		mctx = params.MetricsCtx
 		lc   = params.Lifecycle
 		ds   = params.MetadataDS
 		sdb  = params.SQLDB
 		pb   = params.PubSub
+		gc   = params.GetBasisConfigFunc
 	)
 
 	ctx := helpers.LifecycleCtx(mctx, lc)
-	m := orders.NewManager(ds, sdb, pb)
+	m, err := orders.NewManager(ds, sdb, pb, gc)
+	if err != nil {
+		return nil, err
+	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
@@ -123,5 +128,5 @@ func NewStorageManager(params StorageManagerParams) *orders.Manager {
 		OnStop: m.Terminate,
 	})
 
-	return m
+	return m, nil
 }

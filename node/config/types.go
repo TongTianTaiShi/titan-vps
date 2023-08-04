@@ -35,6 +35,12 @@ type BasisCfg struct {
 	AliyunAccessKeySecret string
 
 	DatabaseAddress string
+
+	ContractorAddr string
+	LotusWsAddr    string
+	LotusHTTPSAddr string
+	PrivateKeyStr  string
+	PaymentAddress []string
 }
 
 type RouteCfg struct {

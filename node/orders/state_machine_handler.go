@@ -53,12 +53,12 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle buy goods: %s", info.OrderID)
 
-	return nil
+	return ctx.Send(BuySucceed{&GoodsInfo{ID: "vps_id", Password: "abc"}})
 }
 
 // handleDone handles the order done
 func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
-	log.Debugf("handle done, %s", info.OrderID)
+	log.Debugf("handle done, %s, goods info:%v", info.OrderID, info.GoodsInfo)
 
 	m.revertPayeeAddress(info.To)
 	m.removeOrder(info.From)

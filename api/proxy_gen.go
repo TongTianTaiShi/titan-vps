@@ -4,6 +4,8 @@ package api
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -34,6 +36,8 @@ type BasisStruct struct {
 		DescribePrice func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) `perm:"read"`
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"read"`
+
+		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"read"`
 
 		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"read"`
 
@@ -187,6 +191,17 @@ func (s *BasisStruct) DescribeRegions(p0 context.Context) ([]string, error) {
 
 func (s *BasisStub) DescribeRegions(p0 context.Context) ([]string, error) {
 	return *new([]string), ErrNotSupported
+}
+
+func (s *BasisStruct) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
+	if s.Internal.GetBalance == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetBalance(p0, p1)
+}
+
+func (s *BasisStub) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
+	return nil, ErrNotSupported
 }
 
 func (s *BasisStruct) Login(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {

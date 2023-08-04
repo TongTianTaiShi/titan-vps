@@ -224,28 +224,7 @@ func (m *Basis) CreateInstance(ctx context.Context, regionID, instanceType, pric
 	return result, nil
 }
 
-func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
-	info := &types.OrderRecord{
-		VpsID: req.Vps,
-		From:  req.User,
-		Value: 10,
-	}
 
-	err := m.OrderMgr.CreatedOrder(info)
-	if err != nil {
-		return "", err
-	}
-
-	return info.To, nil
-}
-
-func (m *Basis) PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) {
-	return "", nil
-}
-
-func (m *Basis) CancelOrder(ctx context.Context, orderID string) error {
-	return m.OrderMgr.CancelOrder(orderID)
-}
 
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
 	m.User[userId].UserLogin.SignCode = "abc123"

@@ -46,7 +46,7 @@ type AttachKeyPairResponse struct {
 	Success    string
 }
 
-// OrderRecord represents information about an asset record
+// OrderRecord represents information about an order record
 type OrderRecord struct {
 	OrderID       string    `db:"order_id"`
 	From          string    `db:"from_addr"`
@@ -67,7 +67,8 @@ type CreateOrderReq struct {
 }
 
 type PaymentCompletedReq struct {
-	OrderID string
+	OrderID       string
+	TransactionID string
 }
 type UserReq struct {
 	UserId    string

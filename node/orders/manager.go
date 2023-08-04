@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
-	"github.com/LMF709268224/titan-vps/lib/filecoinfvm"
+	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
+	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/filecoin-project/go-statemachine"
 	"github.com/filecoin-project/pubsub"
 	"github.com/google/uuid"
@@ -40,10 +41,17 @@ type Manager struct {
 	usabilityAddrs map[string]string
 	usedAddrs      map[string]string
 	addrLock       *sync.Mutex
+
+	cfg config.BasisCfg
 }
 
 // NewManager returns a new manager instance
-func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub) *Manager {
+func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc) (*Manager, error) {
+	cfg, err := getCfg()
+	if err != nil {
+		return nil, err
+	}
+
 	m := &Manager{
 		SQLDB:          sdb,
 		notify:         pb,
@@ -52,16 +60,17 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub) *Manage
 		usabilityAddrs: make(map[string]string),
 		usedAddrs:      make(map[string]string),
 		addrLock:       &sync.Mutex{},
+		cfg:            cfg,
 	}
 
 	// state machine initialization
 	m.stateMachineWait.Add(1)
 	m.orderStateMachines = statemachine.New(ds, m, OrderInfo{})
 
-	return m
+	return m, nil
 }
 
-func (m *Manager) initAddress(as []string) {
+func (m *Manager) initPaymentAddress(as []string) {
 	for _, addr := range as {
 		m.usabilityAddrs[addr] = ""
 	}
@@ -69,17 +78,13 @@ func (m *Manager) initAddress(as []string) {
 
 // Start initializes and starts the order state machine and associated tickers
 func (m *Manager) Start(ctx context.Context) {
-	// TODO
-	m.initAddress([]string{
-		"0x5feaAc40B8eB3575794518bC0761cB4A95838ccF",
-		"0xddfa8C217a0Fb51a6319e2D863743807d07C9e81",
-	})
+	m.initPaymentAddress(m.cfg.PaymentAddress)
 
 	if err := m.initStateMachines(ctx); err != nil {
 		log.Errorf("restartStateMachines err: %s", err.Error())
 	}
 
-	go m.subscribeNodeEvents()
+	go m.subscribeEvents()
 	go m.checkOrderTimeout()
 }
 
@@ -110,27 +115,24 @@ func (m *Manager) checkOrderTimeout() {
 	}
 }
 
-func (m *Manager) subscribeNodeEvents() {
+func (m *Manager) subscribeEvents() {
 	subTransfer := m.notify.Sub(types.EventTransfer.String())
+	defer m.notify.Unsub(subTransfer)
 
-	go func() {
-		defer m.notify.Unsub(subTransfer)
+	for {
+		select {
+		case u := <-subTransfer:
+			tr := u.(*types.FvmTransfer)
 
-		for {
-			select {
-			case u := <-subTransfer:
-				tr := u.(*filecoinfvm.AbiTransfer)
-				log.Debugf("to hex", tr.To.Hex())
-				if hash, exist := m.usedAddrs[tr.To.Hex()]; exist {
-					err := m.orderStateMachines.Send(OrderHash(hash), PaymentSucceed{})
-					if err != nil {
-						log.Errorf("subscribeNodeEvents Send %s err:%s", hash, err.Error())
-						continue
-					}
+			if hash, exist := m.usedAddrs[tr.To]; exist {
+				err := m.orderStateMachines.Send(OrderHash(hash), PaymentSucceed{})
+				if err != nil {
+					log.Errorf("subscribeNodeEvents Send %s err:%s", hash, err.Error())
+					continue
 				}
 			}
 		}
-	}()
+	}
 }
 
 // Terminate stops the order state machine

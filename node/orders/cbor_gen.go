@@ -26,7 +26,7 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 
 	cw := cbg.NewCborWriter(w)
 
-	if _, err := cw.Write([]byte{170}); err != nil {
+	if _, err := cw.Write([]byte{171}); err != nil {
 		return err
 	}
 
@@ -166,7 +166,7 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	// t.DoneState (int64) (int64)
+	// t.DoneState (orders.OrderDoneState) (int64)
 	if len("DoneState") > cbg.MaxLength {
 		return xerrors.Errorf("Value in field \"DoneState\" was too long")
 	}
@@ -186,6 +186,22 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		if err := cw.WriteMajorTypeHeader(cbg.MajNegativeInt, uint64(-t.DoneState-1)); err != nil {
 			return err
 		}
+	}
+
+	// t.GoodsInfo (orders.GoodsInfo) (struct)
+	if len("GoodsInfo") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"GoodsInfo\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("GoodsInfo"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string("GoodsInfo")); err != nil {
+		return err
+	}
+
+	if err := t.GoodsInfo.MarshalCBOR(cw); err != nil {
+		return err
 	}
 
 	// t.DoneHeight (int64) (int64)
@@ -384,7 +400,7 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 
 				t.OrderID = OrderHash(sval)
 			}
-			// t.DoneState (int64) (int64)
+			// t.DoneState (orders.OrderDoneState) (int64)
 		case "DoneState":
 			{
 				maj, extra, err := cr.ReadHeader()
@@ -408,7 +424,27 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 					return fmt.Errorf("wrong type for int64 field: %d", maj)
 				}
 
-				t.DoneState = int64(extraI)
+				t.DoneState = OrderDoneState(extraI)
+			}
+			// t.GoodsInfo (orders.GoodsInfo) (struct)
+		case "GoodsInfo":
+
+			{
+
+				b, err := cr.ReadByte()
+				if err != nil {
+					return err
+				}
+				if b != cbg.CborNull[0] {
+					if err := cr.UnreadByte(); err != nil {
+						return err
+					}
+					t.GoodsInfo = new(GoodsInfo)
+					if err := t.GoodsInfo.UnmarshalCBOR(cr); err != nil {
+						return xerrors.Errorf("unmarshaling t.GoodsInfo pointer: %w", err)
+					}
+				}
+
 			}
 			// t.DoneHeight (int64) (int64)
 		case "DoneHeight":
@@ -692,6 +728,135 @@ func (t *PaymentInfo) UnmarshalCBOR(r io.Reader) (err error) {
 				}
 
 				t.Value = int64(extraI)
+			}
+
+		default:
+			// Field doesn't exist on this type, so ignore it
+			cbg.ScanForLinks(r, func(cid.Cid) {})
+		}
+	}
+
+	return nil
+}
+func (t *GoodsInfo) MarshalCBOR(w io.Writer) error {
+	if t == nil {
+		_, err := w.Write(cbg.CborNull)
+		return err
+	}
+
+	cw := cbg.NewCborWriter(w)
+
+	if _, err := cw.Write([]byte{162}); err != nil {
+		return err
+	}
+
+	// t.ID (string) (string)
+	if len("ID") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"ID\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("ID"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string("ID")); err != nil {
+		return err
+	}
+
+	if len(t.ID) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.ID was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.ID))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.ID)); err != nil {
+		return err
+	}
+
+	// t.Password (string) (string)
+	if len("Password") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"Password\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("Password"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string("Password")); err != nil {
+		return err
+	}
+
+	if len(t.Password) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.Password was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.Password))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.Password)); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *GoodsInfo) UnmarshalCBOR(r io.Reader) (err error) {
+	*t = GoodsInfo{}
+
+	cr := cbg.NewCborReader(r)
+
+	maj, extra, err := cr.ReadHeader()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err == io.EOF {
+			err = io.ErrUnexpectedEOF
+		}
+	}()
+
+	if maj != cbg.MajMap {
+		return fmt.Errorf("cbor input should be of type map")
+	}
+
+	if extra > cbg.MaxLength {
+		return fmt.Errorf("GoodsInfo: map struct too large (%d)", extra)
+	}
+
+	var name string
+	n := extra
+
+	for i := uint64(0); i < n; i++ {
+
+		{
+			sval, err := cbg.ReadString(cr)
+			if err != nil {
+				return err
+			}
+
+			name = string(sval)
+		}
+
+		switch name {
+		// t.ID (string) (string)
+		case "ID":
+
+			{
+				sval, err := cbg.ReadString(cr)
+				if err != nil {
+					return err
+				}
+
+				t.ID = string(sval)
+			}
+			// t.Password (string) (string)
+		case "Password":
+
+			{
+				sval, err := cbg.ReadString(cr)
+				if err != nil {
+					return err
+				}
+
+				t.Password = string(sval)
 			}
 
 		default:
