@@ -9,6 +9,10 @@ import (
 
 type Basis interface {
 	Common
+	OrderAPI
+	UserAPI
+
+	MintToken(ctx context.Context, address string) (string, error) //perm:read
 
 	DescribeRegions(ctx context.Context) ([]string, error)                                                                                      //perm:read
 	DescribeInstanceType(ctx context.Context, regionID string, cores int32, memory float32) ([]string, error)                                   //perm:read
@@ -18,12 +22,16 @@ type Basis interface {
 	CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error)                                      //perm:read
 	AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)              //perm:read
 	RebootInstance(ctx context.Context, regionID, instanceId string) (string, error)                                                            //perm:read
+}
 
-	// order
+// OrderAPI is an interface for order
+type OrderAPI interface {
 	CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error)           //perm:read
 	PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) //perm:read
 	CancelOrder(ctx context.Context, orderID string) error                               //perm:read
+}
 
-	// user
+// UserAPI is an interface for user
+type UserAPI interface {
 	GetBalance(ctx context.Context, address string) (*big.Int, error) //perm:read
 }

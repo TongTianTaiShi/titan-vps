@@ -24,6 +24,19 @@ type DescribePriceResponse struct {
 	TradePrice    float32
 }
 
+type CreateInstanceReq struct {
+	RegionId                string
+	InstanceType            string
+	DryRun                  bool
+	ImageId                 string
+	SecurityGroupId         string
+	InstanceChargeType      string
+	PeriodUnit              string
+	Period                  int32
+	InternetMaxBandwidthOut int32
+	InternetMaxBandwidthIn  int32
+}
+
 type CreateInstanceResponse struct {
 	InstanceId      string
 	OrderId         string
@@ -60,11 +73,29 @@ type OrderRecord struct {
 }
 
 type CreateOrderReq struct {
-	Vps  string
+	Vps  CreateInstanceReq
 	User string
 }
 
 type PaymentCompletedReq struct {
 	OrderID       string
 	TransactionID string
+}
+
+// EventTopics represents topics for pub/sub events
+type EventTopics string
+
+const (
+	// EventTransfer node online event
+	EventTransfer EventTopics = "transfer"
+)
+
+func (t EventTopics) String() string {
+	return string(t)
+}
+
+type FvmTransfer struct {
+	From  string
+	To    string
+	Value int64
 }

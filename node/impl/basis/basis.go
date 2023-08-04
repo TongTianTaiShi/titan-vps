@@ -218,6 +218,8 @@ func (m *Basis) CreateInstance(ctx context.Context, regionID, instanceType, pric
 	return result, nil
 }
 
-
+func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
+	return m.FilecoinMgr.Mint(address)
+}
 
 var _ api.Basis = &Basis{}

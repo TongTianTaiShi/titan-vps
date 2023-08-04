@@ -113,7 +113,7 @@ func ChainGetMessage(out interface{}, c cid.Cid, addr string) error {
 // StateSearchMsg lotus stateSearchMsg api
 func StateSearchMsg(out interface{}, c cid.Cid, addr string) error {
 	serializedParams, err := json.Marshal(params{
-		c,
+		nil, c, -1, true,
 	})
 	if err != nil {
 		return err
@@ -129,7 +129,7 @@ func StateSearchMsg(out interface{}, c cid.Cid, addr string) error {
 	return requestLotus(out, req, addr)
 }
 
-// EthGetMessageCidByTransactionHash
+// EthGetMessageCidByTransactionHash get message by hash
 func EthGetMessageCidByTransactionHash(out interface{}, tx string, addr string) error {
 	serializedParams, err := json.Marshal(params{
 		tx,

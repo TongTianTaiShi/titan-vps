@@ -39,6 +39,8 @@ type BasisStruct struct {
 
 		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"read"`
 
+		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"read"`
+
 		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"read"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
@@ -196,6 +198,17 @@ func (s *BasisStruct) GetBalance(p0 context.Context, p1 string) (*big.Int, error
 
 func (s *BasisStub) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
 	return nil, ErrNotSupported
+}
+
+func (s *BasisStruct) MintToken(p0 context.Context, p1 string) (string, error) {
+	if s.Internal.MintToken == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.MintToken(p0, p1)
+}
+
+func (s *BasisStub) MintToken(p0 context.Context, p1 string) (string, error) {
+	return "", ErrNotSupported
 }
 
 func (s *BasisStruct) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
