@@ -13,7 +13,7 @@ var cOrderRecordTable = `
 		done_time          DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		done_height        INT          DEFAULT 0,
 		vps_id             BIGINT(20)   NOT NULL,
-		msg                VARCHAR(256) DEFAULT "",
+		msg                VARCHAR(2048) DEFAULT "",
 		PRIMARY KEY (order_id),
 		KEY idx_from (from_addr),
 		KEY idx_to (to_addr)
