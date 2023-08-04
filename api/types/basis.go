@@ -42,16 +42,17 @@ type CreateInstanceReq struct {
 }
 
 type CreateInstanceResponse struct {
-	InstanceId      string
-	OrderId         string
-	RequestId       string
-	TradePrice      float32
-	PublicIpAddress string
-	PrivateKey      string
+	InstanceID       string  `db:"instance_id"`
+	OrderId          string  `db:"order_id"`
+	RequestId        string  `db:"request_id"`
+	TradePrice       float32 `db:"trade_price"`
+	PublicIpAddress  string  `db:"public_ip_address"`
+	PrivateKey       string
+	PrivateKeyStatus int `db:"private_key_status"`
 }
 
 type CreateKeyPairResponse struct {
-	KeyPairId      string
+	KeyPairID      string
 	KeyPairName    string
 	PrivateKeyBody string
 }

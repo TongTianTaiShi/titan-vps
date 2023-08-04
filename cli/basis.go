@@ -85,7 +85,13 @@ var createOrderCmd = &cli.Command{
 
 		user := cctx.String("user")
 
-		address, err := api.CreateOrder(ctx, types.CreateOrderReq{Vps: types.CreateInstanceReq{}, User: user})
+		address, err := api.CreateOrder(ctx, types.CreateOrderReq{Vps: types.CreateInstanceReq{
+			RegionId:     "cn-qingdao",
+			ImageId:      "aliyun_2_1903_x64_20G_alibase_20230704.vhd",
+			PeriodUnit:   "week",
+			Period:       1,
+			InstanceType: "ecs.t5-lc1m1.small",
+		}, User: user})
 		if err != nil {
 			return err
 		}

@@ -31,3 +31,16 @@ var cVpsInstanceTable = `
 		bandwidth_in        INT          DEFAULT 0,
 		PRIMARY KEY (id)
 	) ENGINE=InnoDB COMMENT='vps instance';`
+
+var cInstanceInfoTable = `
+	CREATE TABLE if not exists %s (
+		id          		BIGINT(20) NOT NULL AUTO_INCREMENT,
+		instance_id         VARCHAR(128) NOT NULL,
+		order_id       		VARCHAR(128) NOT NULL,
+		dry_run             VARCHAR(128) NOT NULL,
+		RequestId      		VARCHAR(128) NOT NULL,
+		TradePrice  		VARCHAR(128) NOT NULL,
+		PublicIpAddress 	VARCHAR(128) NOT NULL,
+		PrivateKeyStatus    TINYINT(1) NOT NULL DEFAULT 0,
+		PRIMARY KEY (id)
+	) ENGINE=InnoDB COMMENT='instance info';`

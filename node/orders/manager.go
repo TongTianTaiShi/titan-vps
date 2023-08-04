@@ -269,7 +269,7 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 		return nil, xerrors.New(*err.Data)
 	}
 
-	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceId)
+	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceID)
 	if err != nil {
 		log.Errorf("AllocatePublicIpAddress err: %s", err.Error())
 	} else {
@@ -289,7 +289,7 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 		result.PrivateKey = keyInfo.PrivateKeyBody
 	}
 	var instanceIds []string
-	instanceIds = append(instanceIds, result.InstanceId)
+	instanceIds = append(instanceIds, result.InstanceID)
 	_, err = aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
@@ -297,7 +297,7 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	go func() {
 		time.Sleep(1 * time.Minute)
 
-		err := aliyun.StartInstance(regionID, k, s, result.InstanceId)
+		err := aliyun.StartInstance(regionID, k, s, result.InstanceID)
 		log.Infoln("StartInstance err:", err)
 	}()
 

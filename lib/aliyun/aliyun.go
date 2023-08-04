@@ -77,7 +77,7 @@ func CreateInstance(regionID, keyID, keySecret, instanceType, imageID, securityG
 		}
 
 		out = &types.CreateInstanceResponse{
-			InstanceId: *result.Body.InstanceId,
+			InstanceID: *result.Body.InstanceId,
 			OrderId:    *result.Body.OrderId,
 			RequestId:  *result.Body.RequestId,
 			TradePrice: *result.Body.TradePrice,
@@ -136,7 +136,7 @@ func RunInstances(regionID, keyID, keySecret, instanceType, imageID, password, s
 		}
 
 		out = &types.CreateInstanceResponse{
-			InstanceId: *result.Body.InstanceIdSets.InstanceIdSet[0],
+			InstanceID: *result.Body.InstanceIdSets.InstanceIdSet[0],
 			OrderId:    *result.Body.OrderId,
 			RequestId:  *result.Body.RequestId,
 			TradePrice: *result.Body.TradePrice,
@@ -650,7 +650,7 @@ func CreateKeyPair(regionID, keyID, keySecret, KeyPairName string) (*types.Creat
 		}
 		keyInfo := result.Body
 		out = &types.CreateKeyPairResponse{
-			KeyPairId:      *keyInfo.KeyPairId,
+			KeyPairID:      *keyInfo.KeyPairId,
 			KeyPairName:    *keyInfo.KeyPairName,
 			PrivateKeyBody: *keyInfo.PrivateKeyBody,
 		}
