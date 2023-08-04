@@ -25,7 +25,7 @@ type BasisStruct struct {
 	Internal struct {
 		AttachKeyPair func(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) `perm:"read"`
 
-		CreateInstance func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.CreateInstanceResponse, error) `perm:"read"`
+		CreateInstance func(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) `perm:"read"`
 
 		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"read"`
 
@@ -131,14 +131,14 @@ func (s *BasisStub) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 [
 	return *new([]*types.AttachKeyPairResponse), ErrNotSupported
 }
 
-func (s *BasisStruct) CreateInstance(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.CreateInstanceResponse, error) {
+func (s *BasisStruct) CreateInstance(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
 	if s.Internal.CreateInstance == nil {
 		return nil, ErrNotSupported
 	}
-	return s.Internal.CreateInstance(p0, p1, p2, p3, p4, p5)
+	return s.Internal.CreateInstance(p0, p1)
 }
 
-func (s *BasisStub) CreateInstance(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.CreateInstanceResponse, error) {
+func (s *BasisStub) CreateInstance(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
 	return nil, ErrNotSupported
 }
 
