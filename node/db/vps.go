@@ -67,7 +67,7 @@ func (n *SQLDB) SaveVpsInstance(rInfo *types.CreateInstanceReq) (int64, error) {
 func (n *SQLDB) SaveVpsInstanceDevice(rInfo *types.CreateInstanceResponse) error {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (instance_id, order_id, request_id, trade_price, public_ip_address) 
-					VALUES (:instance_id, :order_id, :request_id, :trade_price, :public_ip_address)`, vpsInstanceTable)
+					VALUES (:instance_id, :order_id, :request_id, :trade_price, :public_ip_address)`, vpsInstanceDeviceTable)
 
 	_, err := n.db.NamedExec(query, rInfo)
 	if err != nil {

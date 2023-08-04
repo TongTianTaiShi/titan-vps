@@ -261,9 +261,9 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 		}
 	}
 
-	log.Debugf("securityGroupID : ", securityGroupID)
+	log.Debugln("securityGroupID:", securityGroupID, " , DryRun:", vpsInfo.DryRun)
 
-	result, err := aliyun.CreateInstance(regionID, k, s, instanceType, imageID, securityGroupID, priceUnit, period, false)
+	result, err := aliyun.CreateInstance(regionID, k, s, instanceType, imageID, securityGroupID, priceUnit, period, vpsInfo.DryRun)
 	if err != nil {
 		log.Errorf("CreateInstance err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)

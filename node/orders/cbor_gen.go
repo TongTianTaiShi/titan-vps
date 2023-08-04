@@ -26,7 +26,7 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 
 	cw := cbg.NewCborWriter(w)
 
-	if _, err := cw.Write([]byte{171}); err != nil {
+	if _, err := cw.Write([]byte{172}); err != nil {
 		return err
 	}
 
@@ -50,6 +50,29 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 	if _, err := io.WriteString(w, string(t.To)); err != nil {
+		return err
+	}
+
+	// t.Msg (string) (string)
+	if len("Msg") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"Msg\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("Msg"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string("Msg")); err != nil {
+		return err
+	}
+
+	if len(t.Msg) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.Msg was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.Msg))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.Msg)); err != nil {
 		return err
 	}
 
@@ -313,6 +336,17 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 				}
 
 				t.To = string(sval)
+			}
+			// t.Msg (string) (string)
+		case "Msg":
+
+			{
+				sval, err := cbg.ReadString(cr)
+				if err != nil {
+					return err
+				}
+
+				t.Msg = string(sval)
 			}
 			// t.From (string) (string)
 		case "From":

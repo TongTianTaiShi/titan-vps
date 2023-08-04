@@ -91,6 +91,7 @@ var createOrderCmd = &cli.Command{
 			PeriodUnit:   "week",
 			Period:       1,
 			InstanceType: "ecs.t5-lc1m1.small",
+			DryRun:       true,
 		}, User: user})
 		if err != nil {
 			return err
@@ -251,7 +252,6 @@ var signCodeCmd = &cli.Command{
 		userId := cctx.String("user_id")
 
 		str, err := api.SignCode(ctx, userId)
-
 		if err != nil {
 			return err
 		}
