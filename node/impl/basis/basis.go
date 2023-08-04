@@ -224,8 +224,6 @@ func (m *Basis) CreateInstance(ctx context.Context, regionID, instanceType, pric
 	return result, nil
 }
 
-
-
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
 	m.User[userId].UserLogin.SignCode = "abc123"
 	return "abc123", nil
