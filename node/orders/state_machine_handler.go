@@ -1,6 +1,7 @@
 package orders
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/filecoin-project/go-statemachine"
@@ -61,11 +62,16 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
 	}
 
-	_, err = m.createAliyunInstance(vInfo)
+	rsp, err := m.createAliyunInstance(vInfo)
 	if err != nil {
 		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
 	}
+
 	// Save To DB
+	err = m.SaveVpsInstanceDevice(rsp)
+	if err != nil {
+		fmt.Printf("SaveVpsInstanceDevice err:%s", err.Error())
+	}
 
 	return ctx.Send(BuySucceed{GoodsInfo: &GoodsInfo{ID: "vps_id", Password: "abc"}, Height: height})
 }

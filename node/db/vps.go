@@ -64,7 +64,7 @@ func (n *SQLDB) SaveVpsInstance(rInfo *types.CreateInstanceReq) (int64, error) {
 	return result.LastInsertId()
 }
 
-func (n *SQLDB) SaveVpsInstanceDevice(rInfo *types.CreateInstanceReq) error {
+func (n *SQLDB) SaveVpsInstanceDevice(rInfo *types.CreateInstanceResponse) error {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (instance_id, order_id, request_id, trade_price, public_ip_address) 
 					VALUES (:instance_id, :order_id, :request_id, :trade_price, :public_ip_address)`, vpsInstanceTable)
