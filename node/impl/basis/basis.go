@@ -3,16 +3,17 @@ package basis
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/user"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/gbrlsnchs/jwt/v3"
-	"math/rand"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
@@ -232,6 +233,7 @@ func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanc
 func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
 	return m.FilecoinMgr.Mint(address)
 }
+
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
 	m.UserMgr.User[userId].UserLogin.SignCode = "abc123"
 	return "abc123", nil

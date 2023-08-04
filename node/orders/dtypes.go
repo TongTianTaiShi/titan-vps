@@ -33,7 +33,7 @@ type OrderInfo struct {
 	DoneState     OrderDoneState
 	CreatedHeight int64
 	DoneHeight    int64
-	VpsID         string
+	VpsID         int64
 
 	*PaymentInfo
 	*GoodsInfo

@@ -2,11 +2,14 @@ package orders
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
+	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/filecoin"
@@ -229,4 +232,74 @@ func (m *Manager) recoverOutstandingOrders(info OrderInfo) {
 	delete(m.usabilityAddrs, info.To)
 
 	m.addOrder(info.From, info.OrderID.String())
+}
+
+func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
+	k := m.cfg.AliyunAccessKeyID
+	s := m.cfg.AliyunAccessKeySecret
+
+	priceUnit := vpsInfo.PeriodUnit
+	period := vpsInfo.Period
+	regionID := vpsInfo.RegionId
+	instanceType := vpsInfo.InstanceType
+	imageID := vpsInfo.ImageId
+	if priceUnit == "Year" {
+		priceUnit = "Month"
+		period = period * 12
+	}
+
+	var securityGroupID string
+
+	group, err := aliyun.DescribeSecurityGroups(regionID, k, s)
+	if err == nil && len(group) > 0 {
+		securityGroupID = group[0]
+	} else {
+		securityGroupID, err = aliyun.CreateSecurityGroup(regionID, k, s)
+		if err != nil {
+			log.Errorf("CreateSecurityGroup err: %s", err.Error())
+			return nil, xerrors.New(*err.Data)
+		}
+	}
+
+	log.Debugf("securityGroupID : ", securityGroupID)
+
+	result, err := aliyun.CreateInstance(regionID, k, s, instanceType, imageID, securityGroupID, priceUnit, period, false)
+	if err != nil {
+		log.Errorf("CreateInstance err: %s", err.Error())
+		return nil, xerrors.New(*err.Data)
+	}
+
+	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceId)
+	if err != nil {
+		log.Errorf("AllocatePublicIpAddress err: %s", err.Error())
+	} else {
+		result.PublicIpAddress = address
+	}
+
+	err = aliyun.AuthorizeSecurityGroup(regionID, k, s, securityGroupID)
+	if err != nil {
+		log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
+	}
+	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
+	keyPairName := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
+	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairName)
+	if err != nil {
+		log.Errorf("CreateKeyPair err: %s", err.Error())
+	} else {
+		result.PrivateKey = keyInfo.PrivateKeyBody
+	}
+	var instanceIds []string
+	instanceIds = append(instanceIds, result.InstanceId)
+	_, err = aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
+	if err != nil {
+		log.Errorf("AttachKeyPair err: %s", err.Error())
+	}
+	go func() {
+		time.Sleep(1 * time.Minute)
+
+		err := aliyun.StartInstance(regionID, k, s, result.InstanceId)
+		log.Infoln("StartInstance err:", err)
+	}()
+
+	return result, nil
 }

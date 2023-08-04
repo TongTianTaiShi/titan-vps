@@ -74,7 +74,7 @@ type OrderRecord struct {
 	CreatedTime   time.Time `db:"created_time"`
 	DoneTime      time.Time `db:"done_time"`
 	DoneHeight    int64     `db:"done_height"`
-	VpsID         string    `db:"vps_id"`
+	VpsID         int64     `db:"vps_id"`
 }
 
 type CreateOrderReq struct {

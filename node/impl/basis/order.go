@@ -7,15 +7,18 @@ import (
 )
 
 func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
-	// instanceInfo := req.Vps
+	id, err := m.SaveVpsInstance(&req.Vps)
+	if err != nil {
+		return "", err
+	}
 
 	info := &types.OrderRecord{
-		VpsID: "abc",
+		VpsID: id,
 		From:  req.User,
 		Value: 10,
 	}
 
-	err := m.OrderMgr.CreatedOrder(info)
+	err = m.OrderMgr.CreatedOrder(info)
 	if err != nil {
 		return "", err
 	}

@@ -21,7 +21,7 @@ type Basis interface {
 	CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error)                              //perm:read
 	CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error)                                    //perm:read
 	AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)            //perm:read
-	RebootInstance(ctx context.Context, regionID, instanceId string) (string, error)                                                          //perm:read
+	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                                                          //perm:read
 }
 
 // OrderAPI is an interface for order
@@ -36,8 +36,8 @@ type OrderAPI interface { //perm:read
 type UserAPI interface {
 	// user
 	GetBalance(ctx context.Context, address string) (*big.Int, error)                //perm:read
-	RebootInstance(ctx context.Context, regionID, instanceId string) (string, error) //perm:read
-	SignCode(ctx context.Context, userId string) (string, error)                     //perm:read
+	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error) //perm:read
+	SignCode(ctx context.Context, userID string) (string, error)                     //perm:read
 	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)     //perm:read
 	Logout(ctx context.Context, user *types.UserReq) error                           //perm:read
 }
