@@ -12,14 +12,12 @@ import (
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	etypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/filecoin-project/pubsub"
 	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log/v2"
-	"golang.org/x/crypto/sha3"
 	"golang.org/x/xerrors"
 )
 
@@ -45,6 +43,7 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc) (*Manager, 
 	}
 
 	go manager.watchTransactions()
+	go manager.subscribeEvents()
 
 	return manager, nil
 }
@@ -82,13 +81,36 @@ func (m *Manager) watchTransactions() error {
 		case tr := <-sink:
 			log.Infof("from:%s,to:%s,value:%d, RawTxHash:%s,RawBlockNumber:%d, Removed:%v \n", tr.From.String(), tr.To.String(), tr.Value, tr.Raw.TxHash.String(), tr.Raw.BlockNumber, tr.Raw.Removed)
 			if !tr.Raw.Removed {
-				m.notify.Pub(&types.FvmTransfer{
+				m.notify.Pub(&types.FvmTransferWatch{
 					ID:    tr.Raw.TxHash.Hex(),
 					From:  tr.From.Hex(),
 					To:    tr.To.Hex(),
 					Value: tr.Value.Int64(),
-				}, types.EventTransfer.String())
+				}, types.EventTransferWatch.String())
 			}
+		}
+	}
+}
+
+func (m *Manager) subscribeEvents() {
+	subTransfer := m.notify.Sub(types.EventTransferReq.String())
+	defer m.notify.Unsub(subTransfer)
+
+	for {
+		select {
+		case u := <-subTransfer:
+			tr := u.(*types.FvmTransferReq)
+			hash, err := m.Mint(tr.To, tr.Value)
+			msg := ""
+			if err != nil {
+				msg = err.Error()
+			}
+
+			m.notify.Pub(&types.FvmTransferRep{
+				ID:     tr.ID,
+				TxHash: hash,
+				Msg:    msg,
+			}, types.EventTransferRep.String())
 		}
 	}
 }
@@ -147,18 +169,18 @@ func (m *Manager) CheckMessage(tx string) error {
 	log.Debugf("Height:%d,ExitCode:%d,GasUsed:%d \n", info.Height, info.Receipt.ExitCode, info.Receipt.GasUsed)
 
 	if info.Receipt.ExitCode == 0 {
-		m.notify.Pub(&types.FvmTransfer{
+		m.notify.Pub(&types.FvmTransferWatch{
 			ID:    tx,
 			From:  msg.From.String(),
 			To:    msg.To.String(),
 			Value: msg.Value.Int64(),
-		}, types.EventTransfer.String())
+		}, types.EventTransferWatch.String())
 	}
 
 	return nil
 }
 
-func (m *Manager) Mint(toAddr string) (string, error) {
+func (m *Manager) Mint(toAddr, valueStr string) (string, error) {
 	client, err := ethclient.Dial(m.cfg.LotusHTTPSAddr)
 	if err != nil {
 		return "", xerrors.Errorf("Dial err:%s", err.Error())
@@ -183,25 +205,26 @@ func (m *Manager) Mint(toAddr string) (string, error) {
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	toAddress := common.HexToAddress(toAddr)
-	transferFnSignature := []byte("transfer(address,uint256)")
+	// toAddress := common.HexToAddress(toAddr)
+	// transferFnSignature := []byte("transfer(address,uint256)")
 
-	hash := sha3.NewLegacyKeccak256()
-	hash.Write(transferFnSignature)
-	methodID := hash.Sum(nil)[:4]
-	log.Debugln(hexutil.Encode(methodID)) // 0xa9059cbb
+	// hash := sha3.NewLegacyKeccak256()
+	// hash.Write(transferFnSignature)
+	// methodID := hash.Sum(nil)[:4]
+	// log.Debugln(hexutil.Encode(methodID)) // 0xa9059cbb
 
-	paddedAddress := common.LeftPadBytes(toAddress.Bytes(), 32)
-	log.Debugln(hexutil.Encode(paddedAddress))
+	// paddedAddress := common.LeftPadBytes(toAddress.Bytes(), 32)
+	// log.Debugln(hexutil.Encode(paddedAddress))
 
-	amount := big.NewInt(9000000000000000000)
-	paddedAmount := common.LeftPadBytes(amount.Bytes(), 32)
-	log.Debugln(hexutil.Encode(paddedAmount))
+	amount := new(big.Int)
+	amount.SetString(valueStr, 10)
+	// paddedAmount := common.LeftPadBytes(amount.Bytes(), 32)
+	// log.Debugln(hexutil.Encode(paddedAmount))
 
-	var data []byte
-	data = append(data, methodID...)
-	data = append(data, paddedAddress...)
-	data = append(data, paddedAmount...)
+	// var data []byte
+	// data = append(data, methodID...)
+	// data = append(data, paddedAddress...)
+	// data = append(data, paddedAmount...)
 
 	chainID, err := client.NetworkID(context.Background())
 	if err != nil {
@@ -209,7 +232,7 @@ func (m *Manager) Mint(toAddr string) (string, error) {
 	}
 
 	signer := etypes.LatestSignerForChainID(chainID)
-	to := &bind.TransactOpts{
+	opt := &bind.TransactOpts{
 		Signer: func(address common.Address, transaction *etypes.Transaction) (*etypes.Transaction, error) {
 			return etypes.SignTx(transaction, signer, privateKey)
 		},
@@ -218,7 +241,7 @@ func (m *Manager) Mint(toAddr string) (string, error) {
 		// GasLimit: gasLimit,
 	}
 
-	tr, err := myAbi.Mint(to, common.HexToAddress(toAddr), amount)
+	tr, err := myAbi.Mint(opt, common.HexToAddress(toAddr), amount)
 	if err != nil {
 		return "", xerrors.Errorf("Mint err:%s", err.Error())
 	}

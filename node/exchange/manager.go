@@ -78,11 +78,35 @@ func NewManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFu
 	}
 
 	m.initPaymentAddress(m.cfg.RechargeAddress)
+	m.initOngeingOrders()
 
 	go m.watchTransactions()
 	go m.checkOrderTimeout()
+	go m.subscribeEvents()
 
 	return m, nil
+}
+
+func (m *Manager) initOngeingOrders() {
+	records, err := m.LoadRechargeRecords(types.RechargeCreated)
+	if err != nil {
+		log.Errorln("LoadRechargeRecords err:", err.Error())
+		return
+	}
+
+	for _, info := range records {
+		m.recoverOutstandingOrders(info)
+	}
+}
+
+func (m *Manager) recoverOutstandingOrders(info *types.RechargeRecord) {
+	m.addrLock.Lock()
+	defer m.addrLock.Unlock()
+
+	m.usedAddrs[info.To] = info.ID
+	delete(m.usabilityAddrs, info.To)
+
+	m.addOrder(info.User, info.ID)
 }
 
 func (m *Manager) initPaymentAddress(as []string) {
@@ -133,6 +157,22 @@ func (m *Manager) watchTransactions() {
 			}
 		}
 	}
+}
+
+func (m *Manager) getHeight() int64 {
+	client, err := m.getGrpcClient()
+	if err != nil {
+		log.Errorln("getGrpcClient err :", err.Error())
+		return 0
+	}
+
+	block, err := client.GetNowBlock()
+	if err != nil {
+		log.Errorln("GetNowBlock err :", err.Error())
+		return 0
+	}
+
+	return block.GetBlockHeader().RawData.Number
 }
 
 func (m *Manager) handleBlocks(blocks *api.BlockListExtention) {
@@ -211,6 +251,7 @@ func (m *Manager) handleTransfer(mCid, from, to, blockCid string, height int64, 
 		info.Value = amount
 		info.TxHash = mCid
 		info.From = from
+		info.DoneHeight = height
 
 		err = m.UpdateRechargeRecord(info, types.RechargeDone)
 		if err != nil {
@@ -220,6 +261,37 @@ func (m *Manager) handleTransfer(mCid, from, to, blockCid string, height int64, 
 
 		m.removeOrder(info.User)
 		m.revertPayeeAddress(info.To)
+
+		m.notify.Pub(&types.FvmTransferReq{
+			ID:    info.ID,
+			To:    info.RechargeAddr,
+			Value: amount,
+		}, types.EventTransferReq.String())
+	}
+}
+
+func (m *Manager) subscribeEvents() {
+	subTransfer := m.notify.Sub(types.EventTransferRep.String())
+	defer m.notify.Unsub(subTransfer)
+
+	for {
+		select {
+		case u := <-subTransfer:
+			tr := u.(*types.FvmTransferRep)
+
+			info, err := m.LoadRechargeRecord(tr.ID)
+			if err == nil {
+				info.Msg = tr.Msg
+				info.RechargeHash = tr.TxHash
+
+				err = m.UpdateRechargeRecord(info, types.RechargeDone)
+				if err != nil {
+					log.Errorf("subscribeEvents UpdateRechargeRecord : %s", err.Error())
+				}
+			} else {
+				log.Errorf("subscribeEvents LoadRechargeRecord : %s", err.Error())
+			}
+		}
 	}
 }
 
@@ -240,6 +312,8 @@ func (m *Manager) checkOrderTimeout() {
 			log.Debugf("checkout %s , %s ", addr, hash)
 
 			if info.State == types.RechargeCreated && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
+				info.DoneHeight = m.getHeight()
+
 				err := m.UpdateRechargeRecord(info, types.RechargeTimeout)
 				if err != nil {
 					log.Errorf("checkOrderTimeout UpdateRechargeRecord %s , %s err:%s", addr, hash, err.Error())
@@ -297,11 +371,11 @@ func (m *Manager) CreateRechargeOrder(userAddr, rechargeAddr string) (string, er
 	}
 
 	info := &types.RechargeRecord{
-		ID:           orderID,
-		User:         userAddr,
-		To:           addr,
-		RechargeAddr: rechargeAddr,
-		// State: ,
+		ID:            orderID,
+		User:          userAddr,
+		To:            addr,
+		RechargeAddr:  rechargeAddr,
+		CreatedHeight: m.getHeight(),
 	}
 
 	err = m.SaveRechargeInfo(info)

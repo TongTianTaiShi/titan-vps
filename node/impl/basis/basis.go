@@ -233,7 +233,8 @@ func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanc
 }
 
 func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
-	return m.TransactionMgr.Mint(address)
+	value := "9000000000000000000"
+	return m.TransactionMgr.Mint(address, value)
 }
 
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {

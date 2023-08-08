@@ -128,13 +128,13 @@ func (m *Manager) checkOrderTimeout() {
 }
 
 func (m *Manager) subscribeEvents() {
-	subTransfer := m.notify.Sub(types.EventTransfer.String())
+	subTransfer := m.notify.Sub(types.EventTransferWatch.String())
 	defer m.notify.Unsub(subTransfer)
 
 	for {
 		select {
 		case u := <-subTransfer:
-			tr := u.(*types.FvmTransfer)
+			tr := u.(*types.FvmTransferWatch)
 
 			if hash, exist := m.usedAddrs[tr.To]; exist {
 				err := m.orderStateMachines.Send(OrderHash(hash), PaymentResult{

@@ -151,17 +151,33 @@ type Token struct {
 type EventTopics string
 
 const (
-	// EventTransfer node online event
-	EventTransfer EventTopics = "transfer"
+	// EventTransferWatch node online event
+	EventTransferWatch EventTopics = "transfer_watch"
+	// EventTransferReq request transfer
+	EventTransferReq EventTopics = "transfer_req"
+	// EventTransferRep reply transfer
+	EventTransferRep EventTopics = "transfer_rep"
 )
 
 func (t EventTopics) String() string {
 	return string(t)
 }
 
-type FvmTransfer struct {
+type FvmTransferWatch struct {
 	ID    string
 	From  string
 	To    string
 	Value int64
+}
+
+type FvmTransferReq struct {
+	ID    string
+	To    string
+	Value string
+}
+
+type FvmTransferRep struct {
+	ID     string
+	TxHash string
+	Msg    string
 }

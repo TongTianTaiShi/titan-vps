@@ -32,8 +32,21 @@ func (n *SQLDB) LoadRechargeRecord(id string) (*types.RechargeRecord, error) {
 // UpdateRechargeRecord update recharge record information
 func (n *SQLDB) UpdateRechargeRecord(info *types.RechargeRecord, newState types.RechargeState) error {
 	query := fmt.Sprintf(`UPDATE %s SET state=?, value=?, done_state=?, done_time=NOW(), from_addr=?,
-	    done_height=?, tx_hash=? WHERE id=? AND state=?`, rechargeRecordTable)
-	_, err := n.db.Exec(query, newState, info.Value, info.DoneState, info.From, info.DoneHeight, info.TxHash, info.ID, info.State)
+	    done_height=?, tx_hash=?, recharge_hash=?, msg=? WHERE id=? AND state=?`, rechargeRecordTable)
+	_, err := n.db.Exec(query, newState, info.Value, info.DoneState, info.From, info.DoneHeight, info.TxHash, info.RechargeHash, info.Msg, info.ID, info.State)
 
 	return err
+}
+
+// LoadRechargeRecords load the recharge records from the incoming scheduler
+func (n *SQLDB) LoadRechargeRecords(state types.RechargeState) ([]*types.RechargeRecord, error) {
+	var infos []*types.RechargeRecord
+	query := fmt.Sprintf("SELECT * FROM %s WHERE state=? ", rechargeRecordTable)
+
+	err := n.db.Select(&infos, query, state)
+	if err != nil {
+		return nil, err
+	}
+
+	return infos, nil
 }
