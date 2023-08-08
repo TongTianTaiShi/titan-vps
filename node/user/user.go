@@ -9,7 +9,6 @@ type Manager struct {
 
 // NewManager creates a new instance of the node manager
 func NewManager() (*Manager, error) {
-
 	manager := &Manager{}
 
 	return manager, nil

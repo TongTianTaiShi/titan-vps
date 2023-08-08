@@ -2,17 +2,19 @@ package node
 
 import (
 	"errors"
+
+	"github.com/LMF709268224/titan-vps/node/exchange"
 	"github.com/LMF709268224/titan-vps/node/user"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
-	"github.com/LMF709268224/titan-vps/node/filecoin"
 	"github.com/LMF709268224/titan-vps/node/impl/basis"
 	"github.com/LMF709268224/titan-vps/node/modules"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/orders"
 	"github.com/LMF709268224/titan-vps/node/repo"
+	"github.com/LMF709268224/titan-vps/node/transaction"
 	"github.com/filecoin-project/pubsub"
 	"go.uber.org/fx"
 
@@ -53,7 +55,8 @@ func ConfigBasis(c interface{}) Option {
 		Override(new(*pubsub.PubSub), modules.NewPubSub),
 		Override(new(dtypes.MetadataDS), modules.Datastore),
 		Override(new(*db.SQLDB), modules.NewDB),
-		Override(new(*filecoin.Manager), filecoin.NewManager),
+		Override(new(*transaction.Manager), transaction.NewManager),
+		Override(new(*exchange.Manager), exchange.NewManager),
 		Override(new(*orders.Manager), modules.NewStorageManager),
 		Override(new(*user.Manager), user.NewManager),
 		Override(InitDataTables, db.InitTables),

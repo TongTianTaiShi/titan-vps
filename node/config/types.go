@@ -36,11 +36,15 @@ type BasisCfg struct {
 
 	DatabaseAddress string
 
-	ContractorAddr string
-	LotusWsAddr    string
-	LotusHTTPSAddr string
-	PrivateKeyStr  string
-	PaymentAddress []string
+	TitanContractorAddr string
+	LotusWsAddr         string
+	LotusHTTPSAddr      string
+	PrivateKeyStr       string
+	PaymentAddress      []string
+
+	TrxHTTPSAddr      string
+	TrxContractorAddr string
+	RechargeAddress   []string
 }
 
 type RouteCfg struct {

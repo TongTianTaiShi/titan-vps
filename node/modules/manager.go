@@ -5,11 +5,11 @@ import (
 
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
-	"github.com/LMF709268224/titan-vps/node/filecoin"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/modules/helpers"
 	"github.com/LMF709268224/titan-vps/node/orders"
 	"github.com/LMF709268224/titan-vps/node/repo"
+	"github.com/LMF709268224/titan-vps/node/transaction"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
 	"go.uber.org/fx"
@@ -97,7 +97,7 @@ type StorageManagerParams struct {
 	*db.SQLDB
 	*pubsub.PubSub
 	dtypes.GetBasisConfigFunc
-	*filecoin.Manager
+	*transaction.Manager
 }
 
 // Datastore returns a new metadata datastore

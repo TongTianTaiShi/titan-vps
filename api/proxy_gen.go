@@ -113,6 +113,8 @@ type UserAPIStruct struct {
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
 
+		Recharge func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
+
 		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"read"`
 	}
 }
@@ -414,6 +416,17 @@ func (s *UserAPIStruct) RebootInstance(p0 context.Context, p1 string, p2 string)
 }
 
 func (s *UserAPIStub) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
+	return "", ErrNotSupported
+}
+
+func (s *UserAPIStruct) Recharge(p0 context.Context, p1 string, p2 string) (string, error) {
+	if s.Internal.Recharge == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.Recharge(p0, p1, p2)
+}
+
+func (s *UserAPIStub) Recharge(p0 context.Context, p1 string, p2 string) (string, error) {
 	return "", ErrNotSupported
 }
 

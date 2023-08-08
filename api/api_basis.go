@@ -40,4 +40,5 @@ type UserAPI interface {
 	SignCode(ctx context.Context, userID string) (string, error)                     //perm:read
 	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)     //perm:read
 	Logout(ctx context.Context, user *types.UserReq) error                           //perm:read
+	Recharge(ctx context.Context, address, rechargeAddr string) (string, error)      //perm:read
 }

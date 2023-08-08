@@ -12,8 +12,8 @@ import (
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
-	"github.com/LMF709268224/titan-vps/node/filecoin"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
+	"github.com/LMF709268224/titan-vps/node/transaction"
 	"github.com/filecoin-project/go-statemachine"
 	"github.com/filecoin-project/pubsub"
 	"github.com/google/uuid"
@@ -46,12 +46,12 @@ type Manager struct {
 	usedAddrs      map[string]string
 	addrLock       *sync.Mutex
 
-	cfg         config.BasisCfg
-	filecoinMgr *filecoin.Manager
+	cfg  config.BasisCfg
+	tMgr *transaction.Manager
 }
 
 // NewManager returns a new manager instance
-func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, fm *filecoin.Manager) (*Manager, error) {
+func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, fm *transaction.Manager) (*Manager, error) {
 	cfg, err := getCfg()
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg 
 		usedAddrs:      make(map[string]string),
 		addrLock:       &sync.Mutex{},
 		cfg:            cfg,
-		filecoinMgr:    fm,
+		tMgr:           fm,
 	}
 
 	// state machine initialization
@@ -77,6 +77,9 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg 
 }
 
 func (m *Manager) initPaymentAddress(as []string) {
+	m.addrLock.Lock()
+	defer m.addrLock.Unlock()
+
 	for _, addr := range as {
 		m.usabilityAddrs[addr] = ""
 	}
@@ -112,7 +115,7 @@ func (m *Manager) checkOrderTimeout() {
 
 			if info.State != Done.Int() && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
 
-				height := m.filecoinMgr.GetHeight()
+				height := m.tMgr.GetHeight()
 
 				err = m.orderStateMachines.Send(OrderHash(hash), OrderTimeOut{Height: height})
 				if err != nil {
@@ -158,7 +161,7 @@ func (m *Manager) Terminate(ctx context.Context) error {
 
 // CancelOrder cancel vps order
 func (m *Manager) CancelOrder(orderID string) error {
-	height := m.filecoinMgr.GetHeight()
+	height := m.tMgr.GetHeight()
 
 	return m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{Height: height})
 }
@@ -182,7 +185,7 @@ func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 
 	req.To = address
 	req.OrderID = orderID
-	req.CreatedHeight = m.filecoinMgr.GetHeight()
+	req.CreatedHeight = m.tMgr.GetHeight()
 
 	// create order task
 	return m.orderStateMachines.Send(OrderHash(orderID), CreateOrder{orderInfoFrom(req)})

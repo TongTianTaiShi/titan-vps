@@ -33,6 +33,7 @@ var userCmds = &cli.Command{
 		loginCmd,
 		logoutCmd,
 		getBalanceCmd,
+		rechargeCmd,
 	},
 }
 
@@ -188,6 +189,44 @@ var getBalanceCmd = &cli.Command{
 		address := cctx.String("address")
 
 		str, err := api.GetBalance(ctx, address)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(str)
+		return nil
+	},
+}
+
+var rechargeCmd = &cli.Command{
+	Name:  "recharge",
+	Usage: "recharge",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "address",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "ra",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		address := cctx.String("address")
+		rechargeAddr := cctx.String("ra")
+
+		str, err := api.Recharge(ctx, address, rechargeAddr)
 		if err != nil {
 			return err
 		}

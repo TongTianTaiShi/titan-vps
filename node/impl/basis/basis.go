@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api"
+	"github.com/LMF709268224/titan-vps/node/exchange"
 	"github.com/LMF709268224/titan-vps/node/user"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -19,9 +20,9 @@ import (
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/node/common"
 	"github.com/LMF709268224/titan-vps/node/db"
-	"github.com/LMF709268224/titan-vps/node/filecoin"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/orders"
+	"github.com/LMF709268224/titan-vps/node/transaction"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
 	"go.uber.org/fx"
@@ -34,8 +35,9 @@ var log = logging.Logger("basis")
 type Basis struct {
 	fx.In
 	*common.CommonAPI
-	FilecoinMgr *filecoin.Manager
-	Notify      *pubsub.PubSub
+	TransactionMgr *transaction.Manager
+	ExchangeMgr    *exchange.Manager
+	Notify         *pubsub.PubSub
 	*db.SQLDB
 	OrderMgr *orders.Manager
 	dtypes.GetBasisConfigFunc
@@ -231,7 +233,7 @@ func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanc
 }
 
 func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
-	return m.FilecoinMgr.Mint(address)
+	return m.TransactionMgr.Mint(address)
 }
 
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {

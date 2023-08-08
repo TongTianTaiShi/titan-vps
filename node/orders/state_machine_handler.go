@@ -53,7 +53,7 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle buy goods: %s", info.OrderID)
 
-	height := m.filecoinMgr.GetHeight()
+	height := m.tMgr.GetHeight()
 
 	// Buy Vps
 	vInfo, err := m.LoadVpsInfo(info.VpsID)

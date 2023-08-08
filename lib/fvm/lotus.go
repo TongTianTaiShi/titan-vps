@@ -1,4 +1,4 @@
-package filecoinfvm
+package fvm
 
 import (
 	"bytes"

@@ -27,7 +27,7 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (stri
 }
 
 func (m *Basis) PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) {
-	return "", m.FilecoinMgr.CheckMessage(req.TransactionID)
+	return "", m.TransactionMgr.CheckMessage(req.TransactionID)
 }
 
 func (m *Basis) CancelOrder(ctx context.Context, orderID string) error {

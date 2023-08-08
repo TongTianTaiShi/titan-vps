@@ -1,4 +1,4 @@
-package filecoin
+package transaction
 
 import (
 	"github.com/filecoin-project/go-address"

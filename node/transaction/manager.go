@@ -1,4 +1,4 @@
-package filecoin
+package transaction
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
-	"github.com/LMF709268224/titan-vps/lib/filecoinfvm"
+	"github.com/LMF709268224/titan-vps/lib/fvm"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -23,7 +23,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-var log = logging.Logger("filecoin")
+var log = logging.Logger("transaction")
 
 // Manager is the node manager responsible for managing the online nodes
 type Manager struct {
@@ -44,29 +44,29 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc) (*Manager, 
 		cfg:    cfg,
 	}
 
-	go manager.watchTransfer()
+	go manager.watchTransactions()
 
 	return manager, nil
 }
 
-func (m *Manager) watchTransfer() error {
+func (m *Manager) watchTransactions() error {
 	client, err := ethclient.Dial(m.cfg.LotusWsAddr)
 	if err != nil {
 		return xerrors.Errorf("Dial err:%s", err.Error())
 	}
 
-	tokenAddress := common.HexToAddress(m.cfg.ContractorAddr)
+	tokenAddress := common.HexToAddress(m.cfg.TitanContractorAddr)
 
-	myAbi, err := filecoinfvm.NewAbi(tokenAddress, client)
+	myAbi, err := fvm.NewAbi(tokenAddress, client)
 	if err != nil {
 		return xerrors.Errorf("NewAbi err:%s", err.Error())
 	}
 
-	sink := make(chan *filecoinfvm.AbiTransfer)
+	sink := make(chan *fvm.AbiTransfer)
 
 	sub, err := myAbi.WatchTransfer(nil, sink, nil, nil)
 	if err != nil {
-		return xerrors.Errorf("Transfer err:%s", err.Error())
+		return xerrors.Errorf("WatchTransfer err:%s", err.Error())
 	}
 
 	for {
@@ -95,7 +95,7 @@ func (m *Manager) watchTransfer() error {
 
 func (m *Manager) GetHeight() int64 {
 	var msg tipSet
-	err := filecoinfvm.ChainHead(&msg, m.cfg.LotusHTTPSAddr)
+	err := fvm.ChainHead(&msg, m.cfg.LotusHTTPSAddr)
 	if err != nil {
 		log.Errorf("ChainHead err:%s", err.Error())
 		return 0
@@ -111,9 +111,9 @@ func (m *Manager) GetBalance(addr string) (*big.Int, error) {
 		return big.NewInt(0), xerrors.Errorf("Dial err:%s", err.Error())
 	}
 
-	tokenAddress := common.HexToAddress(m.cfg.ContractorAddr)
+	tokenAddress := common.HexToAddress(m.cfg.TitanContractorAddr)
 
-	myAbi, err := filecoinfvm.NewAbi(tokenAddress, client)
+	myAbi, err := fvm.NewAbi(tokenAddress, client)
 	if err != nil {
 		return big.NewInt(0), xerrors.Errorf("NewAbi err:%s", err.Error())
 	}
@@ -125,7 +125,7 @@ func (m *Manager) GetBalance(addr string) (*big.Int, error) {
 func (m *Manager) CheckMessage(tx string) error {
 	log.Debugf("tx:%s \n", tx)
 	var cid cid.Cid
-	err := filecoinfvm.EthGetMessageCidByTransactionHash(&cid, tx, m.cfg.LotusHTTPSAddr)
+	err := fvm.EthGetMessageCidByTransactionHash(&cid, tx, m.cfg.LotusHTTPSAddr)
 	if err != nil {
 		return err
 	}
@@ -133,13 +133,13 @@ func (m *Manager) CheckMessage(tx string) error {
 	log.Debugf("cid:%s \n", cid.String())
 
 	var msg message
-	err = filecoinfvm.ChainGetMessage(&msg, cid, m.cfg.LotusHTTPSAddr)
+	err = fvm.ChainGetMessage(&msg, cid, m.cfg.LotusHTTPSAddr)
 	if err != nil {
 		return err
 	}
 
 	var info lookup
-	err = filecoinfvm.StateSearchMsg(&info, cid, m.cfg.LotusHTTPSAddr)
+	err = fvm.StateSearchMsg(&info, cid, m.cfg.LotusHTTPSAddr)
 	if err != nil {
 		return err
 	}
@@ -164,9 +164,9 @@ func (m *Manager) Mint(toAddr string) (string, error) {
 		return "", xerrors.Errorf("Dial err:%s", err.Error())
 	}
 
-	tokenAddress := common.HexToAddress(m.cfg.ContractorAddr)
+	tokenAddress := common.HexToAddress(m.cfg.TitanContractorAddr)
 
-	myAbi, err := filecoinfvm.NewAbi(tokenAddress, client)
+	myAbi, err := fvm.NewAbi(tokenAddress, client)
 	if err != nil {
 		return "", xerrors.Errorf("NewAbi err:%s", err.Error())
 	}
@@ -248,31 +248,31 @@ func (m *Manager) Transfer(toAddr, valueStr string) (string, error) {
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
 	toAddress := common.HexToAddress(toAddr)
-	tokenAddress := common.HexToAddress(m.cfg.ContractorAddr)
-	transferFnSignature := []byte("transfer(address,uint256)")
+	tokenAddress := common.HexToAddress(m.cfg.TitanContractorAddr)
+	// transferFnSignature := []byte("transfer(address,uint256)")
 
-	myAbi, err := filecoinfvm.NewAbi(tokenAddress, client)
+	myAbi, err := fvm.NewAbi(tokenAddress, client)
 	if err != nil {
 		return "", xerrors.Errorf("NewAbi err:%s", err.Error())
 	}
 
-	hash := sha3.NewLegacyKeccak256()
-	hash.Write(transferFnSignature)
-	methodID := hash.Sum(nil)[:4]
-	log.Debugln(hexutil.Encode(methodID)) // 0xa9059cbb
+	// hash := sha3.NewLegacyKeccak256()
+	// hash.Write(transferFnSignature)
+	// methodID := hash.Sum(nil)[:4]
+	// log.Debugln(hexutil.Encode(methodID)) // 0xa9059cbb
 
-	paddedAddress := common.LeftPadBytes(toAddress.Bytes(), 32)
-	log.Debugln(hexutil.Encode(paddedAddress))
+	// paddedAddress := common.LeftPadBytes(toAddress.Bytes(), 32)
+	// log.Debugln(hexutil.Encode(paddedAddress))
 
 	amount := new(big.Int)
 	amount.SetString(valueStr, 10)
-	paddedAmount := common.LeftPadBytes(amount.Bytes(), 32)
-	log.Debugln(hexutil.Encode(paddedAmount))
+	// paddedAmount := common.LeftPadBytes(amount.Bytes(), 32)
+	// log.Debugln(hexutil.Encode(paddedAmount))
 
-	var data []byte
-	data = append(data, methodID...)
-	data = append(data, paddedAddress...)
-	data = append(data, paddedAmount...)
+	// var data []byte
+	// data = append(data, methodID...)
+	// data = append(data, paddedAddress...)
+	// data = append(data, paddedAmount...)
 
 	chainID, err := client.NetworkID(context.Background())
 	if err != nil {

@@ -2,6 +2,8 @@ package types
 
 import (
 	"time"
+
+	"github.com/LMF709268224/titan-vps/lib/trxbridge/core"
 )
 
 type Hellos struct {
@@ -79,6 +81,38 @@ type OrderRecord struct {
 	VpsID         int64     `db:"vps_id"`
 	Msg           string    `db:"msg"`
 	TxHash        string    `db:"tx_hash"`
+}
+
+// RechargeState
+type RechargeState int64
+
+// Constants defining various states of the recharge process.
+const (
+	// RechargeCreated recharge order
+	RechargeCreated RechargeState = iota
+	// RechargeDone the order done
+	RechargeDone
+	// RechargeTimeout order
+	RechargeTimeout
+)
+
+// RechargeRecord represents information about an recharge record
+type RechargeRecord struct {
+	ID            string                                `db:"id"`
+	From          string                                `db:"from_addr"`
+	User          string                                `db:"user_addr"`
+	To            string                                `db:"to_addr"`
+	Value         string                                `db:"value"`
+	State         RechargeState                         `db:"state"`
+	DoneState     core.Transaction_ResultContractResult `db:"done_state"`
+	CreatedHeight int64                                 `db:"created_height"`
+	CreatedTime   time.Time                             `db:"created_time"`
+	DoneTime      time.Time                             `db:"done_time"`
+	Msg           string                                `db:"msg"`
+	DoneHeight    int64                                 `db:"done_height"`
+	TxHash        string                                `db:"tx_hash"`
+	RechargeAddr  string                                `db:"recharge_addr"`
+	RechargeHash  string                                `db:"recharge_hash"`
 }
 
 type CreateOrderReq struct {
