@@ -53,7 +53,7 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle buy goods: %s", info.OrderID)
 
-	height := m.tMgr.GetHeight()
+	height := m.getHeight()
 
 	// Buy Vps
 	vInfo, err := m.LoadVpsInfo(info.VpsID)
@@ -79,7 +79,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle done, %s, goods info:%v", info.OrderID, info.GoodsInfo)
 
-	m.revertPayeeAddress(info.To)
+	m.tMgr.RevertFvmAddress(info.To)
 	m.removeOrder(info.User)
 
 	return nil

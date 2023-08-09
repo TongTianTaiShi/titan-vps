@@ -1,4 +1,4 @@
-package transaction
+package filecoinbridge
 
 import (
 	"github.com/filecoin-project/go-address"
@@ -8,11 +8,11 @@ import (
 
 type (
 	// lotus struct
-	tipSet struct {
+	TipSet struct {
 		Height int64
 	}
 
-	message struct {
+	Message struct {
 		Version uint64
 
 		To   address.Address
@@ -30,14 +30,14 @@ type (
 		Params []byte
 	}
 
-	messageReceipt struct {
+	MessageReceipt struct {
 		ExitCode int64
 		GasUsed  int64
 	}
 
-	lookup struct {
+	Lookup struct {
 		Message   cid.Cid // Can be different than requested, in case it was replaced, but only gas values changed
-		Receipt   messageReceipt
+		Receipt   MessageReceipt
 		ReturnDec interface{}
 		Height    int64
 	}

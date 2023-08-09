@@ -17,10 +17,10 @@ type GoodsInfo struct {
 }
 
 type PaymentInfo struct {
-	ID    string
-	From  string
-	To    string
-	Value int64
+	TxHash string
+	From   string
+	To     string
+	Value  int64
 }
 
 // OrderInfo represents order information
@@ -46,7 +46,7 @@ type OrderInfo struct {
 func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 	return &types.OrderRecord{
 		OrderID:       state.OrderID.String(),
-		State:         state.State.Int(),
+		State:         types.OrderState(state.State),
 		From:          state.From,
 		User:          state.User,
 		To:            state.To,

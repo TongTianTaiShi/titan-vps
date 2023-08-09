@@ -18,6 +18,7 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
+	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
 	"github.com/LMF709268224/titan-vps/node/common"
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
@@ -36,7 +37,7 @@ type Basis struct {
 	fx.In
 	*common.CommonAPI
 	TransactionMgr *transaction.Manager
-	ExchangeMgr    *exchange.Manager
+	ExchangeMgr    *exchange.RechargeManager
 	Notify         *pubsub.PubSub
 	*db.SQLDB
 	OrderMgr *orders.Manager
@@ -233,8 +234,17 @@ func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanc
 }
 
 func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
-	value := "9000000000000000000"
-	return m.TransactionMgr.Mint(address, value)
+	cfg, err := m.GetBasisConfigFunc()
+	if err != nil {
+		log.Errorf("get config err:%s", err.Error())
+		return "", err
+	}
+
+	valueStr := "9000000000000000000"
+
+	client := filecoinbridge.NewGrpcClient(cfg.LotusHTTPSAddr, cfg.TitanContractorAddr)
+
+	return client.Mint(cfg.PrivateKeyStr, address, valueStr)
 }
 
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {

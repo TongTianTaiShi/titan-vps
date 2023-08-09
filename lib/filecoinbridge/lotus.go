@@ -1,4 +1,4 @@
-package fvm
+package filecoinbridge
 
 import (
 	"bytes"

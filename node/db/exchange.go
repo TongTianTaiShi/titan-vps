@@ -10,18 +10,18 @@ import (
 func (n *SQLDB) SaveRechargeInfo(rInfo *types.RechargeRecord) error {
 	// update record table
 	query := fmt.Sprintf(
-		`INSERT INTO %s (id, from_addr, to_addr, value, created_height, done_height, state, recharge_addr, recharge_hash, msg, user_addr, tx_hash, done_state) 
-		        VALUES (:id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :recharge_addr, :recharge_hash, :msg, :user_addr, :tx_hash, :done_state)`, rechargeRecordTable)
+		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, recharge_addr, recharge_hash, msg, user_addr, tx_hash, done_state) 
+		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :recharge_addr, :recharge_hash, :msg, :user_addr, :tx_hash, :done_state)`, rechargeRecordTable)
 	_, err := n.db.NamedExec(query, rInfo)
 
 	return err
 }
 
 // LoadRechargeRecord load recharge record information
-func (n *SQLDB) LoadRechargeRecord(id string) (*types.RechargeRecord, error) {
+func (n *SQLDB) LoadRechargeRecord(orderID string) (*types.RechargeRecord, error) {
 	var info types.RechargeRecord
-	query := fmt.Sprintf("SELECT * FROM %s WHERE id=?", rechargeRecordTable)
-	err := n.db.Get(&info, query, id)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE order_id=?", rechargeRecordTable)
+	err := n.db.Get(&info, query, orderID)
 	if err != nil {
 		return nil, err
 	}
@@ -32,8 +32,8 @@ func (n *SQLDB) LoadRechargeRecord(id string) (*types.RechargeRecord, error) {
 // UpdateRechargeRecord update recharge record information
 func (n *SQLDB) UpdateRechargeRecord(info *types.RechargeRecord, newState types.RechargeState) error {
 	query := fmt.Sprintf(`UPDATE %s SET state=?, value=?, done_state=?, done_time=NOW(), from_addr=?,
-	    done_height=?, tx_hash=?, recharge_hash=?, msg=? WHERE id=? AND state=?`, rechargeRecordTable)
-	_, err := n.db.Exec(query, newState, info.Value, info.DoneState, info.From, info.DoneHeight, info.TxHash, info.RechargeHash, info.Msg, info.ID, info.State)
+	    done_height=?, tx_hash=?, recharge_hash=?, msg=? WHERE order_id=? AND state=?`, rechargeRecordTable)
+	_, err := n.db.Exec(query, newState, info.Value, info.DoneState, info.From, info.DoneHeight, info.TxHash, info.RechargeHash, info.Msg, info.OrderID, info.State)
 
 	return err
 }

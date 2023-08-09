@@ -105,6 +105,8 @@ type TransactionStub struct {
 
 type UserAPIStruct struct {
 	Internal struct {
+		CancelRecharge func(p0 context.Context, p1 string) error `perm:"read"`
+
 		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"read"`
 
 		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"read"`
@@ -372,6 +374,17 @@ func (s *TransactionStruct) Hello(p0 context.Context) error {
 }
 
 func (s *TransactionStub) Hello(p0 context.Context) error {
+	return ErrNotSupported
+}
+
+func (s *UserAPIStruct) CancelRecharge(p0 context.Context, p1 string) error {
+	if s.Internal.CancelRecharge == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.CancelRecharge(p0, p1)
+}
+
+func (s *UserAPIStub) CancelRecharge(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 

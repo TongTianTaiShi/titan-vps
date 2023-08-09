@@ -101,7 +101,7 @@ type PaymentSucceed struct {
 
 func (evt PaymentSucceed) apply(state *OrderInfo) {
 	state.From = evt.From
-	state.TxHash = evt.ID
+	state.TxHash = evt.TxHash
 }
 
 // BuySucceed Successful purchase

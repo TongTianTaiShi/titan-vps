@@ -52,7 +52,7 @@ var cInstanceInfoTable = `
 
 var cRechargeTable = `
 	CREATE TABLE if not exists %s (
-		id                 VARCHAR(128) NOT NULL UNIQUE,
+		order_id           VARCHAR(128) NOT NULL UNIQUE,
 		from_addr          VARCHAR(128) DEFAULT "",
 		to_addr            VARCHAR(128) NOT NULL,
 		user_addr          VARCHAR(128) DEFAULT "",
@@ -67,7 +67,7 @@ var cRechargeTable = `
 		done_height        INT          DEFAULT 0,
 		done_state         INT          DEFAULT 0,
 		msg                VARCHAR(2048) DEFAULT "",
-		PRIMARY KEY (id),
+		PRIMARY KEY (order_id),
 		KEY idx_user (user_addr),
 		KEY idx_to (to_addr)
 	) ENGINE=InnoDB COMMENT='recharge info';`

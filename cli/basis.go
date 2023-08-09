@@ -34,6 +34,7 @@ var userCmds = &cli.Command{
 		logoutCmd,
 		getBalanceCmd,
 		rechargeCmd,
+		cancelRechargeCmd,
 	},
 }
 
@@ -233,6 +234,31 @@ var rechargeCmd = &cli.Command{
 
 		fmt.Println(str)
 		return nil
+	},
+}
+
+var cancelRechargeCmd = &cli.Command{
+	Name:  "ca",
+	Usage: "cancel recharge",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "oid",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		oid := cctx.String("oid")
+		return api.CancelRecharge(ctx, oid)
 	},
 }
 

@@ -10,6 +10,26 @@ type Hellos struct {
 	Msg string
 }
 
+// OrderState represents the state of an order in the process of being pulled.
+type OrderState int64
+
+// Constants defining various states of the order process.
+const (
+	// Created order
+	Created OrderState = iota
+	// WaitingPayment Waiting for user to payment order
+	WaitingPayment
+	// BuyGoods buy goods
+	BuyGoods
+	// Done the order done
+	Done
+)
+
+// Int returns the int representation of the order state.
+func (s OrderState) Int() int64 {
+	return int64(s)
+}
+
 // User user info
 type User struct {
 	UUID      string    `db:"uuid" json:"uuid"`
@@ -67,20 +87,20 @@ type AttachKeyPairResponse struct {
 
 // OrderRecord represents information about an order record
 type OrderRecord struct {
-	OrderID       string    `db:"order_id"`
-	From          string    `db:"from_addr"`
-	User          string    `db:"user_addr"`
-	To            string    `db:"to_addr"`
-	Value         int64     `db:"value"`
-	State         int64     `db:"state"`
-	DoneState     int64     `db:"done_state"`
-	CreatedHeight int64     `db:"created_height"`
-	CreatedTime   time.Time `db:"created_time"`
-	DoneTime      time.Time `db:"done_time"`
-	DoneHeight    int64     `db:"done_height"`
-	VpsID         int64     `db:"vps_id"`
-	Msg           string    `db:"msg"`
-	TxHash        string    `db:"tx_hash"`
+	OrderID       string     `db:"order_id"`
+	From          string     `db:"from_addr"`
+	User          string     `db:"user_addr"`
+	To            string     `db:"to_addr"`
+	Value         int64      `db:"value"`
+	State         OrderState `db:"state"`
+	DoneState     int64      `db:"done_state"`
+	CreatedHeight int64      `db:"created_height"`
+	CreatedTime   time.Time  `db:"created_time"`
+	DoneTime      time.Time  `db:"done_time"`
+	DoneHeight    int64      `db:"done_height"`
+	VpsID         int64      `db:"vps_id"`
+	Msg           string     `db:"msg"`
+	TxHash        string     `db:"tx_hash"`
 }
 
 // RechargeState
@@ -94,11 +114,13 @@ const (
 	RechargeDone
 	// RechargeTimeout order
 	RechargeTimeout
+	// RechargeCancel order
+	RechargeCancel
 )
 
 // RechargeRecord represents information about an recharge record
 type RechargeRecord struct {
-	ID            string                                `db:"id"`
+	OrderID       string                                `db:"order_id"`
 	From          string                                `db:"from_addr"`
 	User          string                                `db:"user_addr"`
 	To            string                                `db:"to_addr"`
@@ -151,12 +173,10 @@ type Token struct {
 type EventTopics string
 
 const (
-	// EventTransferWatch node online event
-	EventTransferWatch EventTopics = "transfer_watch"
-	// EventTransferReq request transfer
-	EventTransferReq EventTopics = "transfer_req"
-	// EventTransferRep reply transfer
-	EventTransferRep EventTopics = "transfer_rep"
+	// EventFvmTransferWatch node online event
+	EventFvmTransferWatch EventTopics = "fvm_transfer_watch"
+	// EventTronTransferWatch node online event
+	EventTronTransferWatch EventTopics = "tron_transfer_watch"
 )
 
 func (t EventTopics) String() string {
@@ -164,20 +184,17 @@ func (t EventTopics) String() string {
 }
 
 type FvmTransferWatch struct {
-	ID    string
-	From  string
-	To    string
-	Value int64
-}
-
-type FvmTransferReq struct {
-	ID    string
-	To    string
-	Value string
-}
-
-type FvmTransferRep struct {
-	ID     string
 	TxHash string
-	Msg    string
+	From   string
+	To     string
+	Value  int64
+}
+
+type TronTransferWatch struct {
+	TxHash string
+	From   string
+	To     string
+	Value  string
+	State  core.Transaction_ResultContractResult
+	Height int64
 }

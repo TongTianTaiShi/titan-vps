@@ -10,6 +10,7 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
+	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
@@ -39,12 +40,8 @@ type Manager struct {
 
 	notify *pubsub.PubSub
 
-	ongoingOrders map[string]string
+	ongoingOrders map[string]*types.OrderRecord
 	orderLock     *sync.Mutex
-
-	usabilityAddrs map[string]string
-	usedAddrs      map[string]string
-	addrLock       *sync.Mutex
 
 	cfg  config.BasisCfg
 	tMgr *transaction.Manager
@@ -58,15 +55,12 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg 
 	}
 
 	m := &Manager{
-		SQLDB:          sdb,
-		notify:         pb,
-		ongoingOrders:  make(map[string]string),
-		orderLock:      &sync.Mutex{},
-		usabilityAddrs: make(map[string]string),
-		usedAddrs:      make(map[string]string),
-		addrLock:       &sync.Mutex{},
-		cfg:            cfg,
-		tMgr:           fm,
+		SQLDB:         sdb,
+		notify:        pb,
+		ongoingOrders: make(map[string]*types.OrderRecord),
+		orderLock:     &sync.Mutex{},
+		cfg:           cfg,
+		tMgr:          fm,
 	}
 
 	// state machine initialization
@@ -76,50 +70,42 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg 
 	return m, nil
 }
 
-func (m *Manager) initPaymentAddress(as []string) {
-	m.addrLock.Lock()
-	defer m.addrLock.Unlock()
-
-	for _, addr := range as {
-		m.usabilityAddrs[addr] = ""
-	}
-}
-
 // Start initializes and starts the order state machine and associated tickers
 func (m *Manager) Start(ctx context.Context) {
-	m.initPaymentAddress(m.cfg.PaymentAddress)
-
 	if err := m.initStateMachines(ctx); err != nil {
 		log.Errorf("restartStateMachines err: %s", err.Error())
 	}
 
 	go m.subscribeEvents()
-	go m.checkOrderTimeout()
+	go m.checkOrdersTimeout()
 }
 
-func (m *Manager) checkOrderTimeout() {
+func (m *Manager) checkOrdersTimeout() {
 	ticker := time.NewTicker(checkOrderInterval)
 	defer ticker.Stop()
 
 	for {
 		<-ticker.C
 
-		for addr, hash := range m.usedAddrs {
-			info, err := m.LoadOrderRecord(hash)
+		for _, orderRecord := range m.ongoingOrders {
+			orderID := orderRecord.OrderID
+			addr := orderRecord.To
+
+			info, err := m.LoadOrderRecord(orderID)
 			if err != nil {
-				log.Errorf("checkOrderTimeout LoadOrderRecord %s , %s err:%s", addr, hash, err.Error())
+				log.Errorf("checkOrderTimeout LoadOrderRecord %s , %s err:%s", addr, orderID, err.Error())
 				continue
 			}
 
-			log.Debugf("checkout %s , %s ", addr, hash)
+			log.Debugf("checkout %s , %s ", addr, orderID)
 
-			if info.State != Done.Int() && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
+			if info.State.Int() != Done.Int() && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
 
-				height := m.tMgr.GetHeight()
+				height := m.getHeight()
 
-				err = m.orderStateMachines.Send(OrderHash(hash), OrderTimeOut{Height: height})
+				err = m.orderStateMachines.Send(OrderHash(orderID), OrderTimeOut{Height: height})
 				if err != nil {
-					log.Errorf("checkOrderTimeout Send %s , %s err:%s", addr, hash, err.Error())
+					log.Errorf("checkOrderTimeout Send %s , %s err:%s", addr, orderID, err.Error())
 					continue
 				}
 			}
@@ -127,8 +113,18 @@ func (m *Manager) checkOrderTimeout() {
 	}
 }
 
+func (m *Manager) getOrderIDByToAddress(to string) (string, bool) {
+	for _, orderRecord := range m.ongoingOrders {
+		if orderRecord.To == to {
+			return orderRecord.OrderID, true
+		}
+	}
+
+	return "", false
+}
+
 func (m *Manager) subscribeEvents() {
-	subTransfer := m.notify.Sub(types.EventTransferWatch.String())
+	subTransfer := m.notify.Sub(types.EventFvmTransferWatch.String())
 	defer m.notify.Unsub(subTransfer)
 
 	for {
@@ -136,17 +132,17 @@ func (m *Manager) subscribeEvents() {
 		case u := <-subTransfer:
 			tr := u.(*types.FvmTransferWatch)
 
-			if hash, exist := m.usedAddrs[tr.To]; exist {
-				err := m.orderStateMachines.Send(OrderHash(hash), PaymentResult{
+			if orderID, exist := m.getOrderIDByToAddress(tr.To); exist {
+				err := m.orderStateMachines.Send(OrderHash(orderID), PaymentResult{
 					&PaymentInfo{
-						ID:    tr.ID,
-						From:  tr.From,
-						To:    tr.To,
-						Value: tr.Value,
+						TxHash: tr.TxHash,
+						From:   tr.From,
+						To:     tr.To,
+						Value:  tr.Value,
 					},
 				})
 				if err != nil {
-					log.Errorf("subscribeNodeEvents Send %s err:%s", hash, err.Error())
+					log.Errorf("subscribeNodeEvents Send %s err:%s", orderID, err.Error())
 					continue
 				}
 			}
@@ -161,7 +157,7 @@ func (m *Manager) Terminate(ctx context.Context) error {
 
 // CancelOrder cancel vps order
 func (m *Manager) CancelOrder(orderID string) error {
-	height := m.tMgr.GetHeight()
+	height := m.getHeight()
 
 	return m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{Height: height})
 }
@@ -173,33 +169,34 @@ func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
 
-	err := m.addOrder(req.User, orderID)
+	err := m.addOrder(req)
 	if err != nil {
 		return err
 	}
 
-	address, err := m.allocatePayeeAddress(orderID)
+	address, err := m.tMgr.AllocateFvmAddress(orderID)
 	if err != nil {
+		m.removeOrder(req.User)
 		return err
 	}
 
 	req.To = address
 	req.OrderID = orderID
-	req.CreatedHeight = m.tMgr.GetHeight()
+	req.CreatedHeight = m.getHeight()
 
 	// create order task
 	return m.orderStateMachines.Send(OrderHash(orderID), CreateOrder{orderInfoFrom(req)})
 }
 
-func (m *Manager) addOrder(userID, orderID string) error {
+func (m *Manager) addOrder(req *types.OrderRecord) error {
 	m.orderLock.Lock()
 	defer m.orderLock.Unlock()
 
-	if _, exist := m.ongoingOrders[userID]; exist {
+	if _, exist := m.ongoingOrders[req.User]; exist {
 		return xerrors.New("user have order")
 	}
 
-	m.ongoingOrders[userID] = orderID
+	m.ongoingOrders[req.User] = req
 
 	return nil
 }
@@ -209,39 +206,6 @@ func (m *Manager) removeOrder(userID string) {
 	defer m.orderLock.Unlock()
 
 	delete(m.ongoingOrders, userID)
-}
-
-func (m *Manager) allocatePayeeAddress(orderID string) (string, error) {
-	m.addrLock.Lock()
-	defer m.addrLock.Unlock()
-
-	if len(m.usabilityAddrs) > 0 {
-		for addr := range m.usabilityAddrs {
-			m.usedAddrs[addr] = orderID
-			delete(m.usabilityAddrs, addr)
-			return addr, nil
-		}
-	}
-
-	return "", xerrors.New("not found address")
-}
-
-func (m *Manager) revertPayeeAddress(addr string) {
-	m.addrLock.Lock()
-	defer m.addrLock.Unlock()
-
-	delete(m.usedAddrs, addr)
-	m.usabilityAddrs[addr] = ""
-}
-
-func (m *Manager) recoverOutstandingOrders(info OrderInfo) {
-	m.addrLock.Lock()
-	defer m.addrLock.Unlock()
-
-	m.usedAddrs[info.To] = info.OrderID.String()
-	delete(m.usabilityAddrs, info.To)
-
-	m.addOrder(info.User, info.OrderID.String())
 }
 
 func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
@@ -312,4 +276,15 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	}()
 
 	return result, nil
+}
+
+func (m *Manager) getHeight() int64 {
+	var msg filecoinbridge.TipSet
+	err := filecoinbridge.ChainHead(&msg, m.cfg.LotusHTTPSAddr)
+	if err != nil {
+		log.Errorf("ChainHead err:%s", err.Error())
+		return 0
+	}
+
+	return msg.Height
 }

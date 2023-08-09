@@ -655,29 +655,6 @@ func (t *PaymentInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	// t.ID (string) (string)
-	if len("ID") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"ID\" was too long")
-	}
-
-	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("ID"))); err != nil {
-		return err
-	}
-	if _, err := io.WriteString(w, string("ID")); err != nil {
-		return err
-	}
-
-	if len(t.ID) > cbg.MaxLength {
-		return xerrors.Errorf("Value in field t.ID was too long")
-	}
-
-	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.ID))); err != nil {
-		return err
-	}
-	if _, err := io.WriteString(w, string(t.ID)); err != nil {
-		return err
-	}
-
 	// t.To (string) (string)
 	if len("To") > cbg.MaxLength {
 		return xerrors.Errorf("Value in field \"To\" was too long")
@@ -745,6 +722,29 @@ func (t *PaymentInfo) MarshalCBOR(w io.Writer) error {
 			return err
 		}
 	}
+
+	// t.TxHash (string) (string)
+	if len("TxHash") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"TxHash\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("TxHash"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string("TxHash")); err != nil {
+		return err
+	}
+
+	if len(t.TxHash) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.TxHash was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.TxHash))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.TxHash)); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -786,18 +786,7 @@ func (t *PaymentInfo) UnmarshalCBOR(r io.Reader) (err error) {
 		}
 
 		switch name {
-		// t.ID (string) (string)
-		case "ID":
-
-			{
-				sval, err := cbg.ReadString(cr)
-				if err != nil {
-					return err
-				}
-
-				t.ID = string(sval)
-			}
-			// t.To (string) (string)
+		// t.To (string) (string)
 		case "To":
 
 			{
@@ -844,6 +833,17 @@ func (t *PaymentInfo) UnmarshalCBOR(r io.Reader) (err error) {
 				}
 
 				t.Value = int64(extraI)
+			}
+			// t.TxHash (string) (string)
+		case "TxHash":
+
+			{
+				sval, err := cbg.ReadString(cr)
+				if err != nil {
+					return err
+				}
+
+				t.TxHash = string(sval)
 			}
 
 		default:
