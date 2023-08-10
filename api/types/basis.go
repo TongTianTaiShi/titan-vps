@@ -156,11 +156,6 @@ type WithdrawRecord struct {
 	WithdrawHash  string        `db:"withdraw_hash"`
 }
 
-type CreateOrderReq struct {
-	Vps  CreateInstanceReq
-	User string
-}
-
 type PaymentCompletedReq struct {
 	OrderID       string
 	TransactionID string

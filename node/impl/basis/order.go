@@ -5,19 +5,22 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
+	"github.com/LMF709268224/titan-vps/node/handler"
 	"github.com/ipfs/go-cid"
 	"golang.org/x/xerrors"
 )
 
-func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
-	id, err := m.SaveVpsInstance(&req.Vps)
+func (m *Basis) CreateOrder(ctx context.Context, req types.CreateInstanceReq) (string, error) {
+	userID := handler.GetID(ctx)
+
+	id, err := m.SaveVpsInstance(&req)
 	if err != nil {
 		return "", err
 	}
 
 	info := &types.OrderRecord{
 		VpsID: id,
-		User:  req.User,
+		User:  userID,
 		Value: "10000000000",
 	}
 

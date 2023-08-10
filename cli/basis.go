@@ -70,13 +70,7 @@ var describeRegionsCmd = &cli.Command{
 var createOrderCmd = &cli.Command{
 	Name:  "create",
 	Usage: "create order",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "user",
-			Usage: "node type: edge 1, update 6",
-			Value: "",
-		},
-	},
+	Flags: []cli.Flag{},
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
@@ -87,16 +81,14 @@ var createOrderCmd = &cli.Command{
 
 		defer closer()
 
-		user := cctx.String("user")
-
-		address, err := api.CreateOrder(ctx, types.CreateOrderReq{Vps: types.CreateInstanceReq{
+		address, err := api.CreateOrder(ctx, types.CreateInstanceReq{
 			RegionId:     "cn-qingdao",
 			ImageId:      "aliyun_2_1903_x64_20G_alibase_20230704.vhd",
 			PeriodUnit:   "week",
 			Period:       1,
 			InstanceType: "ecs.t5-lc1m1.small",
 			DryRun:       true,
-		}, User: user})
+		})
 		if err != nil {
 			return err
 		}
@@ -198,11 +190,6 @@ var rechargeCmd = &cli.Command{
 	Usage: "recharge",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "address",
-			Usage: "node type: edge 1, update 6",
-			Value: "",
-		},
-		&cli.StringFlag{
 			Name:  "ra",
 			Usage: "node type: edge 1, update 6",
 			Value: "",
@@ -218,10 +205,9 @@ var rechargeCmd = &cli.Command{
 
 		defer closer()
 
-		address := cctx.String("address")
 		rechargeAddr := cctx.String("ra")
 
-		str, err := api.Recharge(ctx, address, rechargeAddr)
+		str, err := api.Recharge(ctx, rechargeAddr)
 		if err != nil {
 			return err
 		}
@@ -261,11 +247,6 @@ var withdrawCmd = &cli.Command{
 	Usage: "withdraw",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "address",
-			Usage: "node type: edge 1, update 6",
-			Value: "",
-		},
-		&cli.StringFlag{
 			Name:  "wa",
 			Usage: "node type: edge 1, update 6",
 			Value: "",
@@ -281,10 +262,9 @@ var withdrawCmd = &cli.Command{
 
 		defer closer()
 
-		address := cctx.String("address")
 		withdrawAddr := cctx.String("wa")
 
-		str, err := api.Withdraw(ctx, address, withdrawAddr)
+		str, err := api.Withdraw(ctx, withdrawAddr)
 		if err != nil {
 			return err
 		}

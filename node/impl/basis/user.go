@@ -22,16 +22,20 @@ func (m *Basis) GetBalance(ctx context.Context) (*big.Int, error) {
 	return client.GetBalance(userID)
 }
 
-func (m *Basis) Recharge(ctx context.Context, address, rechargeAddr string) (string, error) {
-	return m.RechargeManager.CreateRechargeOrder(address, rechargeAddr)
+func (m *Basis) Recharge(ctx context.Context, rechargeAddr string) (string, error) {
+	userID := handler.GetID(ctx)
+
+	return m.RechargeManager.CreateRechargeOrder(userID, rechargeAddr)
 }
 
 func (m *Basis) CancelRecharge(ctx context.Context, orderID string) error {
 	return m.RechargeManager.CancelRechargeOrder(orderID)
 }
 
-func (m *Basis) Withdraw(ctx context.Context, address, withdrawAddr string) (string, error) {
-	return m.WithdrawManager.CreateWithdrawOrder(address, withdrawAddr)
+func (m *Basis) Withdraw(ctx context.Context, withdrawAddr string) (string, error) {
+	userID := handler.GetID(ctx)
+
+	return m.WithdrawManager.CreateWithdrawOrder(userID, withdrawAddr)
 }
 
 func (m *Basis) CancelWithdraw(ctx context.Context, orderID string) error {

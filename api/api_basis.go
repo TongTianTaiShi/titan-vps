@@ -27,7 +27,7 @@ type Basis interface {
 // OrderAPI is an interface for order
 type OrderAPI interface {
 	// order
-	CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error)           //perm:user
+	CreateOrder(ctx context.Context, req types.CreateInstanceReq) (string, error)        //perm:user
 	PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) //perm:user
 	CancelOrder(ctx context.Context, orderID string) error                               //perm:user
 }
@@ -40,8 +40,8 @@ type UserAPI interface {
 	SignCode(ctx context.Context, userID string) (string, error)                     //perm:default
 	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)     //perm:default
 	Logout(ctx context.Context, user *types.UserReq) error                           //perm:user
-	Recharge(ctx context.Context, address, rechargeAddr string) (string, error)      //perm:user
+	Recharge(ctx context.Context, rechargeAddr string) (string, error)               //perm:user
 	CancelRecharge(ctx context.Context, orderID string) error                        //perm:user
-	Withdraw(ctx context.Context, address, withdrawAddr string) (string, error)      //perm:user
+	Withdraw(ctx context.Context, withdrawAddr string) (string, error)               //perm:user
 	CancelWithdraw(ctx context.Context, orderID string) error                        //perm:user
 }

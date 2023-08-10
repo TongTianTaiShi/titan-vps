@@ -81,7 +81,7 @@ type OrderAPIStruct struct {
 	Internal struct {
 		CancelOrder func(p0 context.Context, p1 string) error `perm:"user"`
 
-		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"user"`
+		CreateOrder func(p0 context.Context, p1 types.CreateInstanceReq) (string, error) `perm:"user"`
 
 		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"user"`
 	}
@@ -116,11 +116,11 @@ type UserAPIStruct struct {
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"user"`
 
-		Recharge func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"user"`
+		Recharge func(p0 context.Context, p1 string) (string, error) `perm:"user"`
 
 		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
-		Withdraw func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"user"`
+		Withdraw func(p0 context.Context, p1 string) (string, error) `perm:"user"`
 	}
 }
 
@@ -347,14 +347,14 @@ func (s *OrderAPIStub) CancelOrder(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 
-func (s *OrderAPIStruct) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
+func (s *OrderAPIStruct) CreateOrder(p0 context.Context, p1 types.CreateInstanceReq) (string, error) {
 	if s.Internal.CreateOrder == nil {
 		return "", ErrNotSupported
 	}
 	return s.Internal.CreateOrder(p0, p1)
 }
 
-func (s *OrderAPIStub) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
+func (s *OrderAPIStub) CreateOrder(p0 context.Context, p1 types.CreateInstanceReq) (string, error) {
 	return "", ErrNotSupported
 }
 
@@ -446,14 +446,14 @@ func (s *UserAPIStub) RebootInstance(p0 context.Context, p1 string, p2 string) (
 	return "", ErrNotSupported
 }
 
-func (s *UserAPIStruct) Recharge(p0 context.Context, p1 string, p2 string) (string, error) {
+func (s *UserAPIStruct) Recharge(p0 context.Context, p1 string) (string, error) {
 	if s.Internal.Recharge == nil {
 		return "", ErrNotSupported
 	}
-	return s.Internal.Recharge(p0, p1, p2)
+	return s.Internal.Recharge(p0, p1)
 }
 
-func (s *UserAPIStub) Recharge(p0 context.Context, p1 string, p2 string) (string, error) {
+func (s *UserAPIStub) Recharge(p0 context.Context, p1 string) (string, error) {
 	return "", ErrNotSupported
 }
 
@@ -468,14 +468,14 @@ func (s *UserAPIStub) SignCode(p0 context.Context, p1 string) (string, error) {
 	return "", ErrNotSupported
 }
 
-func (s *UserAPIStruct) Withdraw(p0 context.Context, p1 string, p2 string) (string, error) {
+func (s *UserAPIStruct) Withdraw(p0 context.Context, p1 string) (string, error) {
 	if s.Internal.Withdraw == nil {
 		return "", ErrNotSupported
 	}
-	return s.Internal.Withdraw(p0, p1, p2)
+	return s.Internal.Withdraw(p0, p1)
 }
 
-func (s *UserAPIStub) Withdraw(p0 context.Context, p1 string, p2 string) (string, error) {
+func (s *UserAPIStub) Withdraw(p0 context.Context, p1 string) (string, error) {
 	return "", ErrNotSupported
 }
 
