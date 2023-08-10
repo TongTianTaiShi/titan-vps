@@ -35,6 +35,8 @@ var userCmds = &cli.Command{
 		getBalanceCmd,
 		rechargeCmd,
 		cancelRechargeCmd,
+		withdrawCmd,
+		cancelWithdrawCmd,
 	},
 }
 
@@ -259,6 +261,69 @@ var cancelRechargeCmd = &cli.Command{
 
 		oid := cctx.String("oid")
 		return api.CancelRecharge(ctx, oid)
+	},
+}
+
+var withdrawCmd = &cli.Command{
+	Name:  "withdraw",
+	Usage: "withdraw",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "address",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "wa",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		address := cctx.String("address")
+		withdrawAddr := cctx.String("wa")
+
+		str, err := api.Withdraw(ctx, address, withdrawAddr)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(str)
+		return nil
+	},
+}
+
+var cancelWithdrawCmd = &cli.Command{
+	Name:  "cw",
+	Usage: "cancel withdraw",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "oid",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		oid := cctx.String("oid")
+		return api.CancelWithdraw(ctx, oid)
 	},
 }
 

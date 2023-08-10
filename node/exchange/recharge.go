@@ -7,6 +7,7 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
+	"github.com/LMF709268224/titan-vps/lib/trxbridge/core"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
@@ -84,21 +85,33 @@ func (m *RechargeManager) handleTronTransfer(orderID string, tr *types.TronTrans
 		log.Errorf("handleTronTransfer LoadOrderRecord %s , %s err:%s", tr.To, orderID, err.Error())
 		return
 	}
-	info.DoneState = tr.State
+
+	if info.State != types.ExchangeCreated {
+		log.Errorf("handleTronTransfer Invalid order status %d , %s", info.State, orderID)
+		return
+	}
+
 	info.Value = tr.Value
 	info.TxHash = tr.TxHash
 	info.From = tr.From
 	info.DoneHeight = tr.Height
 
-	client := filecoinbridge.NewGrpcClient(m.cfg.LotusHTTPSAddr, m.cfg.TitanContractorAddr)
-	hash, err := client.Mint(m.cfg.PrivateKeyStr, info.RechargeAddr, tr.Value)
-	if err != nil {
-		info.Msg = err.Error()
-	} else {
-		info.RechargeHash = hash
+	state := types.ExchangeFail
+	info.Msg = tr.State.String()
+
+	if tr.State == core.Transaction_Result_SUCCESS {
+		state = types.ExchangeDone
+
+		client := filecoinbridge.NewGrpcClient(m.cfg.LotusHTTPSAddr, m.cfg.TitanContractorAddr)
+		hash, err := client.Mint(m.cfg.PrivateKeyStr, info.RechargeAddr, tr.Value)
+		if err != nil {
+			info.Msg = err.Error()
+		} else {
+			info.RechargeHash = hash
+		}
 	}
 
-	err = m.changeOrderState(types.RechargeDone, info)
+	err = m.changeOrderState(state, info)
 	if err != nil {
 		log.Errorf("handleTronTransfer changeOrderState %s err:%s", orderID, err.Error())
 		return
@@ -106,7 +119,7 @@ func (m *RechargeManager) handleTronTransfer(orderID string, tr *types.TronTrans
 }
 
 func (m *RechargeManager) initOngeingOrders() {
-	records, err := m.LoadRechargeRecords(types.RechargeCreated)
+	records, err := m.LoadRechargeRecords(types.ExchangeCreated)
 	if err != nil {
 		log.Errorln("LoadRechargeRecords err:", err.Error())
 		return
@@ -137,8 +150,8 @@ func (m *RechargeManager) checkOrdersTimeout() {
 
 			log.Debugf("checkout %s , %s ", addr, orderID)
 
-			if info.State == types.RechargeCreated && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
-				err := m.changeOrderState(types.RechargeTimeout, info)
+			if info.State == types.ExchangeCreated && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
+				err := m.changeOrderState(types.ExchangeTimeout, info)
 				if err != nil {
 					log.Errorf("checkOrderTimeout UpdateRechargeRecord %s , %s err:%s", addr, orderID, err.Error())
 					continue
@@ -158,21 +171,22 @@ func (m *RechargeManager) getOrderIDByToAddress(to string) (string, bool) {
 	return "", false
 }
 
+// CancelRechargeOrder cancel the order
 func (m *RechargeManager) CancelRechargeOrder(orderID string) error {
 	info, err := m.LoadRechargeRecord(orderID)
 	if err != nil {
 		return err
 	}
 
-	if info.State != types.RechargeCreated {
+	if info.State != types.ExchangeCreated {
 		return xerrors.Errorf("Invalid order status %d", info.State)
 	}
 
-	return m.changeOrderState(types.RechargeCancel, info)
+	return m.changeOrderState(types.ExchangeCancel, info)
 }
 
-func (m *RechargeManager) changeOrderState(state types.RechargeState, info *types.RechargeRecord) error {
-	info.DoneHeight = getHeight(m.cfg.TrxHTTPSAddr)
+func (m *RechargeManager) changeOrderState(state types.ExchangeState, info *types.RechargeRecord) error {
+	info.DoneHeight = getTronHeight(m.cfg.TrxHTTPSAddr)
 
 	err := m.UpdateRechargeRecord(info, state)
 	if err != nil {
@@ -185,7 +199,15 @@ func (m *RechargeManager) changeOrderState(state types.RechargeState, info *type
 	return nil
 }
 
-func (m *RechargeManager) CreateRechargeOrder(userAddr, rechargeAddr string) (string, error) {
+// CreateRechargeOrder create a recharge order
+func (m *RechargeManager) CreateRechargeOrder(userAddr, rechargeAddr string) (addr string, err error) {
+	defer func() {
+		if err != nil {
+			m.removeOrder(userAddr)
+			m.tMgr.RevertTronAddress(addr)
+		}
+	}()
+
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
 
@@ -193,17 +215,16 @@ func (m *RechargeManager) CreateRechargeOrder(userAddr, rechargeAddr string) (st
 		OrderID:       orderID,
 		User:          userAddr,
 		RechargeAddr:  rechargeAddr,
-		CreatedHeight: getHeight(m.cfg.TrxHTTPSAddr),
+		CreatedHeight: getTronHeight(m.cfg.TrxHTTPSAddr),
 	}
 
-	err := m.addOrder(info)
+	err = m.addOrder(info)
 	if err != nil {
 		return "", err
 	}
 
-	addr, err := m.tMgr.AllocateTronAddress(orderID)
+	addr, err = m.tMgr.AllocateTronAddress(orderID)
 	if err != nil {
-		m.removeOrder(userAddr)
 		return "", err
 	}
 

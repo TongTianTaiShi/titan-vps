@@ -42,4 +42,6 @@ type UserAPI interface {
 	Logout(ctx context.Context, user *types.UserReq) error                           //perm:read
 	Recharge(ctx context.Context, address, rechargeAddr string) (string, error)      //perm:read
 	CancelRecharge(ctx context.Context, orderID string) error                        //perm:read
+	Withdraw(ctx context.Context, address, withdrawAddr string) (string, error)      //perm:read
+	CancelWithdraw(ctx context.Context, orderID string) error                        //perm:read
 }

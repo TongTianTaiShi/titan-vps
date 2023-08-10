@@ -1,6 +1,7 @@
 package orders
 
 import (
+	"math/big"
 	"time"
 
 	"github.com/filecoin-project/go-statemachine"
@@ -41,8 +42,16 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 	log.Debugf("handle wait payment, %s , info : %v", info.OrderID, info.PaymentInfo)
 
 	if info.PaymentInfo != nil {
-		if info.To == info.PaymentInfo.To && info.Value <= info.PaymentInfo.Value {
-			return ctx.Send(PaymentSucceed{PaymentInfo: info.PaymentInfo})
+		if info.To == info.PaymentInfo.To {
+			orderAmount := new(big.Int)
+			orderAmount.SetString(info.Value, 10)
+
+			paymentAmount := new(big.Int)
+			paymentAmount.SetString(info.PaymentInfo.Value, 10)
+
+			if orderAmount.Cmp(paymentAmount) <= 0 {
+				return ctx.Send(PaymentSucceed{PaymentInfo: info.PaymentInfo})
+			}
 		}
 	}
 

@@ -144,7 +144,7 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		}
 	}
 
-	// t.Value (int64) (int64)
+	// t.Value (string) (string)
 	if len("Value") > cbg.MaxLength {
 		return xerrors.Errorf("Value in field \"Value\" was too long")
 	}
@@ -156,14 +156,15 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	if t.Value >= 0 {
-		if err := cw.WriteMajorTypeHeader(cbg.MajUnsignedInt, uint64(t.Value)); err != nil {
-			return err
-		}
-	} else {
-		if err := cw.WriteMajorTypeHeader(cbg.MajNegativeInt, uint64(-t.Value-1)); err != nil {
-			return err
-		}
+	if len(t.Value) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.Value was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.Value))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.Value)); err != nil {
+		return err
 	}
 
 	// t.VpsID (int64) (int64)
@@ -442,31 +443,16 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 
 				t.State = OrderState(extraI)
 			}
-			// t.Value (int64) (int64)
+			// t.Value (string) (string)
 		case "Value":
+
 			{
-				maj, extra, err := cr.ReadHeader()
-				var extraI int64
+				sval, err := cbg.ReadString(cr)
 				if err != nil {
 					return err
 				}
-				switch maj {
-				case cbg.MajUnsignedInt:
-					extraI = int64(extra)
-					if extraI < 0 {
-						return fmt.Errorf("int64 positive overflow")
-					}
-				case cbg.MajNegativeInt:
-					extraI = int64(extra)
-					if extraI < 0 {
-						return fmt.Errorf("int64 negative overflow")
-					}
-					extraI = -1 - extraI
-				default:
-					return fmt.Errorf("wrong type for int64 field: %d", maj)
-				}
 
-				t.Value = int64(extraI)
+				t.Value = string(sval)
 			}
 			// t.VpsID (int64) (int64)
 		case "VpsID":
@@ -701,7 +687,7 @@ func (t *PaymentInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	// t.Value (int64) (int64)
+	// t.Value (string) (string)
 	if len("Value") > cbg.MaxLength {
 		return xerrors.Errorf("Value in field \"Value\" was too long")
 	}
@@ -713,14 +699,15 @@ func (t *PaymentInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	if t.Value >= 0 {
-		if err := cw.WriteMajorTypeHeader(cbg.MajUnsignedInt, uint64(t.Value)); err != nil {
-			return err
-		}
-	} else {
-		if err := cw.WriteMajorTypeHeader(cbg.MajNegativeInt, uint64(-t.Value-1)); err != nil {
-			return err
-		}
+	if len(t.Value) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.Value was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.Value))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.Value)); err != nil {
+		return err
 	}
 
 	// t.TxHash (string) (string)
@@ -808,31 +795,16 @@ func (t *PaymentInfo) UnmarshalCBOR(r io.Reader) (err error) {
 
 				t.From = string(sval)
 			}
-			// t.Value (int64) (int64)
+			// t.Value (string) (string)
 		case "Value":
+
 			{
-				maj, extra, err := cr.ReadHeader()
-				var extraI int64
+				sval, err := cbg.ReadString(cr)
 				if err != nil {
 					return err
 				}
-				switch maj {
-				case cbg.MajUnsignedInt:
-					extraI = int64(extra)
-					if extraI < 0 {
-						return fmt.Errorf("int64 positive overflow")
-					}
-				case cbg.MajNegativeInt:
-					extraI = int64(extra)
-					if extraI < 0 {
-						return fmt.Errorf("int64 negative overflow")
-					}
-					extraI = -1 - extraI
-				default:
-					return fmt.Errorf("wrong type for int64 field: %d", maj)
-				}
 
-				t.Value = int64(extraI)
+				t.Value = string(sval)
 			}
 			// t.TxHash (string) (string)
 		case "TxHash":

@@ -1,6 +1,9 @@
 package exchange
 
-import "github.com/LMF709268224/titan-vps/lib/trxbridge"
+import (
+	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
+	"github.com/LMF709268224/titan-vps/lib/trxbridge"
+)
 
 // GetGrpcClient
 func getGrpcClient(addr string) (*trxbridge.GrpcClient, error) {
@@ -13,7 +16,7 @@ func getGrpcClient(addr string) (*trxbridge.GrpcClient, error) {
 	return node, nil
 }
 
-func getHeight(addr string) int64 {
+func getTronHeight(addr string) int64 {
 	client, err := getGrpcClient(addr)
 	if err != nil {
 		log.Errorln("getGrpcClient err :", err.Error())
@@ -27,4 +30,15 @@ func getHeight(addr string) int64 {
 	}
 
 	return block.GetBlockHeader().RawData.Number
+}
+
+func getFilecoinHeight(addr string) int64 {
+	var msg filecoinbridge.TipSet
+	err := filecoinbridge.ChainHead(&msg,addr)
+	if err != nil {
+		log.Errorf("ChainHead err:%s", err.Error())
+		return 0
+	}
+
+	return msg.Height
 }

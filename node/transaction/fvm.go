@@ -41,14 +41,14 @@ func (m *Manager) watchFvmTransactions() error {
 				}
 			}
 		case tr := <-sink:
-			log.Infof("from:%s,to:%s,value:%d, RawTxHash:%s,RawBlockNumber:%d, Removed:%v \n", tr.From.String(), tr.To.String(), tr.Value, tr.Raw.TxHash.String(), tr.Raw.BlockNumber, tr.Raw.Removed)
+			log.Debugf("from:%s,to:%s,value:%d, RawTxHash:%s,RawBlockNumber:%d, Removed:%v \n", tr.From.String(), tr.To.Hex(), tr.Value, tr.Raw.TxHash.String(), tr.Raw.BlockNumber, tr.Raw.Removed)
 			if !tr.Raw.Removed {
 				if _, exist := m.usedFvmAddrs[tr.To.Hex()]; exist {
 					m.notify.Pub(&types.FvmTransferWatch{
 						TxHash: tr.Raw.TxHash.Hex(),
 						From:   tr.From.Hex(),
 						To:     tr.To.Hex(),
-						Value:  tr.Value.Int64(),
+						Value:  tr.Value.String(),
 					}, types.EventFvmTransferWatch.String())
 				}
 			}

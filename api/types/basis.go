@@ -91,7 +91,7 @@ type OrderRecord struct {
 	From          string     `db:"from_addr"`
 	User          string     `db:"user_addr"`
 	To            string     `db:"to_addr"`
-	Value         int64      `db:"value"`
+	Value         string     `db:"value"`
 	State         OrderState `db:"state"`
 	DoneState     int64      `db:"done_state"`
 	CreatedHeight int64      `db:"created_height"`
@@ -103,38 +103,57 @@ type OrderRecord struct {
 	TxHash        string     `db:"tx_hash"`
 }
 
-// RechargeState
-type RechargeState int64
+// ExchangeState Recharge and Withdraw order state
+type ExchangeState int64
 
 // Constants defining various states of the recharge process.
 const (
-	// RechargeCreated recharge order
-	RechargeCreated RechargeState = iota
-	// RechargeDone the order done
-	RechargeDone
-	// RechargeTimeout order
-	RechargeTimeout
-	// RechargeCancel order
-	RechargeCancel
+	// ExchangeCreated recharge order
+	ExchangeCreated ExchangeState = iota
+	// ExchangeDone the order done
+	ExchangeDone
+	// ExchangeTimeout order
+	ExchangeTimeout
+	// ExchangeCancel order
+	ExchangeCancel
+	// ExchangeFail order
+	ExchangeFail
 )
 
 // RechargeRecord represents information about an recharge record
 type RechargeRecord struct {
-	OrderID       string                                `db:"order_id"`
-	From          string                                `db:"from_addr"`
-	User          string                                `db:"user_addr"`
-	To            string                                `db:"to_addr"`
-	Value         string                                `db:"value"`
-	State         RechargeState                         `db:"state"`
-	DoneState     core.Transaction_ResultContractResult `db:"done_state"`
-	CreatedHeight int64                                 `db:"created_height"`
-	CreatedTime   time.Time                             `db:"created_time"`
-	DoneTime      time.Time                             `db:"done_time"`
-	Msg           string                                `db:"msg"`
-	DoneHeight    int64                                 `db:"done_height"`
-	TxHash        string                                `db:"tx_hash"`
-	RechargeAddr  string                                `db:"recharge_addr"`
-	RechargeHash  string                                `db:"recharge_hash"`
+	OrderID       string        `db:"order_id"`
+	From          string        `db:"from_addr"`
+	User          string        `db:"user_addr"`
+	To            string        `db:"to_addr"`
+	Value         string        `db:"value"`
+	State         ExchangeState `db:"state"`
+	CreatedHeight int64         `db:"created_height"`
+	CreatedTime   time.Time     `db:"created_time"`
+	DoneTime      time.Time     `db:"done_time"`
+	Msg           string        `db:"msg"`
+	DoneHeight    int64         `db:"done_height"`
+	TxHash        string        `db:"tx_hash"`
+	RechargeAddr  string        `db:"recharge_addr"`
+	RechargeHash  string        `db:"recharge_hash"`
+}
+
+// WithdrawRecord represents information about an withdraw record
+type WithdrawRecord struct {
+	OrderID       string        `db:"order_id"`
+	From          string        `db:"from_addr"`
+	User          string        `db:"user_addr"`
+	To            string        `db:"to_addr"`
+	Value         string        `db:"value"`
+	State         ExchangeState `db:"state"`
+	CreatedHeight int64         `db:"created_height"`
+	CreatedTime   time.Time     `db:"created_time"`
+	DoneTime      time.Time     `db:"done_time"`
+	Msg           string        `db:"msg"`
+	DoneHeight    int64         `db:"done_height"`
+	TxHash        string        `db:"tx_hash"`
+	WithdrawAddr  string        `db:"withdraw_addr"`
+	WithdrawHash  string        `db:"withdraw_hash"`
 }
 
 type CreateOrderReq struct {
@@ -187,7 +206,7 @@ type FvmTransferWatch struct {
 	TxHash string
 	From   string
 	To     string
-	Value  int64
+	Value  string
 }
 
 type TronTransferWatch struct {

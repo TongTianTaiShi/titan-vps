@@ -18,7 +18,7 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (stri
 	info := &types.OrderRecord{
 		VpsID: id,
 		User:  req.User,
-		Value: 10,
+		Value: "10000000000",
 	}
 
 	err = m.OrderMgr.CreatedOrder(info)
@@ -73,7 +73,7 @@ func (m *Basis) PaymentCompleted(ctx context.Context, req types.PaymentCompleted
 			TxHash: tx,
 			From:   msg.From.String(),
 			To:     msg.To.String(),
-			Value:  msg.Value.Int64(),
+			Value:  msg.Value.String(),
 		}, types.EventFvmTransferWatch.String())
 	}
 

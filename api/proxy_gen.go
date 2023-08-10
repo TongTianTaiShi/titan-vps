@@ -107,6 +107,8 @@ type UserAPIStruct struct {
 	Internal struct {
 		CancelRecharge func(p0 context.Context, p1 string) error `perm:"read"`
 
+		CancelWithdraw func(p0 context.Context, p1 string) error `perm:"read"`
+
 		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"read"`
 
 		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"read"`
@@ -118,6 +120,8 @@ type UserAPIStruct struct {
 		Recharge func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
 
 		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"read"`
+
+		Withdraw func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
 	}
 }
 
@@ -388,6 +392,17 @@ func (s *UserAPIStub) CancelRecharge(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 
+func (s *UserAPIStruct) CancelWithdraw(p0 context.Context, p1 string) error {
+	if s.Internal.CancelWithdraw == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.CancelWithdraw(p0, p1)
+}
+
+func (s *UserAPIStub) CancelWithdraw(p0 context.Context, p1 string) error {
+	return ErrNotSupported
+}
+
 func (s *UserAPIStruct) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
 	if s.Internal.GetBalance == nil {
 		return nil, ErrNotSupported
@@ -451,6 +466,17 @@ func (s *UserAPIStruct) SignCode(p0 context.Context, p1 string) (string, error) 
 }
 
 func (s *UserAPIStub) SignCode(p0 context.Context, p1 string) (string, error) {
+	return "", ErrNotSupported
+}
+
+func (s *UserAPIStruct) Withdraw(p0 context.Context, p1 string, p2 string) (string, error) {
+	if s.Internal.Withdraw == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.Withdraw(p0, p1, p2)
+}
+
+func (s *UserAPIStub) Withdraw(p0 context.Context, p1 string, p2 string) (string, error) {
 	return "", ErrNotSupported
 }
 

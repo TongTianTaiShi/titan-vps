@@ -57,6 +57,7 @@ func ConfigBasis(c interface{}) Option {
 		Override(new(*db.SQLDB), modules.NewDB),
 		Override(new(*transaction.Manager), transaction.NewManager),
 		Override(new(*exchange.RechargeManager), exchange.NewRechargeManager),
+		Override(new(*exchange.WithdrawManager), exchange.NewWithdrawManager),
 		Override(new(*orders.Manager), modules.NewStorageManager),
 		Override(new(*user.Manager), user.NewManager),
 		Override(InitDataTables, db.InitTables),

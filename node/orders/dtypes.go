@@ -20,7 +20,7 @@ type PaymentInfo struct {
 	TxHash string
 	From   string
 	To     string
-	Value  int64
+	Value  string
 }
 
 // OrderInfo represents order information
@@ -30,7 +30,7 @@ type OrderInfo struct {
 	From          string
 	To            string
 	User          string
-	Value         int64
+	Value         string
 	DoneState     OrderDoneState
 	CreatedHeight int64
 	DoneHeight    int64

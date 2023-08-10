@@ -37,8 +37,9 @@ type Basis struct {
 	fx.In
 	*common.CommonAPI
 	TransactionMgr *transaction.Manager
-	ExchangeMgr    *exchange.RechargeManager
-	Notify         *pubsub.PubSub
+	*exchange.RechargeManager
+	*exchange.WithdrawManager
+	Notify *pubsub.PubSub
 	*db.SQLDB
 	OrderMgr *orders.Manager
 	dtypes.GetBasisConfigFunc
