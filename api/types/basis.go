@@ -168,7 +168,6 @@ type PaymentCompletedReq struct {
 type UserReq struct {
 	UserId    string
 	Signature string
-	Address   string
 	PublicKey string
 	Token     string
 }

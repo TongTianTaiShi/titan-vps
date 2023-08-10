@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api"
@@ -248,8 +249,12 @@ func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
 }
 
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
-	m.UserMgr.User[userId].UserLogin.SignCode = "abc123"
-	return "abc123", nil
+	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
+	verifyCode := "Vps(" + fmt.Sprintf("%06d", randNew.Intn(1000000)) + ")"
+	m.UserMgr.User[userId].UserLogin.SignCode = verifyCode
+	m.UserMgr.User[userId].UserLogin.UserId = userId
+	fmt.Println(m.UserMgr)
+	return verifyCode, nil
 }
 
 func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
@@ -257,16 +262,15 @@ func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResp
 	log.Infof("user info %v \n", user)
 	log.Infof("user UserId %s \n", user.UserId)
 	userId := user.UserId
-	// code := m.UserMgr.User[userId].UserLogin.SignCode
-	// signature := user.Signature
-	// address := user.Address
-	// m.UserMgr.User[userId].UserLogin.SignCode = ""
-	// publicKey, err := VerifyMessage("code", signature)
-	// address = strings.ToUpper(address)
-	// publicKey = strings.ToUpper(publicKey)
-	// if publicKey != address {
-	// 	return nil, err
-	// }
+	code := m.UserMgr.User[userId].UserLogin.SignCode
+	signature := user.Signature
+	m.UserMgr.User[userId].UserLogin.SignCode = ""
+	publicKey, err := VerifyMessage(code, signature)
+	userId = strings.ToUpper(userId)
+	publicKey = strings.ToUpper(publicKey)
+	if publicKey != userId {
+		return nil, err
+	}
 	p := types.JWTPayload{
 		ID:    userId,
 		Allow: []auth.Permission{api.RoleUser},

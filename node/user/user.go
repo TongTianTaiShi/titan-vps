@@ -9,7 +9,9 @@ type Manager struct {
 
 // NewManager creates a new instance of the node manager
 func NewManager() (*Manager, error) {
-	manager := &Manager{}
-
+	mgr := make(map[string]*types.UserInfoTmp)
+	manager := &Manager{
+		User: mgr,
+	}
 	return manager, nil
 }

@@ -412,12 +412,10 @@ var loginCmd = &cli.Command{
 		defer closer()
 
 		userId := cctx.String("user_id")
-		publicKey := cctx.String("public_key")
 		signature := cctx.String("signature")
 
 		str, err := api.Login(ctx, &types.UserReq{
 			UserId:    userId,
-			PublicKey: publicKey,
 			Signature: signature,
 		})
 		if err != nil {
