@@ -4,8 +4,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/LMF709268224/titan-vps/node/web"
-
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/build"
@@ -211,11 +209,11 @@ var runCmd = &cli.Command{
 			node.ShutdownHandler{Component: "node", StopFunc: stop},
 		)
 		// gin router
-		srv, err := web.NewServer(bCfg)
-		if err != nil {
-			log.Fatalf("create api server: %v\n", err)
-		}
-		go srv.Run()
+		// srv, err := web.NewServer(bCfg)
+		// if err != nil {
+		// 	log.Fatalf("create api server: %v\n", err)
+		// }
+		// go srv.Run()
 		<-finishCh // fires when shutdown is complete.
 		return nil
 	},

@@ -5,9 +5,12 @@ import (
 	"math/big"
 
 	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
+	"github.com/LMF709268224/titan-vps/node/handler"
 )
 
-func (m *Basis) GetBalance(ctx context.Context, address string) (*big.Int, error) {
+func (m *Basis) GetBalance(ctx context.Context) (*big.Int, error) {
+	userID := handler.GetID(ctx)
+
 	cfg, err := m.GetBasisConfigFunc()
 	if err != nil {
 		log.Errorf("get config err:%s", err.Error())
@@ -16,7 +19,7 @@ func (m *Basis) GetBalance(ctx context.Context, address string) (*big.Int, error
 
 	client := filecoinbridge.NewGrpcClient(cfg.LotusHTTPSAddr, cfg.TitanContractorAddr)
 
-	return client.GetBalance(address)
+	return client.GetBalance(userID)
 }
 
 func (m *Basis) Recharge(ctx context.Context, address, rechargeAddr string) (string, error) {

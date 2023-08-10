@@ -172,13 +172,7 @@ var paymentCompletedCmd = &cli.Command{
 var getBalanceCmd = &cli.Command{
 	Name:  "gb",
 	Usage: "get balance",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "address",
-			Usage: "node type: edge 1, update 6",
-			Value: "",
-		},
-	},
+	Flags: []cli.Flag{},
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
@@ -189,9 +183,7 @@ var getBalanceCmd = &cli.Command{
 
 		defer closer()
 
-		address := cctx.String("address")
-
-		str, err := api.GetBalance(ctx, address)
+		str, err := api.GetBalance(ctx)
 		if err != nil {
 			return err
 		}

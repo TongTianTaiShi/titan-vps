@@ -36,7 +36,7 @@ type BasisStruct struct {
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
 
-		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"default"`
+		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"admin"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"default"`
 	}
@@ -79,11 +79,11 @@ type CommonStub struct {
 
 type OrderAPIStruct struct {
 	Internal struct {
-		CancelOrder func(p0 context.Context, p1 string) error `perm:"default"`
+		CancelOrder func(p0 context.Context, p1 string) error `perm:"user"`
 
-		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"default"`
+		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"user"`
 
-		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"default"`
+		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"user"`
 	}
 }
 
@@ -104,23 +104,23 @@ type TransactionStub struct {
 
 type UserAPIStruct struct {
 	Internal struct {
-		CancelRecharge func(p0 context.Context, p1 string) error `perm:"default"`
+		CancelRecharge func(p0 context.Context, p1 string) error `perm:"user"`
 
-		CancelWithdraw func(p0 context.Context, p1 string) error `perm:"default"`
+		CancelWithdraw func(p0 context.Context, p1 string) error `perm:"user"`
 
-		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"default"`
+		GetBalance func(p0 context.Context) (*big.Int, error) `perm:"user"`
 
 		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"default"`
 
-		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"default"`
+		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"user"`
 
-		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"default"`
+		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"user"`
 
-		Recharge func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"default"`
+		Recharge func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"user"`
 
 		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
-		Withdraw func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"default"`
+		Withdraw func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"user"`
 	}
 }
 
@@ -402,14 +402,14 @@ func (s *UserAPIStub) CancelWithdraw(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 
-func (s *UserAPIStruct) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
+func (s *UserAPIStruct) GetBalance(p0 context.Context) (*big.Int, error) {
 	if s.Internal.GetBalance == nil {
 		return nil, ErrNotSupported
 	}
-	return s.Internal.GetBalance(p0, p1)
+	return s.Internal.GetBalance(p0)
 }
 
-func (s *UserAPIStub) GetBalance(p0 context.Context, p1 string) (*big.Int, error) {
+func (s *UserAPIStub) GetBalance(p0 context.Context) (*big.Int, error) {
 	return nil, ErrNotSupported
 }
 
