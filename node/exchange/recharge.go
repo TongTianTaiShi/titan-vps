@@ -22,8 +22,7 @@ var log = logging.Logger("exchange")
 
 const (
 	checkOrderInterval = 10 * time.Second
-	checkLimit         = 100
-	orderTimeoutTime   = 5 * time.Minute
+	orderTimeoutTime   = 10 * time.Minute
 )
 
 // RechargeManager manager recharge order

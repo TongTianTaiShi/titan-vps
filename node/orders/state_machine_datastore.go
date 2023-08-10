@@ -65,7 +65,7 @@ func (d *Datastore) Query(ctx context.Context, q query.Query) (query.Results, er
 	var rows *sqlx.Rows
 	var err error
 
-	rows, err = d.orderDB.LoadAllOrderRecords(checkLimit, 0, PullingStates)
+	rows, err = d.orderDB.LoadAllOrderRecords(PullingStates)
 	if err != nil {
 		log.Errorf("LoadAllOrderRecords :%s", err.Error())
 		return nil, err

@@ -71,9 +71,9 @@ func (n *SQLDB) LoadOrderCount() (int, error) {
 }
 
 // LoadAllOrderRecords loads all order records
-func (n *SQLDB) LoadAllOrderRecords(limit, offset int, statuses []int64) (*sqlx.Rows, error) {
-	sQuery := fmt.Sprintf(`SELECT * FROM %s WHERE state in (?) order by order_id asc limit ? offset ?`, orderRecordTable)
-	query, args, err := sqlx.In(sQuery, statuses, limit, offset)
+func (n *SQLDB) LoadAllOrderRecords(statuses []int64) (*sqlx.Rows, error) {
+	sQuery := fmt.Sprintf(`SELECT * FROM %s WHERE state in (?) `, orderRecordTable)
+	query, args, err := sqlx.In(sQuery, statuses)
 	if err != nil {
 		return nil, err
 	}

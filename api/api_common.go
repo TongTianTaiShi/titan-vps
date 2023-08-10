@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/filecoin-project/go-jsonrpc/auth"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 
@@ -28,9 +26,9 @@ type Common interface {
 	// MethodGroup: Auth
 
 	// AuthVerify checks whether the specified token is valid and returns the list of permissions associated with it.
-	AuthVerify(ctx context.Context, token string) ([]auth.Permission, error) //perm:read
+	AuthVerify(ctx context.Context, token string) (*types.JWTPayload, error) //perm:default
 	// AuthNew creates a new token with the specified list of permissions.
-	AuthNew(ctx context.Context, perms []auth.Permission) ([]byte, error) //perm:admin
+	AuthNew(ctx context.Context, payload *types.JWTPayload) (string, error) //perm:admin
 
 	// MethodGroup: Log
 
@@ -44,7 +42,7 @@ type Common interface {
 	// MethodGroup: Common
 
 	// Version provides information about API provider
-	Version(context.Context) (APIVersion, error) //perm:read
+	Version(context.Context) (APIVersion, error) //perm:default
 	// Discover returns an OpenRPC document describing an RPC API.
 	Discover(ctx context.Context) (types.OpenRPCDocument, error) //perm:admin
 	// Shutdown trigger graceful shutdown

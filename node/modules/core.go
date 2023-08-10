@@ -6,7 +6,6 @@ import (
 	"io"
 
 	"github.com/LMF709268224/titan-vps/api"
-	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/repo"
 	"github.com/LMF709268224/titan-vps/node/types"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -27,7 +26,7 @@ func KeyStore(lr repo.LockedRepo) (types.KeyStore, error) {
 	return lr.KeyStore()
 }
 
-func APISecret(keystore types.KeyStore, lr repo.LockedRepo) (*dtypes.APIAlg, error) {
+func APISecret(keystore types.KeyStore, lr repo.LockedRepo) (*jwt.HMACSHA, error) {
 	key, err := keystore.Get(JWTSecretName)
 
 	if errors.Is(err, types.ErrKeyInfoNotFound) {
@@ -64,5 +63,5 @@ func APISecret(keystore types.KeyStore, lr repo.LockedRepo) (*dtypes.APIAlg, err
 		return nil, xerrors.Errorf("could not get JWT Token: %w", err)
 	}
 
-	return (*dtypes.APIAlg)(jwt.NewHS256(key.PrivateKey)), nil
+	return jwt.NewHS256(key.PrivateKey), nil
 }

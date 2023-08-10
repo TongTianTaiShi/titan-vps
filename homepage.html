@@ -238,7 +238,7 @@
 
                     return true
                 },
-                fetchData (funcName, params) {
+                fetchData (funcName, params, lotusToken) {
                     var data = {
                         "jsonrpc": "2.0",
                         "method": "titan." + funcName,
@@ -246,25 +246,60 @@
                         "id": 1
                     };
 
+                    he = { "Authorization": ["Bearer " + lotusToken] }
+                    if (lotusToken == "") {
+                        he = { "Content-Type": "application/json" }
+                    }
+
                     return fetch("/rpc/v0", {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: he,
                         body: JSON.stringify(data)
                     })
                 },
                 getRegions () {
-                    this.fetchData("DescribeRegions", [])
+                    var data = {
+                        "UserId": "abc",
+                        "Signature": "titan.ssss",
+                        "Address": "Adddr",
+                    };
+
+                    this.fetchData("Login", [data], "")
                         .then(res => res.json())
                         .then(res => {
-                            console.log(' Response:', res);
+                            console.log(' Token:', res.result.Token);
+                            token = res.result.Token
 
-                            if (!this.checkRes(res)) {
-                                return
-                            }
-                            this.list = res.result || [];
-                            this.regionValue = this.list[0];
+                            var data = {
+                                "UserId": "abc222",
+                                "Signature": "titan.ssss",
+                                "Address": "Adddr",
+                            };
+
+                            this.fetchData("Logout", [data], token)
+                                .then(res => res.json())
+                                .then(res => {
+                                    console.log(' Response:', res);
+                                })
+                                .catch(error => console.error(' Error:', error));
                         })
                         .catch(error => console.error(' Error:', error));
+
+
+
+
+                    // this.fetchData("DescribeRegions", [])
+                    //     .then(res => res.json())
+                    //     .then(res => {
+                    //         console.log(' Response:', res);
+
+                    //         if (!this.checkRes(res)) {
+                    //             return
+                    //         }
+                    //         this.list = res.result || [];
+                    //         this.regionValue = this.list[0];
+                    //     })
+                    //     .catch(error => console.error(' Error:', error));
                 },
                 getDescribeImages () {
                     if (!this.instanceValue) {

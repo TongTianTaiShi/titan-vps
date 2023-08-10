@@ -25,19 +25,6 @@ func (evt OrderRestart) applyGlobal(state *OrderInfo) bool {
 	return false
 }
 
-// InfoUpdate update order info
-type InfoUpdate struct {
-	Size   int64
-	Blocks int64
-}
-
-func (evt InfoUpdate) applyGlobal(state *OrderInfo) bool {
-	return true
-}
-
-func (evt InfoUpdate) Ignore() {
-}
-
 // PaymentResult User payment result
 type PaymentResult struct {
 	*PaymentInfo
@@ -47,9 +34,11 @@ func (evt PaymentResult) apply(state *OrderInfo) {
 	state.PaymentInfo = evt.PaymentInfo
 }
 
+// Ignore Ignorable
 func (evt PaymentResult) Ignore() {
 }
 
+// CreateOrder create a goods order
 type CreateOrder struct {
 	*OrderInfo
 }

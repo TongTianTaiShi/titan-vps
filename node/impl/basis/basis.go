@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/exchange"
+	"github.com/LMF709268224/titan-vps/node/handler"
 	"github.com/LMF709268224/titan-vps/node/user"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -43,7 +43,6 @@ type Basis struct {
 	*db.SQLDB
 	OrderMgr *orders.Manager
 	dtypes.GetBasisConfigFunc
-	Key     *dtypes.APIAlg
 	UserMgr *user.Manager
 }
 
@@ -254,23 +253,26 @@ func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
 }
 
 func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
+	log.Infoln("---------------------------------------------")
+	log.Infof("user info %v \n", user)
+	log.Infof("user UserId %s \n", user.UserId)
 	userId := user.UserId
-	code := m.UserMgr.User[userId].UserLogin.SignCode
-	signature := user.Signature
-	address := user.Address
-	m.UserMgr.User[userId].UserLogin.SignCode = ""
-	publicKey, err := VerifyMessage(code, signature)
-	address = strings.ToUpper(address)
-	publicKey = strings.ToUpper(publicKey)
-	if publicKey != address {
-		return nil, err
+	// code := m.UserMgr.User[userId].UserLogin.SignCode
+	// signature := user.Signature
+	// address := user.Address
+	// m.UserMgr.User[userId].UserLogin.SignCode = ""
+	// publicKey, err := VerifyMessage("code", signature)
+	// address = strings.ToUpper(address)
+	// publicKey = strings.ToUpper(publicKey)
+	// if publicKey != address {
+	// 	return nil, err
+	// }
+	p := types.JWTPayload{
+		ID:    userId,
+		Allow: []auth.Permission{api.RoleUser},
 	}
-	payload := &types.Token{
-		UserId:     userId,
-		Expiration: time.Now().Add(time.Hour),
-	}
-	var rsp *types.UserResponse
-	tk, err := jwt.Sign(&payload, (*jwt.HMACSHA)(m.Key))
+	rsp := &types.UserResponse{}
+	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
 		return rsp, err
 	}
@@ -280,7 +282,9 @@ func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResp
 }
 
 func (m *Basis) Logout(ctx context.Context, user *types.UserReq) error {
-	delete(m.UserMgr.User, user.UserId)
+	nodeID := handler.GetID(ctx)
+	log.Warnf("user id : %s", nodeID)
+	// delete(m.UserMgr.User, user.UserId)
 	return nil
 }
 

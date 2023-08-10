@@ -11,11 +11,13 @@ func (c OrderHash) String() string {
 	return string(c)
 }
 
+// GoodsInfo bug goods info
 type GoodsInfo struct {
 	ID       string
 	Password string
 }
 
+// PaymentInfo user payment info
 type PaymentInfo struct {
 	TxHash string
 	From   string

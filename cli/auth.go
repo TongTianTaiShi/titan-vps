@@ -3,7 +3,8 @@ package cli
 import (
 	"fmt"
 
-	"github.com/LMF709268224/titan-vps/api"
+	"github.com/LMF709268224/titan-vps/api/types"
+	"github.com/google/uuid"
 
 	"github.com/urfave/cli/v2"
 	"golang.org/x/xerrors"
@@ -46,18 +47,7 @@ var AuthCreateAdminToken = &cli.Command{
 		}
 
 		perm := cctx.String("perm")
-		idx := 0
-		for i, p := range api.AllPermissions {
-			if auth.Permission(perm) == p {
-				idx = i + 1
-			}
-		}
-
-		if idx == 0 {
-			return fmt.Errorf("--perm flag has to be one of: %s", api.AllPermissions)
-		}
-
-		token, err := napi.AuthNew(ctx, api.AllPermissions[:idx])
+		token, err := napi.AuthNew(ctx, &types.JWTPayload{Allow: []auth.Permission{auth.Permission(perm)}, ID: uuid.NewString()})
 		if err != nil {
 			return err
 		}
@@ -93,18 +83,7 @@ var AuthAPIInfoToken = &cli.Command{
 		}
 
 		perm := cctx.String("perm")
-		idx := 0
-		for i, p := range api.AllPermissions {
-			if auth.Permission(perm) == p {
-				idx = i + 1
-			}
-		}
-
-		if idx == 0 {
-			return fmt.Errorf("--perm flag has to be one of: %s", api.AllPermissions)
-		}
-
-		token, err := napi.AuthNew(ctx, api.AllPermissions[:idx])
+		token, err := napi.AuthNew(ctx, &types.JWTPayload{Allow: []auth.Permission{auth.Permission(perm)}, ID: uuid.NewString()})
 		if err != nil {
 			return err
 		}

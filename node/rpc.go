@@ -10,7 +10,7 @@ import (
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/metrics"
 	"github.com/LMF709268224/titan-vps/metrics/proxy"
-	"github.com/filecoin-project/go-jsonrpc/auth"
+	"github.com/LMF709268224/titan-vps/node/handler"
 
 	"github.com/filecoin-project/go-jsonrpc"
 	"github.com/gorilla/mux"
@@ -62,12 +62,12 @@ func TransactionHandler(a api.Transaction, permissioned bool, opts ...jsonrpc.Se
 		rpcServer := jsonrpc.NewServer(append(opts, jsonrpc.WithServerErrors(api.RPCErrors))...)
 		rpcServer.Register("titan", hnd)
 
-		var handler http.Handler = rpcServer
+		var hand http.Handler = rpcServer
 		if permissioned {
-			handler = &auth.Handler{Verify: a.AuthVerify, Next: rpcServer.ServeHTTP}
+			hand = handler.New(a.AuthVerify, m.ServeHTTP)
 		}
 
-		m.Handle(path, handler)
+		m.Handle(path, hand)
 	}
 
 	fnapi := proxy.MetricedTransactionAPI(a)
@@ -85,16 +85,16 @@ func TransactionHandler(a api.Transaction, permissioned bool, opts ...jsonrpc.Se
 func BasisHandler(a api.Basis, permissioned bool, opts ...jsonrpc.ServerOption) (http.Handler, error) {
 	m := mux.NewRouter()
 
-	serveRpc := func(path string, hnd interface{}) {
+	serveRPC := func(path string, hnd interface{}) {
 		rpcServer := jsonrpc.NewServer(append(opts, jsonrpc.WithServerErrors(api.RPCErrors))...)
 		rpcServer.Register("titan", hnd)
 
-		var handler http.Handler = rpcServer
+		var hand http.Handler = rpcServer
 		if permissioned {
-			handler = &auth.Handler{Verify: a.AuthVerify, Next: rpcServer.ServeHTTP}
+			hand = handler.New(a.AuthVerify, rpcServer.ServeHTTP)
 		}
 
-		m.Handle(path, handler)
+		m.Handle(path, hand)
 	}
 
 	wapi := proxy.MetricedBasisAPI(a)
@@ -102,7 +102,7 @@ func BasisHandler(a api.Basis, permissioned bool, opts ...jsonrpc.ServerOption) 
 		wapi = api.PermissionedBasisAPI(wapi)
 	}
 
-	serveRpc("/rpc/v0", wapi)
+	serveRPC("/rpc/v0", wapi)
 	m.HandleFunc("/rpc/index", homePage)
 	m.PathPrefix("/").Handler(http.DefaultServeMux) // pprof
 

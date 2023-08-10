@@ -8,7 +8,6 @@ import (
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/build"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
-	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/repo"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/gbrlsnchs/jwt/v3"
@@ -23,7 +22,7 @@ var session = uuid.New()
 // CommonAPI api o
 type CommonAPI struct {
 	Alerting     *alerting.Alerting
-	APISecret    *dtypes.APIAlg
+	APISecret    *jwt.HMACSHA
 	ShutdownChan chan struct{}
 }
 
@@ -34,7 +33,7 @@ type jwtPayload struct {
 }
 
 // NewCommonAPI initializes a new CommonAPI
-func NewCommonAPI(lr repo.LockedRepo, secret *dtypes.APIAlg) (CommonAPI, error) {
+func NewCommonAPI(lr repo.LockedRepo, secret *jwt.HMACSHA) (CommonAPI, error) {
 	commAPI := CommonAPI{
 		APISecret: secret,
 	}
@@ -43,22 +42,27 @@ func NewCommonAPI(lr repo.LockedRepo, secret *dtypes.APIAlg) (CommonAPI, error) 
 }
 
 // AuthVerify verifies a JWT token and returns the permissions associated with it
-func (a *CommonAPI) AuthVerify(ctx context.Context, token string) ([]auth.Permission, error) {
-	var payload jwtPayload
-	if _, err := jwt.Verify([]byte(token), (*jwt.HMACSHA)(a.APISecret), &payload); err != nil {
+func (a *CommonAPI) AuthVerify(ctx context.Context, token string) (*types.JWTPayload, error) {
+	var payload types.JWTPayload
+	if _, err := jwt.Verify([]byte(token), a.APISecret, &payload); err != nil {
 		return nil, xerrors.Errorf("JWT Verification failed: %w", err)
 	}
 
-	return payload.Allow, nil
+	// replace ID to NodeID
+	if len(payload.NodeID) > 0 {
+		payload.ID = payload.NodeID
+	}
+	return &payload, nil
 }
 
 // AuthNew generates a new JWT token with the provided permissions
-func (a *CommonAPI) AuthNew(ctx context.Context, perms []auth.Permission) ([]byte, error) {
-	p := jwtPayload{
-		Allow: perms, // TODO: consider checking validity
+func (a *CommonAPI) AuthNew(ctx context.Context, payload *types.JWTPayload) (string, error) {
+	tk, err := jwt.Sign(&payload, a.APISecret)
+	if err != nil {
+		return "", err
 	}
 
-	return jwt.Sign(&p, (*jwt.HMACSHA)(a.APISecret))
+	return string(tk), nil
 }
 
 // LogList returns a list of available logging subsystems

@@ -8,7 +8,6 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
-	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/google/uuid"
 	"golang.org/x/xerrors"
 )
@@ -23,23 +22,23 @@ type BasisStruct struct {
 	UserAPIStruct
 
 	Internal struct {
-		AttachKeyPair func(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) `perm:"read"`
+		AttachKeyPair func(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) `perm:"default"`
 
-		CreateInstance func(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) `perm:"read"`
+		CreateInstance func(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) `perm:"default"`
 
-		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"read"`
+		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"default"`
 
-		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]string, error) `perm:"read"`
+		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]string, error) `perm:"default"`
 
-		DescribeInstanceType func(p0 context.Context, p1 string, p2 int32, p3 float32) ([]string, error) `perm:"read"`
+		DescribeInstanceType func(p0 context.Context, p1 string, p2 int32, p3 float32) ([]string, error) `perm:"default"`
 
-		DescribePrice func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) `perm:"read"`
+		DescribePrice func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) `perm:"default"`
 
-		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"read"`
+		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
 
-		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"read"`
+		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
-		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
+		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"default"`
 	}
 }
 
@@ -53,9 +52,9 @@ type BasisStub struct {
 
 type CommonStruct struct {
 	Internal struct {
-		AuthNew func(p0 context.Context, p1 []auth.Permission) ([]byte, error) `perm:"admin"`
+		AuthNew func(p0 context.Context, p1 *types.JWTPayload) (string, error) `perm:"admin"`
 
-		AuthVerify func(p0 context.Context, p1 string) ([]auth.Permission, error) `perm:"read"`
+		AuthVerify func(p0 context.Context, p1 string) (*types.JWTPayload, error) `perm:"default"`
 
 		Closing func(p0 context.Context) (<-chan struct{}, error) `perm:"admin"`
 
@@ -71,7 +70,7 @@ type CommonStruct struct {
 
 		Shutdown func(p0 context.Context) error `perm:"admin"`
 
-		Version func(p0 context.Context) (APIVersion, error) `perm:"read"`
+		Version func(p0 context.Context) (APIVersion, error) `perm:"default"`
 	}
 }
 
@@ -80,11 +79,11 @@ type CommonStub struct {
 
 type OrderAPIStruct struct {
 	Internal struct {
-		CancelOrder func(p0 context.Context, p1 string) error `perm:"read"`
+		CancelOrder func(p0 context.Context, p1 string) error `perm:"default"`
 
-		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"read"`
+		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"default"`
 
-		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"read"`
+		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"default"`
 	}
 }
 
@@ -105,23 +104,23 @@ type TransactionStub struct {
 
 type UserAPIStruct struct {
 	Internal struct {
-		CancelRecharge func(p0 context.Context, p1 string) error `perm:"read"`
+		CancelRecharge func(p0 context.Context, p1 string) error `perm:"default"`
 
-		CancelWithdraw func(p0 context.Context, p1 string) error `perm:"read"`
+		CancelWithdraw func(p0 context.Context, p1 string) error `perm:"default"`
 
-		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"read"`
+		GetBalance func(p0 context.Context, p1 string) (*big.Int, error) `perm:"default"`
 
-		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"read"`
+		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"default"`
 
-		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"read"`
+		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"default"`
 
-		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
+		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"default"`
 
-		Recharge func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
+		Recharge func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"default"`
 
-		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"read"`
+		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
-		Withdraw func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"read"`
+		Withdraw func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"default"`
 	}
 }
 
@@ -227,26 +226,26 @@ func (s *BasisStub) RebootInstance(p0 context.Context, p1 string, p2 string) (st
 	return "", ErrNotSupported
 }
 
-func (s *CommonStruct) AuthNew(p0 context.Context, p1 []auth.Permission) ([]byte, error) {
+func (s *CommonStruct) AuthNew(p0 context.Context, p1 *types.JWTPayload) (string, error) {
 	if s.Internal.AuthNew == nil {
-		return *new([]byte), ErrNotSupported
+		return "", ErrNotSupported
 	}
 	return s.Internal.AuthNew(p0, p1)
 }
 
-func (s *CommonStub) AuthNew(p0 context.Context, p1 []auth.Permission) ([]byte, error) {
-	return *new([]byte), ErrNotSupported
+func (s *CommonStub) AuthNew(p0 context.Context, p1 *types.JWTPayload) (string, error) {
+	return "", ErrNotSupported
 }
 
-func (s *CommonStruct) AuthVerify(p0 context.Context, p1 string) ([]auth.Permission, error) {
+func (s *CommonStruct) AuthVerify(p0 context.Context, p1 string) (*types.JWTPayload, error) {
 	if s.Internal.AuthVerify == nil {
-		return *new([]auth.Permission), ErrNotSupported
+		return nil, ErrNotSupported
 	}
 	return s.Internal.AuthVerify(p0, p1)
 }
 
-func (s *CommonStub) AuthVerify(p0 context.Context, p1 string) ([]auth.Permission, error) {
-	return *new([]auth.Permission), ErrNotSupported
+func (s *CommonStub) AuthVerify(p0 context.Context, p1 string) (*types.JWTPayload, error) {
+	return nil, ErrNotSupported
 }
 
 func (s *CommonStruct) Closing(p0 context.Context) (<-chan struct{}, error) {

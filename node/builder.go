@@ -9,10 +9,10 @@ import (
 	"github.com/LMF709268224/titan-vps/node/common"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/modules"
-	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/modules/helpers"
 	"github.com/LMF709268224/titan-vps/node/repo"
 	"github.com/LMF709268224/titan-vps/node/types"
+	"github.com/gbrlsnchs/jwt/v3"
 	logging "github.com/ipfs/go-log/v2"
 	metricsi "github.com/ipfs/go-metrics-interface"
 	"go.uber.org/fx"
@@ -98,7 +98,7 @@ func Repo(r repo.Repo) Option {
 			Override(new(repo.LockedRepo), modules.LockedRepo(lr)), // module handles closing
 			Override(new(*common.CommonAPI), common.NewCommonAPI),
 			Override(new(types.KeyStore), modules.KeyStore),
-			Override(new(*dtypes.APIAlg), modules.APISecret),
+			Override(new(*jwt.HMACSHA), modules.APISecret),
 			Override(new(helpers.MetricsCtx), func() context.Context {
 				return metricsi.CtxScope(context.Background(), "titan")
 			}),
