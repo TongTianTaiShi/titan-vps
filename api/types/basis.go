@@ -48,6 +48,16 @@ type DescribePriceResponse struct {
 	TradePrice    float32
 }
 
+type DescribeImageResponse struct {
+	ImageId      string
+	ImageName    string
+	ImageFamily  string
+	Platform     string
+	OSType       string
+	OSName       string
+	Architecture string
+}
+
 // todo
 type CreateInstanceReq struct {
 	Id                      string `db:"id"`

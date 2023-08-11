@@ -14,6 +14,7 @@ var BasisCMDs = []*cli.Command{
 	describeRegionsCmd,
 	describeInstanceTypeCmd,
 	mintCmd,
+	describeImageCmd,
 }
 
 var orderCmds = &cli.Command{
@@ -58,6 +59,33 @@ var describeRegionsCmd = &cli.Command{
 		defer closer()
 
 		list, err := api.DescribeRegions(ctx)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(list)
+		return nil
+	},
+}
+
+var describeImageCmd = &cli.Command{
+	Name:  "dim",
+	Usage: "describe regions",
+
+	Before: func(cctx *cli.Context) error {
+		return nil
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		list, err := api.DescribeImages(ctx, "cn-hangzhou", "")
 		if err != nil {
 			return err
 		}

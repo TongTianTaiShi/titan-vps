@@ -598,10 +598,10 @@ func DescribeImages(regionID, keyID, keySecret, instanceType string) (*ecs201405
 	}
 
 	createSecurityGroupRequest := &ecs20140526.DescribeImagesRequest{
-		InstanceType: tea.String(instanceType),
+		RegionId: tea.String(regionID),
 	}
 	if instanceType != "" {
-		createSecurityGroupRequest.InstanceType = tea.String(regionID)
+		createSecurityGroupRequest.InstanceType = tea.String(instanceType)
 	}
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {

@@ -99,29 +99,30 @@ func (m *Basis) DescribeRecommendInstanceType(ctx context.Context, regionID stri
 	return rpsData, nil
 }
 
-func (m *Basis) DescribeInstanceType(ctx context.Context, regionID, CpuArchitecture, InstanceCategory string, cores int32, memory float32) ([]types.DescribeInstanceTypeResponse, error) {
+func (m *Basis) DescribeInstanceType(ctx context.Context, regionID, CpuArchitecture, InstanceCategory string, cores int32, memory float32) ([]*types.DescribeInstanceTypeResponse, error) {
 	k, s := m.getAccessKeys()
 	rsp, err := aliyun.DescribeInstanceTypes(regionID, k, s, CpuArchitecture, InstanceCategory, cores, memory)
 	if err != nil {
 		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
-	var rspDataList []types.DescribeInstanceTypeResponse
+	var rspDataList []*types.DescribeInstanceTypeResponse
 	for _, data := range rsp.Body.InstanceTypes.InstanceType {
-		var rspData types.DescribeInstanceTypeResponse
-		rspData.InstanceCategory = *data.InstanceCategory
-		rspData.InstanceTypeId = *data.InstanceTypeId
-		rspData.MemorySize = *data.MemorySize
-		rspData.CpuArchitecture = *data.CpuArchitecture
-		rspData.InstanceTypeFamily = *data.CpuArchitecture
-		rspData.CpuCoreCount = *data.CpuCoreCount
-		rspData.PhysicalProcessorModel = *data.PhysicalProcessorModel
+		rspData := &types.DescribeInstanceTypeResponse{
+			InstanceCategory:       *data.InstanceCategory,
+			InstanceTypeId:         *data.InstanceTypeId,
+			MemorySize:             *data.MemorySize,
+			CpuArchitecture:        *data.CpuArchitecture,
+			InstanceTypeFamily:     *data.InstanceTypeFamily,
+			CpuCoreCount:           *data.CpuCoreCount,
+			PhysicalProcessorModel: *data.PhysicalProcessorModel,
+		}
 		rspDataList = append(rspDataList, rspData)
 	}
 	return rspDataList, nil
 }
 
-func (m *Basis) DescribeImages(ctx context.Context, regionID, instanceType string) ([]string, error) {
+func (m *Basis) DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error) {
 	k, s := m.getAccessKeys()
 
 	rsp, err := aliyun.DescribeImages(regionID, k, s, instanceType)
@@ -129,16 +130,20 @@ func (m *Basis) DescribeImages(ctx context.Context, regionID, instanceType strin
 		log.Errorf("DescribeImages err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
-	var rpsData []string
+	var rspDataList []*types.DescribeImageResponse
 	for _, data := range rsp.Body.Images.Image {
-		instanceType := data.ImageId
-		if *instanceType == "" {
-			continue
+		rspData := &types.DescribeImageResponse{
+			ImageId:      *data.ImageId,
+			ImageFamily:  *data.ImageFamily,
+			ImageName:    *data.ImageName,
+			Architecture: *data.Architecture,
+			OSName:       *data.OSName,
+			OSType:       *data.OSType,
+			Platform:     *data.Platform,
 		}
-		rpsData = append(rpsData, *instanceType)
+		rspDataList = append(rspDataList, rspData)
 	}
-
-	return rpsData, nil
+	return rspDataList, nil
 }
 
 func (m *Basis) DescribePrice(ctx context.Context, regionID, instanceType, priceUnit, imageID string, period int32) (*types.DescribePriceResponse, error) {
@@ -270,23 +275,20 @@ func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
 }
 
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
-	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
-	verifyCode := "Vps(" + fmt.Sprintf("%06d", randNew.Intn(1000000)) + ")"
-	m.UserMgr.User[userId] = &types.UserInfoTmp{}
-	m.UserMgr.User[userId].UserLogin.SignCode = verifyCode
-	m.UserMgr.User[userId].UserLogin.UserId = userId
-	return verifyCode, nil
+	return m.UserMgr.SetSignCode(userId)
 }
 
 func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
 	userId := user.UserId
-	code := m.UserMgr.User[userId].UserLogin.SignCode
+	code, err := m.UserMgr.GetSignCode(userId)
+	if err != nil {
+		return nil, err
+	}
 	signature := user.Signature
-	m.UserMgr.User[userId].UserLogin.SignCode = ""
-	publicKey, err := VerifyMessage(code, signature)
+	address, err := VerifyMessage(code, signature)
 	userId = strings.ToUpper(userId)
-	publicKey = strings.ToUpper(publicKey)
-	if publicKey != userId {
+	address = strings.ToUpper(address)
+	if address != userId {
 		return nil, err
 	}
 	p := types.JWTPayload{
