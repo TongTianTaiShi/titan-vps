@@ -40,11 +40,11 @@ type BasisCfg struct {
 	LotusWsAddr         string
 	LotusHTTPSAddr      string
 	PrivateKeyStr       string
-	PaymentAddress      []string
+	PaymentAddresses    []string
 
 	TrxHTTPSAddr      string
 	TrxContractorAddr string
-	RechargeAddress   []string
+	RechargeAddress   string
 
 	TrxHeight int64
 }

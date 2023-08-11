@@ -43,7 +43,9 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc) (*Manager, 
 	}
 
 	manager.addrWait.Add(2)
-	manager.initFvmAddress(cfg.PaymentAddress)
+	manager.initFvmAddress(cfg.PaymentAddresses)
+
+	manager.tronAddr = cfg.RechargeAddress
 
 	go manager.watchFvmTransactions()
 	go manager.watchTronTransactions()
