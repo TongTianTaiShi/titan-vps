@@ -71,17 +71,17 @@ func (m *RechargeManager) subscribeEvents() {
 		case u := <-subTransfer:
 			tr := u.(*types.TronTransferWatch)
 
-			if orderID, exist := m.getOrderIDByToAddress(tr.To); exist {
-				m.handleTronTransfer(orderID, tr)
-			}
+			m.handleTronTransfer(tr)
 		}
 	}
 }
 
-func (m *RechargeManager) handleTronTransfer(orderID string, tr *types.TronTransferWatch) {
+func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
+	orderID := tr.OrderID
+
 	info, err := m.LoadRechargeRecord(orderID)
 	if err != nil {
-		log.Errorf("handleTronTransfer LoadOrderRecord %s , %s err:%s", tr.To, orderID, err.Error())
+		log.Errorf("handleTronTransfer LoadOrderRecord %s , %s err:%s", tr.TxHash, orderID, err.Error())
 		return
 	}
 
@@ -160,15 +160,15 @@ func (m *RechargeManager) checkOrdersTimeout() {
 	}
 }
 
-func (m *RechargeManager) getOrderIDByToAddress(to string) (string, bool) {
-	for _, orderRecord := range m.ongoingOrders {
-		if orderRecord.To == to {
-			return orderRecord.OrderID, true
-		}
-	}
+// func (m *RechargeManager) getOrderIDByToAddress(to string) (string, bool) {
+// 	for _, orderRecord := range m.ongoingOrders {
+// 		if orderRecord.To == to {
+// 			return orderRecord.OrderID, true
+// 		}
+// 	}
 
-	return "", false
-}
+// 	return "", false
+// }
 
 // CancelRechargeOrder cancel the order
 func (m *RechargeManager) CancelRechargeOrder(orderID string) error {

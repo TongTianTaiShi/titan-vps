@@ -15,7 +15,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const checkBlockInterval = 10 * time.Second
+const checkBlockInterval = 3 * time.Second
+
+var height = int64(39214904)
 
 // GetGrpcClient
 func (m *Manager) getGrpcClient() (*trxbridge.GrpcClient, error) {
@@ -41,18 +43,23 @@ func (m *Manager) watchTronTransactions() {
 	for {
 		<-ticker.C
 
-		// blockExtention, err := client.GetBlockByNum(m.height)
-		// if err == nil {
-		// 	err = m.handleBlock(blockExtention)
-		// 	if err == nil {
-		// 		m.height++
-		// 	}
-		// }
+		block, err := client.GetNowBlock()
+		if err != nil {
+			log.Errorf("GetNowBlock err:%s", err.Error())
+			continue
+		}
 
-		blocks, err := client.GetBlockByLatestNum(4)
+		nowHeight := block.BlockHeader.RawData.Number
+		if height == nowHeight {
+			continue
+		}
+
+		blocks, err := client.GetBlockByLimitNext(height, nowHeight)
 		if err == nil && len(blocks.Block) > 0 {
 			m.handleBlocks(blocks)
 		}
+
+		height = nowHeight
 	}
 }
 
@@ -71,7 +78,7 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 	}
 
 	bNum := blockExtention.BlockHeader.RawData.Number
-	// log.Infoln(" handleBlock bNum :", bNum)
+	// log.Debugln(" handleBlock height :", bNum)
 
 	bid := hexutil.Encode(blockExtention.Blockid)
 
@@ -83,15 +90,17 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 		state := te.Transaction.GetRet()[0].ContractRet
 		txid := hexutil.Encode(te.Txid)
 
+		orderID := string(te.Transaction.RawData.Data)
+
 		for _, contract := range te.Transaction.RawData.Contract {
-			m.filterTransaction(contract, txid, bid, bNum, state)
+			m.filterTransaction(contract, txid, bid, bNum, state, orderID)
 		}
 	}
 
 	return nil
 }
 
-func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, bid string, bNum int64, state core.Transaction_ResultContractResult) {
+func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, bid string, bNum int64, state core.Transaction_ResultContractResult, orderID string) {
 	if contract.Type == core.Transaction_Contract_TriggerSmartContract {
 		// trc20
 		unObj := &core.TriggerSmartContract{}
@@ -115,7 +124,7 @@ func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, b
 			return
 		}
 
-		m.handleTransfer(txid, from, to, bid, bNum, amount, contractAddress, state)
+		m.handleTransfer(txid, from, to, bid, bNum, amount, contractAddress, state, orderID)
 	}
 }
 
@@ -136,17 +145,18 @@ func (m *Manager) decodeData(trc20 []byte) (to string, amount string, flag bool)
 	return
 }
 
-func (m *Manager) handleTransfer(mCid, from, to, blockCid string, height int64, amount string, contract string, state core.Transaction_ResultContractResult) {
+func (m *Manager) handleTransfer(mCid, from, to, blockCid string, height int64, amount string, contract string, state core.Transaction_ResultContractResult, orderID string) {
 	log.Infof("Transfer :%s,%s,%s,%s,%s,%s", mCid, to, from, contract, amount, state)
 
 	if _, exist := m.usedTronAddrs[to]; exist {
 		m.notify.Pub(&types.TronTransferWatch{
-			TxHash: mCid,
-			From:   from,
-			To:     to,
-			Value:  amount,
-			State:  state,
-			Height: height,
+			TxHash:  mCid,
+			From:    from,
+			To:      to,
+			Value:   amount,
+			State:   state,
+			Height:  height,
+			OrderID: orderID,
 		}, types.EventTronTransferWatch.String())
 	}
 }

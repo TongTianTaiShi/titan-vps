@@ -45,6 +45,8 @@ type BasisCfg struct {
 	TrxHTTPSAddr      string
 	TrxContractorAddr string
 	RechargeAddress   []string
+
+	TrxHeight int64
 }
 
 type RouteCfg struct {
