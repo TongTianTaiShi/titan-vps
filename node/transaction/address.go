@@ -15,17 +15,6 @@ func (m *Manager) initFvmAddress(as []string) {
 	}
 }
 
-func (m *Manager) initTronAddress(as []string) {
-	defer m.addrWait.Done()
-
-	m.tronAddrLock.Lock()
-	defer m.tronAddrLock.Unlock()
-
-	for _, addr := range as {
-		m.usabilityTronAddrs[addr] = ""
-	}
-}
-
 // AllocateFvmAddress get a fvm address
 func (m *Manager) AllocateFvmAddress(orderID string) (string, error) {
 	m.fvmAddrLock.Lock()
@@ -62,37 +51,7 @@ func (m *Manager) RecoverOutstandingFvmOrders(addr, orderID string) {
 	delete(m.usabilityFvmAddrs, addr)
 }
 
-// AllocateTronAddress get a tron address
-func (m *Manager) AllocateTronAddress(orderID string) (string, error) {
-	m.tronAddrLock.Lock()
-	defer m.tronAddrLock.Unlock()
-
-	if len(m.usabilityTronAddrs) > 0 {
-		for addr := range m.usabilityTronAddrs {
-			m.usedTronAddrs[addr] = orderID
-			delete(m.usabilityTronAddrs, addr)
-			return addr, nil
-		}
-	}
-	return "", xerrors.New("not found address")
-}
-
-// RevertTronAddress revert a tron address
-func (m *Manager) RevertTronAddress(addr string) {
-	m.tronAddrLock.Lock()
-	defer m.tronAddrLock.Unlock()
-
-	delete(m.usedTronAddrs, addr)
-	m.usabilityTronAddrs[addr] = ""
-}
-
-// RecoverOutstandingTronOrders recover the tron order
-func (m *Manager) RecoverOutstandingTronOrders(addr, orderID string) {
-	m.addrWait.Wait()
-
-	m.tronAddrLock.Lock()
-	defer m.tronAddrLock.Unlock()
-
-	m.usedTronAddrs[addr] = orderID
-	delete(m.usabilityTronAddrs, addr)
+// GetTronAddr get a fvm address
+func (m *Manager) GetTronAddr() string {
+	return m.tronAddr
 }

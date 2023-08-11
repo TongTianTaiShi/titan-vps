@@ -26,14 +26,8 @@ func (m *Basis) GetBalance(ctx context.Context) (string, error) {
 	return value.String(), nil
 }
 
-func (m *Basis) Recharge(ctx context.Context, rechargeAddr string) (string, error) {
-	userID := handler.GetID(ctx)
-
-	return m.RechargeManager.CreateRechargeOrder(userID, rechargeAddr)
-}
-
-func (m *Basis) CancelRecharge(ctx context.Context, orderID string) error {
-	return m.RechargeManager.CancelRechargeOrder(orderID)
+func (m *Basis) Recharge(ctx context.Context) (string, error) {
+	return m.TransactionMgr.GetTronAddr(), nil
 }
 
 func (m *Basis) Withdraw(ctx context.Context, withdrawAddr string) (string, error) {

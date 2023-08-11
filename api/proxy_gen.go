@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -102,8 +103,6 @@ type TransactionStub struct {
 
 type UserAPIStruct struct {
 	Internal struct {
-		CancelRecharge func(p0 context.Context, p1 string) error `perm:"user"`
-
 		CancelWithdraw func(p0 context.Context, p1 string) error `perm:"user"`
 
 		GetBalance func(p0 context.Context) (string, error) `perm:"user"`
@@ -118,7 +117,7 @@ type UserAPIStruct struct {
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"user"`
 
-		Recharge func(p0 context.Context, p1 string) (string, error) `perm:"user"`
+		Recharge func(p0 context.Context) (string, error) `perm:"user"`
 
 		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
@@ -382,17 +381,6 @@ func (s *TransactionStub) Hello(p0 context.Context) error {
 	return ErrNotSupported
 }
 
-func (s *UserAPIStruct) CancelRecharge(p0 context.Context, p1 string) error {
-	if s.Internal.CancelRecharge == nil {
-		return ErrNotSupported
-	}
-	return s.Internal.CancelRecharge(p0, p1)
-}
-
-func (s *UserAPIStub) CancelRecharge(p0 context.Context, p1 string) error {
-	return ErrNotSupported
-}
-
 func (s *UserAPIStruct) CancelWithdraw(p0 context.Context, p1 string) error {
 	if s.Internal.CancelWithdraw == nil {
 		return ErrNotSupported
@@ -470,14 +458,14 @@ func (s *UserAPIStub) RebootInstance(p0 context.Context, p1 string, p2 string) (
 	return "", ErrNotSupported
 }
 
-func (s *UserAPIStruct) Recharge(p0 context.Context, p1 string) (string, error) {
+func (s *UserAPIStruct) Recharge(p0 context.Context) (string, error) {
 	if s.Internal.Recharge == nil {
 		return "", ErrNotSupported
 	}
-	return s.Internal.Recharge(p0, p1)
+	return s.Internal.Recharge(p0)
 }
 
-func (s *UserAPIStub) Recharge(p0 context.Context, p1 string) (string, error) {
+func (s *UserAPIStub) Recharge(p0 context.Context) (string, error) {
 	return "", ErrNotSupported
 }
 

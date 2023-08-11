@@ -35,7 +35,6 @@ var userCmds = &cli.Command{
 		logoutCmd,
 		getBalanceCmd,
 		rechargeCmd,
-		cancelRechargeCmd,
 		withdrawCmd,
 		cancelWithdrawCmd,
 	},
@@ -231,13 +230,7 @@ var getBalanceCmd = &cli.Command{
 var rechargeCmd = &cli.Command{
 	Name:  "recharge",
 	Usage: "recharge",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "ra",
-			Usage: "node type: edge 1, update 6",
-			Value: "",
-		},
-	},
+	Flags: []cli.Flag{},
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
@@ -248,40 +241,13 @@ var rechargeCmd = &cli.Command{
 
 		defer closer()
 
-		rechargeAddr := cctx.String("ra")
-
-		str, err := api.Recharge(ctx, rechargeAddr)
+		str, err := api.Recharge(ctx)
 		if err != nil {
 			return err
 		}
 
 		fmt.Println(str)
 		return nil
-	},
-}
-
-var cancelRechargeCmd = &cli.Command{
-	Name:  "ca",
-	Usage: "cancel recharge",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "oid",
-			Usage: "node type: edge 1, update 6",
-			Value: "",
-		},
-	},
-	Action: func(cctx *cli.Context) error {
-		ctx := ReqContext(cctx)
-
-		api, closer, err := GetBasisAPI(cctx)
-		if err != nil {
-			return err
-		}
-
-		defer closer()
-
-		oid := cctx.String("oid")
-		return api.CancelRecharge(ctx, oid)
 	},
 }
 

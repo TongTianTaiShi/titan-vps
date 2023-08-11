@@ -213,11 +213,11 @@ type FvmTransferWatch struct {
 }
 
 type TronTransferWatch struct {
-	TxHash  string
-	From    string
-	To      string
-	Value   string
-	State   core.Transaction_ResultContractResult
-	Height  int64
-	OrderID string
+	TxHash       string
+	From         string
+	To           string
+	Value        string
+	State        core.Transaction_ResultContractResult
+	Height       int64
+	RechargeAddr string
 }
