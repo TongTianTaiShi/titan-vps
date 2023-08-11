@@ -5,9 +5,9 @@ import (
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/opentracing/opentracing-go/log"
 
-	openapi "github.com/alibabacloud-go/darabonba-openapi/client"
-	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v2/client"
-	util "github.com/alibabacloud-go/tea-utils/service"
+	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
+	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
+	util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 )
 
@@ -23,7 +23,6 @@ func newClient(regionID, keyID, keySecret string) (*ecs20140526.Client, *tea.SDK
 	}
 
 	configClient.RegionId = tea.String(regionID)
-
 	client, err := ecs20140526.NewClient(configClient)
 	if err != nil {
 		errors := &tea.SDKError{}
@@ -463,7 +462,6 @@ func DescribeRegions(keyID, keySecret string) (*ecs20140526.DescribeRegionsRespo
 // DescribeRecommendInstanceType Describe Instance Type
 func DescribeRecommendInstanceType(regionID, keyID, keySecret string, cores int32, memory float32) (*ecs20140526.DescribeRecommendInstanceTypeResponse, *tea.SDKError) {
 	var result *ecs20140526.DescribeRecommendInstanceTypeResponse
-
 	client, err := newClient(regionID, keyID, keySecret)
 	if err != nil {
 		return result, err
@@ -485,6 +483,45 @@ func DescribeRecommendInstanceType(regionID, keyID, keySecret string, cores int3
 			}
 		}()
 		result, _e = client.DescribeRecommendInstanceTypeWithOptions(describeRecommendInstanceTypeRequest, runtime)
+		if _e != nil {
+			return _e
+		}
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return result, errors
+	}
+	return result, nil
+}
+
+func DescribeInstanceTypes(regionID, keyID, keySecret, CpuArchitecture, InstanceCategory string, cores int32, memory float32) (*ecs20140526.DescribeInstanceTypesResponse, *tea.SDKError) {
+	var result *ecs20140526.DescribeInstanceTypesResponse
+	client, err := newClient(regionID, keyID, keySecret)
+	if err != nil {
+		return result, err
+	}
+
+	describeInstanceTypesRequest := &ecs20140526.DescribeInstanceTypesRequest{
+		CpuArchitecture:     tea.String(CpuArchitecture),
+		MinimumCpuCoreCount: tea.Int32(cores),
+		MinimumMemorySize:   tea.Float32(memory),
+		InstanceCategory:    tea.String(InstanceCategory),
+	}
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		result, _e = client.DescribeInstanceTypesWithOptions(describeInstanceTypesRequest, runtime)
 		if _e != nil {
 			return _e
 		}

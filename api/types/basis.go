@@ -72,6 +72,15 @@ type CreateInstanceResponse struct {
 	PrivateKey       string
 	PrivateKeyStatus int `db:"private_key_status"`
 }
+type DescribeInstanceTypeResponse struct {
+	InstanceTypeId         string
+	MemorySize             float32
+	CpuArchitecture        string
+	InstanceCategory       string
+	CpuCoreCount           int
+	InstanceTypeFamily     string
+	PhysicalProcessorModel string
+}
 
 type CreateKeyPairResponse struct {
 	KeyPairID      string

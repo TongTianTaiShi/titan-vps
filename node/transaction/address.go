@@ -1,6 +1,8 @@
 package transaction
 
-import "golang.org/x/xerrors"
+import (
+	"golang.org/x/xerrors"
+)
 
 func (m *Manager) initFvmAddress(as []string) {
 	defer m.addrWait.Done()
@@ -72,7 +74,6 @@ func (m *Manager) AllocateTronAddress(orderID string) (string, error) {
 			return addr, nil
 		}
 	}
-
 	return "", xerrors.New("not found address")
 }
 

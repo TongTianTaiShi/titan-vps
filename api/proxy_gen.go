@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -29,7 +28,7 @@ type BasisStruct struct {
 
 		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]string, error) `perm:"default"`
 
-		DescribeInstanceType func(p0 context.Context, p1 string, p2 int32, p3 float32) ([]string, error) `perm:"default"`
+		DescribeInstanceType func(p0 context.Context, p1 string, p2 string, p3 string, p4 int32, p5 float32) ([]types.DescribeInstanceTypeResponse, error) `perm:"default"`
 
 		DescribePrice func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) `perm:"default"`
 
@@ -174,15 +173,15 @@ func (s *BasisStub) DescribeImages(p0 context.Context, p1 string, p2 string) ([]
 	return *new([]string), ErrNotSupported
 }
 
-func (s *BasisStruct) DescribeInstanceType(p0 context.Context, p1 string, p2 int32, p3 float32) ([]string, error) {
+func (s *BasisStruct) DescribeInstanceType(p0 context.Context, p1 string, p2 string, p3 string, p4 int32, p5 float32) ([]types.DescribeInstanceTypeResponse, error) {
 	if s.Internal.DescribeInstanceType == nil {
-		return *new([]string), ErrNotSupported
+		return *new([]types.DescribeInstanceTypeResponse), ErrNotSupported
 	}
-	return s.Internal.DescribeInstanceType(p0, p1, p2, p3)
+	return s.Internal.DescribeInstanceType(p0, p1, p2, p3, p4, p5)
 }
 
-func (s *BasisStub) DescribeInstanceType(p0 context.Context, p1 string, p2 int32, p3 float32) ([]string, error) {
-	return *new([]string), ErrNotSupported
+func (s *BasisStub) DescribeInstanceType(p0 context.Context, p1 string, p2 string, p3 string, p4 int32, p5 float32) ([]types.DescribeInstanceTypeResponse, error) {
+	return *new([]types.DescribeInstanceTypeResponse), ErrNotSupported
 }
 
 func (s *BasisStruct) DescribePrice(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) {

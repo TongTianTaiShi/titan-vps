@@ -13,14 +13,14 @@ type Basis interface {
 
 	MintToken(ctx context.Context, address string) (string, error) //perm:admin
 
-	DescribeRegions(ctx context.Context) ([]string, error)                                                                                    //perm:default
-	DescribeInstanceType(ctx context.Context, regionID string, cores int32, memory float32) ([]string, error)                                 //perm:default
-	DescribeImages(ctx context.Context, regionID, instanceType string) ([]string, error)                                                      //perm:default
-	DescribePrice(ctx context.Context, regionID, instanceType, priceUnit, imageID string, period int32) (*types.DescribePriceResponse, error) //perm:default
-	CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error)                              //perm:default
-	CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error)                                    //perm:default
-	AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)            //perm:default
-	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                                                          //perm:default
+	DescribeRegions(ctx context.Context) ([]string, error)                                                                                                                   //perm:default
+	DescribeInstanceType(ctx context.Context, regionID, CpuArchitecture, InstanceCategory string, cores int32, memory float32) ([]types.DescribeInstanceTypeResponse, error) //perm:default
+	DescribeImages(ctx context.Context, regionID, instanceType string) ([]string, error)                                                                                     //perm:default
+	DescribePrice(ctx context.Context, regionID, instanceType, priceUnit, imageID string, period int32) (*types.DescribePriceResponse, error)                                //perm:default
+	CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error)                                                             //perm:default
+	CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error)                                                                   //perm:default
+	AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)                                           //perm:default
+	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                                                                                         //perm:default
 }
 
 // OrderAPI is an interface for order

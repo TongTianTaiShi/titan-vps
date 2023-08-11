@@ -176,7 +176,6 @@ func (m *RechargeManager) CancelRechargeOrder(orderID string) error {
 	if err != nil {
 		return err
 	}
-
 	if info.State != types.ExchangeCreated {
 		return xerrors.Errorf("Invalid order status %d", info.State)
 	}

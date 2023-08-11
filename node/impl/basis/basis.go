@@ -74,9 +74,8 @@ func (m *Basis) DescribeRegions(ctx context.Context) ([]string, error) {
 	return rpsData, nil
 }
 
-func (m *Basis) DescribeInstanceType(ctx context.Context, regionID string, cores int32, memory float32) ([]string, error) {
+func (m *Basis) DescribeRecommendInstanceType(ctx context.Context, regionID string, cores int32, memory float32) ([]string, error) {
 	k, s := m.getAccessKeys()
-
 	rsp, err := aliyun.DescribeRecommendInstanceType(regionID, k, s, cores, memory)
 	if err != nil {
 		log.Errorf("DescribeRecommendInstanceType err: %s", err.Error())
@@ -98,6 +97,24 @@ func (m *Basis) DescribeInstanceType(ctx context.Context, regionID string, cores
 	}
 
 	return rpsData, nil
+}
+
+func (m *Basis) DescribeInstanceType(ctx context.Context, regionID, CpuArchitecture, InstanceCategory string, cores int32, memory float32) ([]types.DescribeInstanceTypeResponse, error) {
+	k, s := m.getAccessKeys()
+	rsp, err := aliyun.DescribeInstanceTypes(regionID, k, s, CpuArchitecture, InstanceCategory, cores, memory)
+	if err != nil {
+		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
+		return nil, xerrors.New(*err.Data)
+	}
+	var rspDataList []types.DescribeInstanceTypeResponse
+	for _, data := range rsp.Body.InstanceTypes.InstanceType {
+		var rspData types.DescribeInstanceTypeResponse
+		rspData.InstanceCategory = *data.InstanceCategory
+		rspData.InstanceTypeId = *data.InstanceTypeId
+		rspData.MemorySize = *data.MemorySize
+		rspData.CpuArchitecture = *data.CpuArchitecture
+	}
+	return rspDataList, nil
 }
 
 func (m *Basis) DescribeImages(ctx context.Context, regionID, instanceType string) ([]string, error) {
@@ -251,16 +268,13 @@ func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
 func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
 	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
 	verifyCode := "Vps(" + fmt.Sprintf("%06d", randNew.Intn(1000000)) + ")"
+	m.UserMgr.User[userId] = &types.UserInfoTmp{}
 	m.UserMgr.User[userId].UserLogin.SignCode = verifyCode
 	m.UserMgr.User[userId].UserLogin.UserId = userId
-	fmt.Println(m.UserMgr)
 	return verifyCode, nil
 }
 
 func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
-	log.Infoln("---------------------------------------------")
-	log.Infof("user info %v \n", user)
-	log.Infof("user UserId %s \n", user.UserId)
 	userId := user.UserId
 	code := m.UserMgr.User[userId].UserLogin.SignCode
 	signature := user.Signature

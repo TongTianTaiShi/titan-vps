@@ -12,6 +12,7 @@ var BasisCMDs = []*cli.Command{
 	WithCategory("order", orderCmds),
 	WithCategory("user", userCmds),
 	describeRegionsCmd,
+	describeInstanceTypeCmd,
 	mintCmd,
 }
 
@@ -58,6 +59,48 @@ var describeRegionsCmd = &cli.Command{
 		defer closer()
 
 		list, err := api.DescribeRegions(ctx)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(list)
+		return nil
+	},
+}
+
+var describeInstanceTypeCmd = &cli.Command{
+	Name:  "dit",
+	Usage: "describe regions",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "region_id",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "core",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "memory",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+		regionId := cctx.String("region_id")
+		core := int32(cctx.Int("core"))
+		memory := float32(cctx.Float64("memory"))
+		list, err := api.DescribeInstanceType(ctx, regionId, "", "", core, memory)
 		if err != nil {
 			return err
 		}
@@ -336,7 +379,7 @@ var signCodeCmd = &cli.Command{
 	Usage: "user get code",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "",
+			Name:  "user_id",
 			Usage: "",
 			Value: "",
 		},
