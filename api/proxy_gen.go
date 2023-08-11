@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-	"math/big"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
@@ -108,7 +107,11 @@ type UserAPIStruct struct {
 
 		CancelWithdraw func(p0 context.Context, p1 string) error `perm:"user"`
 
-		GetBalance func(p0 context.Context) (*big.Int, error) `perm:"user"`
+		GetBalance func(p0 context.Context) (string, error) `perm:"user"`
+
+		GetRechargeRecord func(p0 context.Context, p1 int64, p2 int64) ([]*types.RechargeRecord, error) `perm:"user"`
+
+		GetWithdrawRecord func(p0 context.Context, p1 int64, p2 int64) ([]*types.WithdrawRecord, error) `perm:"user"`
 
 		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"default"`
 
@@ -402,15 +405,37 @@ func (s *UserAPIStub) CancelWithdraw(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 
-func (s *UserAPIStruct) GetBalance(p0 context.Context) (*big.Int, error) {
+func (s *UserAPIStruct) GetBalance(p0 context.Context) (string, error) {
 	if s.Internal.GetBalance == nil {
-		return nil, ErrNotSupported
+		return "", ErrNotSupported
 	}
 	return s.Internal.GetBalance(p0)
 }
 
-func (s *UserAPIStub) GetBalance(p0 context.Context) (*big.Int, error) {
-	return nil, ErrNotSupported
+func (s *UserAPIStub) GetBalance(p0 context.Context) (string, error) {
+	return "", ErrNotSupported
+}
+
+func (s *UserAPIStruct) GetRechargeRecord(p0 context.Context, p1 int64, p2 int64) ([]*types.RechargeRecord, error) {
+	if s.Internal.GetRechargeRecord == nil {
+		return *new([]*types.RechargeRecord), ErrNotSupported
+	}
+	return s.Internal.GetRechargeRecord(p0, p1, p2)
+}
+
+func (s *UserAPIStub) GetRechargeRecord(p0 context.Context, p1 int64, p2 int64) ([]*types.RechargeRecord, error) {
+	return *new([]*types.RechargeRecord), ErrNotSupported
+}
+
+func (s *UserAPIStruct) GetWithdrawRecord(p0 context.Context, p1 int64, p2 int64) ([]*types.WithdrawRecord, error) {
+	if s.Internal.GetWithdrawRecord == nil {
+		return *new([]*types.WithdrawRecord), ErrNotSupported
+	}
+	return s.Internal.GetWithdrawRecord(p0, p1, p2)
+}
+
+func (s *UserAPIStub) GetWithdrawRecord(p0 context.Context, p1 int64, p2 int64) ([]*types.WithdrawRecord, error) {
+	return *new([]*types.WithdrawRecord), ErrNotSupported
 }
 
 func (s *UserAPIStruct) Login(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {

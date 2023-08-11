@@ -2,24 +2,28 @@ package basis
 
 import (
 	"context"
-	"math/big"
 
+	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
 	"github.com/LMF709268224/titan-vps/node/handler"
 )
 
-func (m *Basis) GetBalance(ctx context.Context) (*big.Int, error) {
+func (m *Basis) GetBalance(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
 
 	cfg, err := m.GetBasisConfigFunc()
 	if err != nil {
-		log.Errorf("get config err:%s", err.Error())
-		return big.NewInt(0), err
+		return "", err
 	}
 
 	client := filecoinbridge.NewGrpcClient(cfg.LotusHTTPSAddr, cfg.TitanContractorAddr)
 
-	return client.GetBalance(userID)
+	value, err := client.GetBalance(userID)
+	if err != nil {
+		return "", err
+	}
+
+	return value.String(), nil
 }
 
 func (m *Basis) Recharge(ctx context.Context, rechargeAddr string) (string, error) {
@@ -40,4 +44,16 @@ func (m *Basis) Withdraw(ctx context.Context, withdrawAddr string) (string, erro
 
 func (m *Basis) CancelWithdraw(ctx context.Context, orderID string) error {
 	return m.WithdrawManager.CancelWithdrawOrder(orderID)
+}
+
+func (m *Basis) GetRechargeRecord(ctx context.Context, limit, offset int64) ([]*types.RechargeRecord, error) {
+	userID := handler.GetID(ctx)
+
+	return m.LoadRechargeRecordsByUser(userID, limit, offset)
+}
+
+func (m *Basis) GetWithdrawRecord(ctx context.Context, limit, offset int64) ([]*types.WithdrawRecord, error) {
+	userID := handler.GetID(ctx)
+
+	return m.LoadWithdrawRecordsByUser(userID, limit, offset)
 }

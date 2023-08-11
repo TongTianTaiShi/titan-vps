@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"math/big"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 )
@@ -35,13 +34,15 @@ type OrderAPI interface {
 // UserAPI is an interface for user
 type UserAPI interface {
 	// user
-	GetBalance(ctx context.Context) (*big.Int, error)                                //perm:user
-	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error) //perm:user
-	SignCode(ctx context.Context, userID string) (string, error)                     //perm:default
-	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)     //perm:default
-	Logout(ctx context.Context, user *types.UserReq) error                           //perm:user
-	Recharge(ctx context.Context, rechargeAddr string) (string, error)               //perm:user
-	CancelRecharge(ctx context.Context, orderID string) error                        //perm:user
-	Withdraw(ctx context.Context, withdrawAddr string) (string, error)               //perm:user
-	CancelWithdraw(ctx context.Context, orderID string) error                        //perm:user
+	GetBalance(ctx context.Context) (string, error)                                              //perm:user
+	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)             //perm:user
+	SignCode(ctx context.Context, userID string) (string, error)                                 //perm:default
+	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)                 //perm:default
+	Logout(ctx context.Context, user *types.UserReq) error                                       //perm:user
+	Recharge(ctx context.Context, rechargeAddr string) (string, error)                           //perm:user
+	CancelRecharge(ctx context.Context, orderID string) error                                    //perm:user
+	Withdraw(ctx context.Context, withdrawAddr string) (string, error)                           //perm:user
+	CancelWithdraw(ctx context.Context, orderID string) error                                    //perm:user
+	GetRechargeRecord(ctx context.Context, limit, offset int64) ([]*types.RechargeRecord, error) //perm:user
+	GetWithdrawRecord(ctx context.Context, limit, offset int64) ([]*types.WithdrawRecord, error) //perm:user
 }

@@ -95,3 +95,35 @@ func (n *SQLDB) LoadWithdrawRecords(state types.ExchangeState) ([]*types.Withdra
 
 	return infos, nil
 }
+
+// LoadWithdrawRecordsByUser load records
+func (n *SQLDB) LoadWithdrawRecordsByUser(userAddr string, limit, offset int64) ([]*types.WithdrawRecord, error) {
+	var infos []*types.WithdrawRecord
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_addr=? order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable)
+	if limit > loadOrderRecordsDefaultLimit {
+		limit = loadOrderRecordsDefaultLimit
+	}
+
+	err := n.db.Select(&infos, query, userAddr, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	return infos, nil
+}
+
+// LoadRechargeRecordsByUser load records
+func (n *SQLDB) LoadRechargeRecordsByUser(userAddr string, limit, offset int64) ([]*types.RechargeRecord, error) {
+	var infos []*types.RechargeRecord
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_addr=? order by created_time desc LIMIT ? OFFSET ?", rechargeRecordTable)
+	if limit > loadOrderRecordsDefaultLimit {
+		limit = loadOrderRecordsDefaultLimit
+	}
+
+	err := n.db.Select(&infos, query, userAddr, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	return infos, nil
+}
