@@ -507,12 +507,20 @@ func DescribeInstanceTypes(regionID, keyID, keySecret, CpuArchitecture, Instance
 	if err != nil {
 		return result, err
 	}
-
-	describeInstanceTypesRequest := &ecs20140526.DescribeInstanceTypesRequest{
-		CpuArchitecture:     tea.String(CpuArchitecture),
-		MinimumCpuCoreCount: tea.Int32(cores),
-		MinimumMemorySize:   tea.Float32(memory),
-		InstanceCategory:    tea.String(InstanceCategory),
+	describeInstanceTypesRequest := &ecs20140526.DescribeInstanceTypesRequest{}
+	if CpuArchitecture != "" {
+		describeInstanceTypesRequest.CpuArchitecture = tea.String(CpuArchitecture)
+	}
+	if InstanceCategory != "" {
+		describeInstanceTypesRequest.InstanceCategory = tea.String(InstanceCategory)
+	}
+	if cores != 0 {
+		describeInstanceTypesRequest.MinimumCpuCoreCount = tea.Int32(cores)
+		describeInstanceTypesRequest.MaximumCpuCoreCount = tea.Int32(cores)
+	}
+	if memory != 0 {
+		describeInstanceTypesRequest.MinimumMemorySize = tea.Float32(memory)
+		describeInstanceTypesRequest.MaximumMemorySize = tea.Float32(memory)
 	}
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {
@@ -590,8 +598,10 @@ func DescribeImages(regionID, keyID, keySecret, instanceType string) (*ecs201405
 	}
 
 	createSecurityGroupRequest := &ecs20140526.DescribeImagesRequest{
-		RegionId:     tea.String(regionID),
 		InstanceType: tea.String(instanceType),
+	}
+	if instanceType != "" {
+		createSecurityGroupRequest.InstanceType = tea.String(regionID)
 	}
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {

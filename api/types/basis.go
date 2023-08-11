@@ -77,7 +77,7 @@ type DescribeInstanceTypeResponse struct {
 	MemorySize             float32
 	CpuArchitecture        string
 	InstanceCategory       string
-	CpuCoreCount           int
+	CpuCoreCount           int32
 	InstanceTypeFamily     string
 	PhysicalProcessorModel string
 }

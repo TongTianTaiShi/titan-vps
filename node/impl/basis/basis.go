@@ -113,6 +113,10 @@ func (m *Basis) DescribeInstanceType(ctx context.Context, regionID, CpuArchitect
 		rspData.InstanceTypeId = *data.InstanceTypeId
 		rspData.MemorySize = *data.MemorySize
 		rspData.CpuArchitecture = *data.CpuArchitecture
+		rspData.InstanceTypeFamily = *data.CpuArchitecture
+		rspData.CpuCoreCount = *data.CpuCoreCount
+		rspData.PhysicalProcessorModel = *data.PhysicalProcessorModel
+		rspDataList = append(rspDataList, rspData)
 	}
 	return rspDataList, nil
 }
