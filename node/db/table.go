@@ -91,3 +91,10 @@ var cWithdrawTable = `
 		KEY idx_user (user_addr),
 		KEY idx_to (to_addr)
 	) ENGINE=InnoDB COMMENT='withdraw info';`
+
+var cConfigTable = `
+	CREATE TABLE if not exists %s (
+		name       VARCHAR(16)  DEFAULT "",
+		value      VARCHAR(32)  DEFAULT "",
+		PRIMARY KEY (name)
+	) ENGINE=InnoDB COMMENT='config info';`

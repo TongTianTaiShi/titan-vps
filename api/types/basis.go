@@ -139,6 +139,16 @@ const (
 	ExchangeFail
 )
 
+type LoginType int64
+
+// Constants defining various states of the recharge process.
+const (
+	// LoginTypeMetaMask
+	LoginTypeMetaMask LoginType = iota
+	// LoginTypeTron
+	LoginTypeTron
+)
+
 // RechargeRecord represents information about an recharge record
 type RechargeRecord struct {
 	OrderID       string        `db:"order_id"`
@@ -179,12 +189,13 @@ type PaymentCompletedReq struct {
 	OrderID       string
 	TransactionID string
 }
+
 type UserReq struct {
 	UserId    string
 	Signature string
-	PublicKey string
-	Token     string
+	Type      LoginType
 }
+
 type UserResponse struct {
 	UserId   string
 	SignCode string

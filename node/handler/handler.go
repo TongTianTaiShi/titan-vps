@@ -17,6 +17,8 @@ type (
 	RemoteAddr struct{}
 	// user id (node id)
 	ID struct{}
+	// LoginType filecoin tron eth ...
+	LoginType struct{}
 )
 
 // Handler represents an HTTP handler that also adds remote client address and node ID to the request context
@@ -44,6 +46,20 @@ func GetID(ctx context.Context) string {
 	v, ok := ctx.Value(ID{}).(string)
 	if !ok {
 		return ""
+	}
+
+	return v
+}
+
+// GetLoginType returns the login type of the client
+func GetLoginType(ctx context.Context) types.LoginType {
+	if !api.HasPerm(ctx, api.RoleDefault, api.RoleUser) {
+		return -1
+	}
+
+	v, ok := ctx.Value(LoginType{}).(types.LoginType)
+	if !ok {
+		return -1
 	}
 
 	return v
@@ -89,6 +105,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		ctx = context.WithValue(ctx, ID{}, payload.ID)
+		ctx = context.WithValue(ctx, LoginType{}, payload.LoginType)
 		ctx = api.WithPerm(ctx, payload.Allow)
 	}
 

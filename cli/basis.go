@@ -457,11 +457,9 @@ var logoutCmd = &cli.Command{
 		defer closer()
 
 		userId := cctx.String("user_id")
-		token := cctx.String("token")
 
 		err = api.Logout(ctx, &types.UserReq{
 			UserId: userId,
-			Token:  token,
 		})
 		if err != nil {
 			return err

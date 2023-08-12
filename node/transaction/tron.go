@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"math/big"
+	"strconv"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
@@ -9,6 +10,7 @@ import (
 	"github.com/LMF709268224/titan-vps/lib/trxbridge/api"
 	"github.com/LMF709268224/titan-vps/lib/trxbridge/core"
 	"github.com/LMF709268224/titan-vps/lib/trxbridge/hexutil"
+	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/smirkcat/hdwallet"
 	"golang.org/x/xerrors"
@@ -16,8 +18,6 @@ import (
 )
 
 const checkBlockInterval = 3 * time.Second
-
-var height = int64(39214904)
 
 // GetGrpcClient
 func (m *Manager) getGrpcClient() (*trxbridge.GrpcClient, error) {
@@ -40,6 +40,17 @@ func (m *Manager) watchTronTransactions() {
 		return
 	}
 
+	height := int64(0)
+	heightStr := ""
+
+	err = m.LoadConfigValue(db.ConfigTronHeight, &heightStr)
+	if err == nil {
+		i, err := strconv.ParseInt(heightStr, 10, 64)
+		if err == nil {
+			height = i
+		}
+	}
+
 	for {
 		<-ticker.C
 
@@ -50,6 +61,10 @@ func (m *Manager) watchTronTransactions() {
 		}
 
 		nowHeight := block.BlockHeader.RawData.Number
+		if height == 0 {
+			height = nowHeight - 1
+		}
+
 		if height == nowHeight {
 			continue
 		}
@@ -60,6 +75,11 @@ func (m *Manager) watchTronTransactions() {
 		}
 
 		height = nowHeight
+		str := strconv.FormatInt(height, 10)
+		err = m.SaveConfigValue(db.ConfigTronHeight, str)
+		if err != nil {
+			log.Errorf("SaveConfigValue err:%s", err.Error())
+		}
 	}
 }
 
@@ -78,7 +98,7 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 	}
 
 	bNum := blockExtention.BlockHeader.RawData.Number
-	// log.Debugln(" handleBlock height :", bNum)
+	log.Debugln(" handleBlock height :", bNum)
 
 	bid := hexutil.Encode(blockExtention.Blockid)
 

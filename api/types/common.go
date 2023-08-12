@@ -9,8 +9,9 @@ type OpenRPCDocument map[string]interface{}
 type JWTPayload struct {
 	Allow []auth.Permission
 	ID    string
-	// TODO remove NodeID later, any role id replace as ID
-	NodeID string
+
+	LoginType int64
+
 	// Extend is json string
 	Extend string
 }

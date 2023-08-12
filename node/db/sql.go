@@ -44,6 +44,7 @@ const (
 	vpsInstanceDeviceTable = "vps_instance_device"
 	rechargeRecordTable    = "recharge_record"
 	withdrawRecordTable    = "withdraw_record"
+	configTable            = "config"
 
 	// Default limits for loading table entries.
 	loadOrderRecordsDefaultLimit = 100
@@ -70,6 +71,7 @@ func InitTables(d *SQLDB) error {
 	tx.MustExec(fmt.Sprintf(cInstanceInfoTable, vpsInstanceDeviceTable))
 	tx.MustExec(fmt.Sprintf(cRechargeTable, rechargeRecordTable))
 	tx.MustExec(fmt.Sprintf(cWithdrawTable, withdrawRecordTable))
+	tx.MustExec(fmt.Sprintf(cConfigTable, configTable))
 
 	return tx.Commit()
 }
