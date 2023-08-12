@@ -127,7 +127,7 @@ var describeInstanceTypeCmd = &cli.Command{
 		regionId := cctx.String("region_id")
 		core := int32(cctx.Int("core"))
 		memory := float32(cctx.Float64("memory"))
-		list, err := api.DescribeInstanceType(ctx, regionId, "X86", "General-purpose", core, memory)
+		list, err := api.DescribeInstanceType(ctx, &types.DescribeInstanceTypeReq{RegionId: regionId, CpuArchitecture: "X86", CpuCoreCount: core, MemorySize: memory, InstanceCategory: "General-purpose"})
 		if err != nil {
 			return err
 		}

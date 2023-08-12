@@ -38,28 +38,32 @@ func newClient(regionID, keyID, keySecret string) (*ecs20140526.Client, *tea.SDK
 }
 
 // CreateInstance crate an instance
-func CreateInstance(regionID, keyID, keySecret, instanceType, imageID, securityGroupID, periodUnit string, period int32, dryRun bool) (*types.CreateInstanceResponse, *tea.SDKError) {
+func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceReq, dryRun bool) (*types.CreateInstanceResponse, *tea.SDKError) {
 	var out *types.CreateInstanceResponse
 
-	client, err := newClient(regionID, keyID, keySecret)
+	client, err := newClient(instanceReq.RegionId, keyID, keySecret)
 	if err != nil {
 		return out, err
 	}
 
 	createInstanceRequest := &ecs20140526.CreateInstanceRequest{
-		RegionId:           tea.String(regionID),
-		InstanceType:       tea.String(instanceType),
+		RegionId:           tea.String(instanceReq.RegionId),
+		InstanceType:       tea.String(instanceReq.InstanceType),
 		DryRun:             tea.Bool(dryRun),
-		ImageId:            tea.String(imageID),
-		SecurityGroupId:    tea.String(securityGroupID),
+		ImageId:            tea.String(instanceReq.ImageId),
+		SecurityGroupId:    tea.String(instanceReq.SecurityGroupId),
 		InstanceChargeType: tea.String("PrePaid"),
-		PeriodUnit:         tea.String(periodUnit),
-		Period:             tea.Int32(period),
+		PeriodUnit:         tea.String(instanceReq.PeriodUnit),
+		InternetChargeType: tea.String(instanceReq.InternetChargeType),
+		Period:             tea.Int32(instanceReq.Period),
 		//Password:                tea.String(password),
 		InternetMaxBandwidthOut: tea.Int32(1),
 		InternetMaxBandwidthIn:  tea.Int32(1),
 		// TODO
-		SystemDisk: &ecs20140526.CreateInstanceRequestSystemDisk{Size: tea.Int32(20)},
+		SystemDisk: &ecs20140526.CreateInstanceRequestSystemDisk{
+			Size:     tea.Int32(instanceReq.SystemDiskSize),
+			Category: tea.String(instanceReq.SystemDiskCategory),
+		},
 	}
 
 	runtime := &util.RuntimeOptions{}
@@ -330,21 +334,42 @@ func AllocatePublicIPAddress(regionID, keyID, keySecret, instanceID string) (str
 }
 
 // DescribePrice describe instance price
-func DescribePrice(regionID, keyID, keySecret, instanceType, priceUnit, imageID string, period int32) (*types.DescribePriceResponse, *tea.SDKError) {
+func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, *tea.SDKError) {
 	var out *types.DescribePriceResponse
 
-	client, err := newClient(regionID, keyID, keySecret)
+	client, err := newClient(priceReq.RegionId, keyID, keySecret)
 	if err != nil {
 		return out, err
 	}
 
 	describePriceRequest := &ecs20140526.DescribePriceRequest{
-		RegionId:     tea.String(regionID),
-		InstanceType: tea.String(instanceType),
-		PriceUnit:    tea.String(priceUnit),
-		Period:       tea.Int32(period),
-		ImageId:      tea.String(imageID),
+		RegionId:           tea.String(priceReq.RegionId),
+		InstanceType:       tea.String(priceReq.InstanceType),
+		PriceUnit:          tea.String(priceReq.PriceUnit),
+		Period:             tea.Int32(priceReq.Period),
+		ImageId:            tea.String(priceReq.ImageID),
+		InternetChargeType: tea.String(priceReq.InternetChargeType),
+		// todo 查询批量购买某种配置的云服务器ECS的价格
+		Amount:                  tea.Int32(priceReq.Amount),
+		InternetMaxBandwidthOut: tea.Int32(priceReq.InternetMaxBandwidthOut),
+		// PayByBandwidth
+		SystemDisk: &ecs20140526.DescribePriceRequestSystemDisk{
+			Category: tea.String(priceReq.SystemDiskCategory),
+			Size:     tea.Int32(priceReq.SystemDiskSize),
+		},
+		DataDisk: []*ecs20140526.DescribePriceRequestDataDisk{},
 	}
+	if len(priceReq.DataDisk) > 0 {
+		for _, v := range priceReq.DataDisk {
+			DataDiskInfo := &ecs20140526.DescribePriceRequestDataDisk{
+				Category:         v.Category,
+				PerformanceLevel: v.PerformanceLevel,
+				Size:             v.Size,
+			}
+			describePriceRequest.DataDisk = append(describePriceRequest.DataDisk, DataDiskInfo)
+		}
+	}
+
 	runtime := &util.RuntimeOptions{}
 
 	tryErr := func() (_e error) {
@@ -501,26 +526,32 @@ func DescribeRecommendInstanceType(regionID, keyID, keySecret string, cores int3
 	return result, nil
 }
 
-func DescribeInstanceTypes(regionID, keyID, keySecret, CpuArchitecture, InstanceCategory string, cores int32, memory float32) (*ecs20140526.DescribeInstanceTypesResponse, *tea.SDKError) {
+func DescribeInstanceTypes(keyID, keySecret string, instanceType *types.DescribeInstanceTypeReq) (*ecs20140526.DescribeInstanceTypesResponse, *tea.SDKError) {
 	var result *ecs20140526.DescribeInstanceTypesResponse
-	client, err := newClient(regionID, keyID, keySecret)
+	client, err := newClient(instanceType.RegionId, keyID, keySecret)
 	if err != nil {
 		return result, err
 	}
 	describeInstanceTypesRequest := &ecs20140526.DescribeInstanceTypesRequest{}
-	if CpuArchitecture != "" {
-		describeInstanceTypesRequest.CpuArchitecture = tea.String(CpuArchitecture)
+	if instanceType.CpuArchitecture != "" {
+		describeInstanceTypesRequest.CpuArchitecture = tea.String(instanceType.CpuArchitecture)
 	}
-	if InstanceCategory != "" {
-		describeInstanceTypesRequest.InstanceCategory = tea.String(InstanceCategory)
+	if instanceType.InstanceCategory != "" {
+		describeInstanceTypesRequest.InstanceCategory = tea.String(instanceType.InstanceCategory)
 	}
-	if cores != 0 {
-		describeInstanceTypesRequest.MinimumCpuCoreCount = tea.Int32(cores)
-		describeInstanceTypesRequest.MaximumCpuCoreCount = tea.Int32(cores)
+	if instanceType.CpuCoreCount != 0 {
+		describeInstanceTypesRequest.MinimumCpuCoreCount = tea.Int32(instanceType.CpuCoreCount)
+		describeInstanceTypesRequest.MaximumCpuCoreCount = tea.Int32(instanceType.CpuCoreCount)
 	}
-	if memory != 0 {
-		describeInstanceTypesRequest.MinimumMemorySize = tea.Float32(memory)
-		describeInstanceTypesRequest.MaximumMemorySize = tea.Float32(memory)
+	if instanceType.MemorySize != 0 {
+		describeInstanceTypesRequest.MinimumMemorySize = tea.Float32(instanceType.MemorySize)
+		describeInstanceTypesRequest.MaximumMemorySize = tea.Float32(instanceType.MemorySize)
+	}
+	if instanceType.MaxResults != 0 {
+		describeInstanceTypesRequest.MaxResults = tea.Int64(instanceType.MaxResults)
+	}
+	if instanceType.NextToken != "" {
+		describeInstanceTypesRequest.NextToken = tea.String(instanceType.NextToken)
 	}
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {
@@ -611,6 +642,88 @@ func DescribeImages(regionID, keyID, keySecret, instanceType string) (*ecs201405
 			}
 		}()
 		result, _e = client.DescribeImagesWithOptions(createSecurityGroupRequest, runtime)
+		if _e != nil {
+			return _e
+		}
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return result, errors
+	}
+	return result, nil
+}
+
+// DescribeInstanceStatus query instance status
+func DescribeInstanceStatus(regionID, keyID, keySecret string, InstanceId []string) (*ecs20140526.DescribeInstanceStatusResponse, *tea.SDKError) {
+	var result *ecs20140526.DescribeInstanceStatusResponse
+
+	client, err := newClient(regionID, keyID, keySecret)
+	if err != nil {
+		return result, err
+	}
+
+	createSecurityGroupRequest := &ecs20140526.DescribeInstanceStatusRequest{
+		RegionId:   tea.String(regionID),
+		InstanceId: tea.StringSlice(InstanceId),
+	}
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		result, _e = client.DescribeInstanceStatusWithOptions(createSecurityGroupRequest, runtime)
+		if _e != nil {
+			return _e
+		}
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return result, errors
+	}
+	return result, nil
+}
+
+// DescribeInstances instance detail info
+func DescribeInstances(regionID, keyID, keySecret string, InstanceIds []string) (*ecs20140526.DescribeInstancesResponse, *tea.SDKError) {
+	var result *ecs20140526.DescribeInstancesResponse
+
+	client, err := newClient(regionID, keyID, keySecret)
+	if err != nil {
+		return result, err
+	}
+	instanceIdsByte, e := json.Marshal(InstanceIds)
+	if e != nil {
+		log.Error(e)
+	}
+	instanceIdSting := string(instanceIdsByte)
+	createSecurityGroupRequest := &ecs20140526.DescribeInstancesRequest{
+		RegionId:    tea.String(regionID),
+		InstanceIds: tea.String(instanceIdSting),
+	}
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		result, _e = client.DescribeInstancesWithOptions(createSecurityGroupRequest, runtime)
 		if _e != nil {
 			return _e
 		}

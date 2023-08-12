@@ -42,6 +42,26 @@ type User struct {
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
+type DescribePriceReq struct {
+	RegionId                string
+	InstanceType            string
+	PriceUnit               string
+	ImageID                 string
+	InternetChargeType      string
+	SystemDiskCategory      string
+	SystemDiskSize          int32
+	Period                  int32
+	Amount                  int32
+	InternetMaxBandwidthOut int32
+	DataDisk                []*DescribePriceRequestDataDisk
+}
+
+type DescribePriceRequestDataDisk struct {
+	Category         *string
+	PerformanceLevel *string
+	Size             *int64
+}
+
 type DescribePriceResponse struct {
 	Currency      string
 	OriginalPrice float32
@@ -71,6 +91,10 @@ type CreateInstanceReq struct {
 	Period                  int32  `db:"period"`
 	InternetMaxBandwidthOut int32  `db:"bandwidth_out"`
 	InternetMaxBandwidthIn  int32  `db:"bandwidth_in"`
+	SystemDiskCategory      string
+	InternetChargeType      string
+	SystemDiskSize          int32
+	DataDisk                []*DescribePriceRequestDataDisk
 }
 
 type CreateInstanceResponse struct {
@@ -82,7 +106,22 @@ type CreateInstanceResponse struct {
 	PrivateKey       string
 	PrivateKeyStatus int `db:"private_key_status"`
 }
+type DescribeInstanceTypeReq struct {
+	RegionId         string
+	MemorySize       float32
+	CpuArchitecture  string
+	InstanceCategory string
+	CpuCoreCount     int32
+	MaxResults       int64
+	NextToken        string
+}
+
 type DescribeInstanceTypeResponse struct {
+	InstanceTypes []*DescribeInstanceType
+	NextToken     string
+}
+
+type DescribeInstanceType struct {
 	InstanceTypeId         string
 	MemorySize             float32
 	CpuArchitecture        string
@@ -90,6 +129,7 @@ type DescribeInstanceTypeResponse struct {
 	CpuCoreCount           int32
 	InstanceTypeFamily     string
 	PhysicalProcessorModel string
+	NextToken              string
 }
 
 type CreateKeyPairResponse struct {

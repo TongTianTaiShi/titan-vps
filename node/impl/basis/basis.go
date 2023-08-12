@@ -99,16 +99,18 @@ func (m *Basis) DescribeRecommendInstanceType(ctx context.Context, regionID stri
 	return rpsData, nil
 }
 
-func (m *Basis) DescribeInstanceType(ctx context.Context, regionID, CpuArchitecture, InstanceCategory string, cores int32, memory float32) ([]*types.DescribeInstanceTypeResponse, error) {
+func (m *Basis) DescribeInstanceType(ctx context.Context, instanceType *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
 	k, s := m.getAccessKeys()
-	rsp, err := aliyun.DescribeInstanceTypes(regionID, k, s, CpuArchitecture, InstanceCategory, cores, memory)
+	rsp, err := aliyun.DescribeInstanceTypes(k, s, instanceType)
 	if err != nil {
 		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
-	var rspDataList []*types.DescribeInstanceTypeResponse
+	rspDataList := &types.DescribeInstanceTypeResponse{
+		NextToken: *rsp.Body.NextToken,
+	}
 	for _, data := range rsp.Body.InstanceTypes.InstanceType {
-		rspData := &types.DescribeInstanceTypeResponse{
+		rspData := &types.DescribeInstanceType{
 			InstanceCategory:       *data.InstanceCategory,
 			InstanceTypeId:         *data.InstanceTypeId,
 			MemorySize:             *data.MemorySize,
@@ -117,7 +119,7 @@ func (m *Basis) DescribeInstanceType(ctx context.Context, regionID, CpuArchitect
 			CpuCoreCount:           *data.CpuCoreCount,
 			PhysicalProcessorModel: *data.PhysicalProcessorModel,
 		}
-		rspDataList = append(rspDataList, rspData)
+		rspDataList.InstanceTypes = append(rspDataList.InstanceTypes, rspData)
 	}
 	return rspDataList, nil
 }
@@ -146,10 +148,10 @@ func (m *Basis) DescribeImages(ctx context.Context, regionID, instanceType strin
 	return rspDataList, nil
 }
 
-func (m *Basis) DescribePrice(ctx context.Context, regionID, instanceType, priceUnit, imageID string, period int32) (*types.DescribePriceResponse, error) {
+func (m *Basis) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	k, s := m.getAccessKeys()
 
-	price, err := aliyun.DescribePrice(regionID, k, s, instanceType, priceUnit, imageID, period)
+	price, err := aliyun.DescribePrice(k, s, priceReq)
 	if err != nil {
 		log.Errorf("DescribePrice err:", err.Error())
 		return nil, xerrors.New(*err.Data)
@@ -197,8 +199,6 @@ func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanc
 	priceUnit := vpsInfo.PeriodUnit
 	period := vpsInfo.Period
 	regionID := vpsInfo.RegionId
-	instanceType := vpsInfo.InstanceType
-	imageID := vpsInfo.ImageId
 	if priceUnit == "Year" {
 		priceUnit = "Month"
 		period = period * 12
@@ -219,7 +219,7 @@ func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanc
 
 	log.Debugf("securityGroupID : ", securityGroupID)
 
-	result, err := aliyun.CreateInstance(regionID, k, s, instanceType, imageID, securityGroupID, priceUnit, period, false)
+	result, err := aliyun.CreateInstance(k, s, vpsInfo, false)
 	if err != nil {
 		log.Errorf("CreateInstance err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)

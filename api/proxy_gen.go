@@ -28,9 +28,9 @@ type BasisStruct struct {
 
 		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]*types.DescribeImageResponse, error) `perm:"default"`
 
-		DescribeInstanceType func(p0 context.Context, p1 string, p2 string, p3 string, p4 int32, p5 float32) ([]*types.DescribeInstanceTypeResponse, error) `perm:"default"`
+		DescribeInstanceType func(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) `perm:"default"`
 
-		DescribePrice func(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) `perm:"default"`
+		DescribePrice func(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) `perm:"default"`
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
 
@@ -171,25 +171,25 @@ func (s *BasisStub) DescribeImages(p0 context.Context, p1 string, p2 string) ([]
 	return *new([]*types.DescribeImageResponse), ErrNotSupported
 }
 
-func (s *BasisStruct) DescribeInstanceType(p0 context.Context, p1 string, p2 string, p3 string, p4 int32, p5 float32) ([]*types.DescribeInstanceTypeResponse, error) {
+func (s *BasisStruct) DescribeInstanceType(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
 	if s.Internal.DescribeInstanceType == nil {
-		return *new([]*types.DescribeInstanceTypeResponse), ErrNotSupported
+		return nil, ErrNotSupported
 	}
-	return s.Internal.DescribeInstanceType(p0, p1, p2, p3, p4, p5)
+	return s.Internal.DescribeInstanceType(p0, p1)
 }
 
-func (s *BasisStub) DescribeInstanceType(p0 context.Context, p1 string, p2 string, p3 string, p4 int32, p5 float32) ([]*types.DescribeInstanceTypeResponse, error) {
-	return *new([]*types.DescribeInstanceTypeResponse), ErrNotSupported
+func (s *BasisStub) DescribeInstanceType(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
+	return nil, ErrNotSupported
 }
 
-func (s *BasisStruct) DescribePrice(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) {
+func (s *BasisStruct) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	if s.Internal.DescribePrice == nil {
 		return nil, ErrNotSupported
 	}
-	return s.Internal.DescribePrice(p0, p1, p2, p3, p4, p5)
+	return s.Internal.DescribePrice(p0, p1)
 }
 
-func (s *BasisStub) DescribePrice(p0 context.Context, p1 string, p2 string, p3 string, p4 string, p5 int32) (*types.DescribePriceResponse, error) {
+func (s *BasisStub) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	return nil, ErrNotSupported
 }
 
