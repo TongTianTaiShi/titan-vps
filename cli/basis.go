@@ -268,7 +268,7 @@ var rechargeCmd = &cli.Command{
 
 		defer closer()
 
-		str, err := api.Recharge(ctx)
+		str, err := api.GetRechargeAddress(ctx)
 		if err != nil {
 			return err
 		}
@@ -287,6 +287,11 @@ var withdrawCmd = &cli.Command{
 			Usage: "node type: edge 1, update 6",
 			Value: "",
 		},
+		&cli.StringFlag{
+			Name:  "value",
+			Usage: "node type: edge 1, update 6",
+			Value: "",
+		},
 	},
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
@@ -299,14 +304,9 @@ var withdrawCmd = &cli.Command{
 		defer closer()
 
 		withdrawAddr := cctx.String("wa")
+		value := cctx.String("value")
 
-		str, err := api.Withdraw(ctx, withdrawAddr)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(str)
-		return nil
+		return api.Withdraw(ctx, withdrawAddr, value)
 	},
 }
 

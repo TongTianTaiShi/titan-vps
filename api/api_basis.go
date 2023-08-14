@@ -39,8 +39,8 @@ type UserAPI interface {
 	SignCode(ctx context.Context, userID string) (string, error)                                 //perm:default
 	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)                 //perm:default
 	Logout(ctx context.Context, user *types.UserReq) error                                       //perm:user
-	Recharge(ctx context.Context) (string, error)                                                //perm:user
-	Withdraw(ctx context.Context, withdrawAddr string) (string, error)                           //perm:user
+	GetRechargeAddress(ctx context.Context) (string, error)                                      //perm:user
+	Withdraw(ctx context.Context, withdrawAddr, value string) error                              //perm:user
 	GetRechargeRecord(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) //perm:user
 	GetWithdrawRecord(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) //perm:user
 }

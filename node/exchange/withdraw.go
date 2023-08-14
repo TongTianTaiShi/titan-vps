@@ -179,14 +179,7 @@ func (m *WithdrawManager) changeOrderState(state types.WithdrawState, info *type
 }
 
 // CreateWithdrawOrder create a withdraw order
-func (m *WithdrawManager) CreateWithdrawOrder(userAddr, withdrawAddr string) (addr string, err error) {
-	defer func() {
-		if err != nil {
-			m.removeOrder(userAddr)
-			m.tMgr.RevertFvmAddress(addr)
-		}
-	}()
-
+func (m *WithdrawManager) CreateWithdrawOrder(userAddr, withdrawAddr, value string) (err error) {
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
 
@@ -194,27 +187,11 @@ func (m *WithdrawManager) CreateWithdrawOrder(userAddr, withdrawAddr string) (ad
 		OrderID:       orderID,
 		User:          userAddr,
 		WithdrawAddr:  withdrawAddr,
+		Value:         value,
 		CreatedHeight: getFilecoinHeight(m.cfg.LotusHTTPSAddr),
 	}
 
-	err = m.addOrder(info)
-	if err != nil {
-		return "", err
-	}
-
-	addr, err = m.tMgr.AllocateFvmAddress(orderID)
-	if err != nil {
-		return "", err
-	}
-
-	info.To = addr
-
-	err = m.SaveWithdrawInfo(info)
-	if err != nil {
-		return "", err
-	}
-
-	return addr, nil
+	return m.SaveWithdrawInfo(info)
 }
 
 func (m *WithdrawManager) addOrder(info *types.WithdrawRecord) error {

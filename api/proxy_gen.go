@@ -105,6 +105,8 @@ type UserAPIStruct struct {
 	Internal struct {
 		GetBalance func(p0 context.Context) (string, error) `perm:"user"`
 
+		GetRechargeAddress func(p0 context.Context) (string, error) `perm:"user"`
+
 		GetRechargeRecord func(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) `perm:"user"`
 
 		GetWithdrawRecord func(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) `perm:"user"`
@@ -115,11 +117,9 @@ type UserAPIStruct struct {
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"user"`
 
-		Recharge func(p0 context.Context) (string, error) `perm:"user"`
-
 		SignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
-		Withdraw func(p0 context.Context, p1 string) (string, error) `perm:"user"`
+		Withdraw func(p0 context.Context, p1 string, p2 string) error `perm:"user"`
 	}
 }
 
@@ -390,6 +390,17 @@ func (s *UserAPIStub) GetBalance(p0 context.Context) (string, error) {
 	return "", ErrNotSupported
 }
 
+func (s *UserAPIStruct) GetRechargeAddress(p0 context.Context) (string, error) {
+	if s.Internal.GetRechargeAddress == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.GetRechargeAddress(p0)
+}
+
+func (s *UserAPIStub) GetRechargeAddress(p0 context.Context) (string, error) {
+	return "", ErrNotSupported
+}
+
 func (s *UserAPIStruct) GetRechargeRecord(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) {
 	if s.Internal.GetRechargeRecord == nil {
 		return nil, ErrNotSupported
@@ -445,17 +456,6 @@ func (s *UserAPIStub) RebootInstance(p0 context.Context, p1 string, p2 string) (
 	return "", ErrNotSupported
 }
 
-func (s *UserAPIStruct) Recharge(p0 context.Context) (string, error) {
-	if s.Internal.Recharge == nil {
-		return "", ErrNotSupported
-	}
-	return s.Internal.Recharge(p0)
-}
-
-func (s *UserAPIStub) Recharge(p0 context.Context) (string, error) {
-	return "", ErrNotSupported
-}
-
 func (s *UserAPIStruct) SignCode(p0 context.Context, p1 string) (string, error) {
 	if s.Internal.SignCode == nil {
 		return "", ErrNotSupported
@@ -467,15 +467,15 @@ func (s *UserAPIStub) SignCode(p0 context.Context, p1 string) (string, error) {
 	return "", ErrNotSupported
 }
 
-func (s *UserAPIStruct) Withdraw(p0 context.Context, p1 string) (string, error) {
+func (s *UserAPIStruct) Withdraw(p0 context.Context, p1 string, p2 string) error {
 	if s.Internal.Withdraw == nil {
-		return "", ErrNotSupported
+		return ErrNotSupported
 	}
-	return s.Internal.Withdraw(p0, p1)
+	return s.Internal.Withdraw(p0, p1, p2)
 }
 
-func (s *UserAPIStub) Withdraw(p0 context.Context, p1 string) (string, error) {
-	return "", ErrNotSupported
+func (s *UserAPIStub) Withdraw(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
 }
 
 var _ Basis = new(BasisStruct)

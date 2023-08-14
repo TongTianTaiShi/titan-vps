@@ -26,14 +26,14 @@ func (m *Basis) GetBalance(ctx context.Context) (string, error) {
 	return value.String(), nil
 }
 
-func (m *Basis) Recharge(ctx context.Context) (string, error) {
+func (m *Basis) GetRechargeAddress(ctx context.Context) (string, error) {
 	return m.TransactionMgr.GetTronAddr(), nil
 }
 
-func (m *Basis) Withdraw(ctx context.Context, withdrawAddr string) (string, error) {
+func (m *Basis) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 	userID := handler.GetID(ctx)
 
-	return m.WithdrawManager.CreateWithdrawOrder(userID, withdrawAddr)
+	return m.WithdrawManager.CreateWithdrawOrder(userID, withdrawAddr, value)
 }
 
 func (m *Basis) GetRechargeRecord(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) {
