@@ -36,17 +36,13 @@ func (m *Basis) Withdraw(ctx context.Context, withdrawAddr string) (string, erro
 	return m.WithdrawManager.CreateWithdrawOrder(userID, withdrawAddr)
 }
 
-func (m *Basis) CancelWithdraw(ctx context.Context, orderID string) error {
-	return m.WithdrawManager.CancelWithdrawOrder(orderID)
-}
-
-func (m *Basis) GetRechargeRecord(ctx context.Context, limit, offset int64) ([]*types.RechargeRecord, error) {
+func (m *Basis) GetRechargeRecord(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) {
 	userID := handler.GetID(ctx)
 
 	return m.LoadRechargeRecordsByUser(userID, limit, offset)
 }
 
-func (m *Basis) GetWithdrawRecord(ctx context.Context, limit, offset int64) ([]*types.WithdrawRecord, error) {
+func (m *Basis) GetWithdrawRecord(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
 	userID := handler.GetID(ctx)
 
 	return m.LoadWithdrawRecordsByUser(userID, limit, offset)

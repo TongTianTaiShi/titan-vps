@@ -37,7 +37,6 @@ var userCmds = &cli.Command{
 		getBalanceCmd,
 		rechargeCmd,
 		withdrawCmd,
-		cancelWithdrawCmd,
 	},
 }
 
@@ -311,31 +310,6 @@ var withdrawCmd = &cli.Command{
 	},
 }
 
-var cancelWithdrawCmd = &cli.Command{
-	Name:  "cw",
-	Usage: "cancel withdraw",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "oid",
-			Usage: "node type: edge 1, update 6",
-			Value: "",
-		},
-	},
-	Action: func(cctx *cli.Context) error {
-		ctx := ReqContext(cctx)
-
-		api, closer, err := GetBasisAPI(cctx)
-		if err != nil {
-			return err
-		}
-
-		defer closer()
-
-		oid := cctx.String("oid")
-		return api.CancelWithdraw(ctx, oid)
-	},
-}
-
 var mintCmd = &cli.Command{
 	Name:  "mint",
 	Usage: "mint token",
@@ -457,11 +431,9 @@ var logoutCmd = &cli.Command{
 		defer closer()
 
 		userId := cctx.String("user_id")
-		token := cctx.String("token")
 
 		err = api.Logout(ctx, &types.UserReq{
 			UserId: userId,
-			Token:  token,
 		})
 		if err != nil {
 			return err

@@ -162,22 +162,42 @@ type OrderRecord struct {
 	TxHash        string     `db:"tx_hash"`
 }
 
-// ExchangeState Recharge and Withdraw order state
-type ExchangeState int64
+// RechargeState Recharge order state
+type RechargeState int64
 
 // Constants defining various states of the recharge process.
 const (
-	// ExchangeCreated recharge order
-	ExchangeCreated ExchangeState = iota
-	// ExchangeDone the order done
-	ExchangeDone
-	// ExchangeTimeout order
-	ExchangeTimeout
-	// ExchangeCancel order
-	ExchangeCancel
-	// ExchangeFail order
-	ExchangeFail
+	// RechargeDone Recharge done
+	RechargeDone RechargeState = iota
+	// RechargeRefund Recharge Refund
+	RechargeRefund
 )
+
+// WithdrawState Withdraw order state
+type WithdrawState int64
+
+// Constants defining various states of the recharge process.
+const (
+	// WithdrawDone Withdraw done
+	WithdrawDone WithdrawState = iota
+	// WithdrawRefund Withdraw done
+	WithdrawRefund
+)
+
+type LoginType int64
+
+// Constants defining various states of the recharge process.
+const (
+	// LoginTypeMetaMask
+	LoginTypeMetaMask LoginType = iota
+	// LoginTypeTron
+	LoginTypeTron
+)
+
+type RechargeResponse struct {
+	Total int
+	List  []*RechargeRecord
+}
 
 // RechargeRecord represents information about an recharge record
 type RechargeRecord struct {
@@ -186,7 +206,7 @@ type RechargeRecord struct {
 	User          string        `db:"user_addr"`
 	To            string        `db:"to_addr"`
 	Value         string        `db:"value"`
-	State         ExchangeState `db:"state"`
+	State         RechargeState `db:"state"`
 	CreatedHeight int64         `db:"created_height"`
 	CreatedTime   time.Time     `db:"created_time"`
 	DoneTime      time.Time     `db:"done_time"`
@@ -197,6 +217,11 @@ type RechargeRecord struct {
 	RechargeHash  string        `db:"recharge_hash"`
 }
 
+type WithdrawResponse struct {
+	Total int
+	List  []*WithdrawRecord
+}
+
 // WithdrawRecord represents information about an withdraw record
 type WithdrawRecord struct {
 	OrderID       string        `db:"order_id"`
@@ -204,7 +229,7 @@ type WithdrawRecord struct {
 	User          string        `db:"user_addr"`
 	To            string        `db:"to_addr"`
 	Value         string        `db:"value"`
-	State         ExchangeState `db:"state"`
+	State         WithdrawState `db:"state"`
 	CreatedHeight int64         `db:"created_height"`
 	CreatedTime   time.Time     `db:"created_time"`
 	DoneTime      time.Time     `db:"done_time"`
@@ -219,12 +244,13 @@ type PaymentCompletedReq struct {
 	OrderID       string
 	TransactionID string
 }
+
 type UserReq struct {
 	UserId    string
 	Signature string
-	PublicKey string
-	Token     string
+	Type      LoginType
 }
+
 type UserResponse struct {
 	UserId   string
 	SignCode string
@@ -263,11 +289,11 @@ type FvmTransferWatch struct {
 }
 
 type TronTransferWatch struct {
-	TxHash       string
-	From         string
-	To           string
-	Value        string
-	State        core.Transaction_ResultContractResult
-	Height       int64
-	RechargeAddr string
+	TxHash   string
+	From     string
+	To       string
+	Value    string
+	State    core.Transaction_ResultContractResult
+	Height   int64
+	UserAddr string
 }

@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/LMF709268224/titan-vps/node/config"
+	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
@@ -14,6 +15,7 @@ var log = logging.Logger("transaction")
 // Manager is the node manager responsible for managing the online nodes
 type Manager struct {
 	notify *pubsub.PubSub
+	*db.SQLDB
 
 	cfg config.BasisCfg
 
@@ -27,7 +29,7 @@ type Manager struct {
 }
 
 // NewManager creates a new instance of the node manager
-func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc) (*Manager, error) {
+func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, db *db.SQLDB) (*Manager, error) {
 	cfg, err := getCfg()
 	if err != nil {
 		return nil, err
@@ -36,6 +38,7 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc) (*Manager, 
 	manager := &Manager{
 		notify: pb,
 		cfg:    cfg,
+		SQLDB:  db,
 
 		usabilityFvmAddrs: make(map[string]string),
 		usedFvmAddrs:      make(map[string]string),

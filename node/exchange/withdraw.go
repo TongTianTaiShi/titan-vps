@@ -3,7 +3,6 @@ package exchange
 import (
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/config"
@@ -46,7 +45,7 @@ func NewWithdrawManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasis
 
 	m.initOngeingOrders()
 
-	go m.checkOrdersTimeout()
+	// go m.checkOrdersTimeout()
 	go m.subscribeEvents()
 
 	return m, nil
@@ -77,10 +76,10 @@ func (m *WithdrawManager) handleFvmTransfer(orderID string, tr *types.FvmTransfe
 		return
 	}
 
-	if info.State != types.ExchangeCreated {
-		log.Errorf("handleFvmTransfer Invalid order status %d , %s", info.State, orderID)
-		return
-	}
+	// if info.State != types.ExchangeCreated {
+	// 	log.Errorf("handleFvmTransfer Invalid order status %d , %s", info.State, orderID)
+	// 	return
+	// }
 
 	info.Value = tr.Value
 	info.TxHash = tr.TxHash
@@ -90,7 +89,7 @@ func (m *WithdrawManager) handleFvmTransfer(orderID string, tr *types.FvmTransfe
 	// TODO notify
 	log.Warnf("need transfer %s USDT to %s", tr.Value, info.WithdrawAddr)
 
-	err = m.changeOrderState(types.ExchangeDone, info)
+	err = m.changeOrderState(types.WithdrawDone, info)
 	if err != nil {
 		log.Errorf("handleFvmTransfer changeOrderState %s err:%s", orderID, err.Error())
 		return
@@ -98,7 +97,7 @@ func (m *WithdrawManager) handleFvmTransfer(orderID string, tr *types.FvmTransfe
 }
 
 func (m *WithdrawManager) initOngeingOrders() {
-	records, err := m.LoadWithdrawRecords(types.ExchangeCreated)
+	records, err := m.LoadWithdrawRecords(types.WithdrawDone)
 	if err != nil {
 		log.Errorln("LoadWithdrawRecords err:", err.Error())
 		return
@@ -110,35 +109,35 @@ func (m *WithdrawManager) initOngeingOrders() {
 	}
 }
 
-func (m *WithdrawManager) checkOrdersTimeout() {
-	ticker := time.NewTicker(checkOrderInterval)
-	defer ticker.Stop()
+// func (m *WithdrawManager) checkOrdersTimeout() {
+// 	ticker := time.NewTicker(checkOrderInterval)
+// 	defer ticker.Stop()
 
-	for {
-		<-ticker.C
+// 	for {
+// 		<-ticker.C
 
-		for _, orderRecord := range m.ongoingOrders {
-			orderID := orderRecord.OrderID
-			addr := orderRecord.To
+// 		for _, orderRecord := range m.ongoingOrders {
+// 			orderID := orderRecord.OrderID
+// 			addr := orderRecord.To
 
-			info, err := m.LoadWithdrawRecord(orderID)
-			if err != nil {
-				log.Errorf("checkOrderTimeout LoadOrderRecord %s , %s err:%s", addr, orderID, err.Error())
-				continue
-			}
+// 			info, err := m.LoadWithdrawRecord(orderID)
+// 			if err != nil {
+// 				log.Errorf("checkOrderTimeout LoadOrderRecord %s , %s err:%s", addr, orderID, err.Error())
+// 				continue
+// 			}
 
-			log.Debugf("checkout %s , %s ", addr, orderID)
+// 			log.Debugf("checkout %s , %s ", addr, orderID)
 
-			if info.State == types.ExchangeCreated && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
-				err := m.changeOrderState(types.ExchangeTimeout, info)
-				if err != nil {
-					log.Errorf("checkOrderTimeout changeOrderState %s , %s err:%s", addr, orderID, err.Error())
-					continue
-				}
-			}
-		}
-	}
-}
+// 			if info.State == types.ExchangeCreated && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
+// 				err := m.changeOrderState(types.ExchangeTimeout, info)
+// 				if err != nil {
+// 					log.Errorf("checkOrderTimeout changeOrderState %s , %s err:%s", addr, orderID, err.Error())
+// 					continue
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
 func (m *WithdrawManager) getOrderIDByToAddress(to string) (string, bool) {
 	for _, orderRecord := range m.ongoingOrders {
@@ -151,21 +150,21 @@ func (m *WithdrawManager) getOrderIDByToAddress(to string) (string, bool) {
 	return "", false
 }
 
-// CancelWithdrawOrder cancel the order
-func (m *WithdrawManager) CancelWithdrawOrder(orderID string) error {
-	info, err := m.LoadWithdrawRecord(orderID)
-	if err != nil {
-		return err
-	}
+// // CancelWithdrawOrder cancel the order
+// func (m *WithdrawManager) CancelWithdrawOrder(orderID string) error {
+// 	info, err := m.LoadWithdrawRecord(orderID)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if info.State != types.ExchangeCreated {
-		return xerrors.Errorf("Invalid order status %d", info.State)
-	}
+// 	if info.State != types.ExchangeCreated {
+// 		return xerrors.Errorf("Invalid order status %d", info.State)
+// 	}
 
-	return m.changeOrderState(types.ExchangeCancel, info)
-}
+// 	return m.changeOrderState(types.ExchangeCancel, info)
+// }
 
-func (m *WithdrawManager) changeOrderState(state types.ExchangeState, info *types.WithdrawRecord) error {
+func (m *WithdrawManager) changeOrderState(state types.WithdrawState, info *types.WithdrawRecord) error {
 	info.DoneHeight = getFilecoinHeight(m.cfg.LotusHTTPSAddr)
 
 	err := m.UpdateWithdrawRecord(info, state)

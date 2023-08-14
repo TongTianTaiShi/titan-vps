@@ -41,7 +41,6 @@ type UserAPI interface {
 	Logout(ctx context.Context, user *types.UserReq) error                                       //perm:user
 	Recharge(ctx context.Context) (string, error)                                                //perm:user
 	Withdraw(ctx context.Context, withdrawAddr string) (string, error)                           //perm:user
-	CancelWithdraw(ctx context.Context, orderID string) error                                    //perm:user
-	GetRechargeRecord(ctx context.Context, limit, offset int64) ([]*types.RechargeRecord, error) //perm:user
-	GetWithdrawRecord(ctx context.Context, limit, offset int64) ([]*types.WithdrawRecord, error) //perm:user
+	GetRechargeRecord(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) //perm:user
+	GetWithdrawRecord(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) //perm:user
 }

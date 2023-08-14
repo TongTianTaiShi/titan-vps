@@ -2,10 +2,10 @@ package basis
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"math/rand"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api"
@@ -27,6 +27,7 @@ import (
 	"github.com/LMF709268224/titan-vps/node/transaction"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
+
 	"go.uber.org/fx"
 	"golang.org/x/xerrors"
 )
@@ -279,28 +280,28 @@ func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
 }
 
 func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
-	userId := user.UserId
-	code, err := m.UserMgr.GetSignCode(userId)
+	userID := user.UserId
+	code, err := m.UserMgr.GetSignCode(userID)
 	if err != nil {
 		return nil, err
 	}
 	signature := user.Signature
-	address, err := VerifyMessage(code, signature)
-	userId = strings.ToUpper(userId)
-	address = strings.ToUpper(address)
-	if address != userId {
+	address, err := verifyEthMessage(code, signature)
+	if err != nil {
 		return nil, err
 	}
+
 	p := types.JWTPayload{
-		ID:    userId,
-		Allow: []auth.Permission{api.RoleUser},
+		ID:        address,
+		LoginType: int64(user.Type),
+		Allow:     []auth.Permission{api.RoleUser},
 	}
 	rsp := &types.UserResponse{}
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
 		return rsp, err
 	}
-	rsp.UserId = userId
+	rsp.UserId = address
 	rsp.Token = string(tk)
 	return rsp, nil
 }
@@ -314,14 +315,9 @@ func (m *Basis) Logout(ctx context.Context, user *types.UserReq) error {
 
 var _ api.Basis = &Basis{}
 
-// JwtPayload represents the payload of a JWT token.
-type JwtPayload struct {
-	Allow []auth.Permission
-}
-
-func VerifyMessage(message string, signedMessage string) (string, error) {
+func verifyEthMessage(code string, signedMessage string) (string, error) {
 	// Hash the unsigned message using EIP-191
-	hashedMessage := []byte("\x19Ethereum Signed Message:\n" + strconv.Itoa(len(message)) + message)
+	hashedMessage := []byte("\x19Ethereum Signed Message:\n" + strconv.Itoa(len(code)) + code)
 	hash := crypto.Keccak256Hash(hashedMessage)
 	// Get the bytes of the signed message
 	decodedMessage := hexutil.MustDecode(signedMessage)
@@ -332,11 +328,27 @@ func VerifyMessage(message string, signedMessage string) (string, error) {
 	// Recover a public key from the signed message
 	sigPublicKeyECDSA, err := crypto.SigToPub(hash.Bytes(), decodedMessage)
 	if sigPublicKeyECDSA == nil {
-		log.Errorf("Could not get a public get from the message signature")
+		return "", xerrors.New("Could not get a public get from the message signature")
 	}
 	if err != nil {
 		return "", err
 	}
 
 	return crypto.PubkeyToAddress(*sigPublicKeyECDSA).String(), nil
+}
+
+func verifyTronMessage(code string, signedMessage string) (string, error) {
+	sig := []byte(signedMessage)
+
+	message, err := crypto.Ecrecover(sha256.New().Sum([]byte(code)), sig)
+	if err != nil {
+		return "", err
+	}
+
+	pubKey, err := crypto.UnmarshalPubkey(message)
+	if err != nil {
+		return "", err
+	}
+
+	return crypto.PubkeyToAddress(*pubKey).String(), err
 }

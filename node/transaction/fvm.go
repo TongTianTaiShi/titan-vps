@@ -18,14 +18,14 @@ func (m *Manager) watchFvmTransactions() error {
 
 	tokenAddress := common.HexToAddress(m.cfg.TitanContractorAddr)
 
-	myAbi, err := filecoinbridge.NewAbi(tokenAddress, client)
+	fAbi, err := filecoinbridge.NewAbi(tokenAddress, client)
 	if err != nil {
 		return xerrors.Errorf("NewAbi err:%s", err.Error())
 	}
 
 	sink := make(chan *filecoinbridge.AbiTransfer)
 
-	sub, err := myAbi.WatchTransfer(nil, sink, nil, nil)
+	sub, err := fAbi.WatchTransfer(nil, sink, nil, nil)
 	if err != nil {
 		return xerrors.Errorf("WatchTransfer err:%s", err.Error())
 	}
@@ -35,7 +35,7 @@ func (m *Manager) watchFvmTransactions() error {
 		case err := <-sub.Err():
 			if err != nil {
 				log.Debugln(time.Now().Format("2006-01-02 15:04:05"), " err:", err)
-				sub, err = myAbi.WatchTransfer(nil, sink, nil, nil)
+				sub, err = fAbi.WatchTransfer(nil, sink, nil, nil)
 				if err != nil {
 					return xerrors.Errorf("WatchTransfer err:%s", err.Error())
 				}

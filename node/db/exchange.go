@@ -30,7 +30,7 @@ func (n *SQLDB) LoadRechargeRecord(orderID string) (*types.RechargeRecord, error
 }
 
 // LoadRechargeRecords load the recharge records from the incoming scheduler
-func (n *SQLDB) LoadRechargeRecords(state types.ExchangeState) ([]*types.RechargeRecord, error) {
+func (n *SQLDB) LoadRechargeRecords(state types.RechargeState) ([]*types.RechargeRecord, error) {
 	var infos []*types.RechargeRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE state=? ", rechargeRecordTable)
 
@@ -66,7 +66,7 @@ func (n *SQLDB) LoadWithdrawRecord(orderID string) (*types.WithdrawRecord, error
 }
 
 // UpdateWithdrawRecord update withdraw record information
-func (n *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.ExchangeState) error {
+func (n *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.WithdrawState) error {
 	query := fmt.Sprintf(`UPDATE %s SET state=?, value=?, done_time=NOW(), from_addr=?,
 	    done_height=?, tx_hash=?, withdraw_hash=?, msg=? WHERE order_id=? AND state=?`, withdrawRecordTable)
 	_, err := n.db.Exec(query, newState, info.Value, info.From, info.DoneHeight, info.TxHash, info.WithdrawHash, info.Msg, info.OrderID, info.State)
@@ -75,7 +75,7 @@ func (n *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.
 }
 
 // LoadWithdrawRecords load the withdraw records from the incoming scheduler
-func (n *SQLDB) LoadWithdrawRecords(state types.ExchangeState) ([]*types.WithdrawRecord, error) {
+func (n *SQLDB) LoadWithdrawRecords(state types.WithdrawState) ([]*types.WithdrawRecord, error) {
 	var infos []*types.WithdrawRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE state=? ", withdrawRecordTable)
 
@@ -88,7 +88,9 @@ func (n *SQLDB) LoadWithdrawRecords(state types.ExchangeState) ([]*types.Withdra
 }
 
 // LoadWithdrawRecordsByUser load records
-func (n *SQLDB) LoadWithdrawRecordsByUser(userAddr string, limit, offset int64) ([]*types.WithdrawRecord, error) {
+func (n *SQLDB) LoadWithdrawRecordsByUser(userAddr string, limit, offset int64) (*types.WithdrawResponse, error) {
+	out := new(types.WithdrawResponse)
+
 	var infos []*types.WithdrawRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_addr=? order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable)
 	if limit > loadOrderRecordsDefaultLimit {
@@ -100,11 +102,23 @@ func (n *SQLDB) LoadWithdrawRecordsByUser(userAddr string, limit, offset int64) 
 		return nil, err
 	}
 
-	return infos, nil
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_addr=?", withdrawRecordTable)
+	var count int
+	err = n.db.Get(&count, countQuery, userAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	out.Total = count
+	out.List = infos
+
+	return out, nil
 }
 
 // LoadRechargeRecordsByUser load records
-func (n *SQLDB) LoadRechargeRecordsByUser(userAddr string, limit, offset int64) ([]*types.RechargeRecord, error) {
+func (n *SQLDB) LoadRechargeRecordsByUser(userAddr string, limit, offset int64) (*types.RechargeResponse, error) {
+	out := new(types.RechargeResponse)
+
 	var infos []*types.RechargeRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_addr=? order by created_time desc LIMIT ? OFFSET ?", rechargeRecordTable)
 	if limit > loadOrderRecordsDefaultLimit {
@@ -116,5 +130,15 @@ func (n *SQLDB) LoadRechargeRecordsByUser(userAddr string, limit, offset int64) 
 		return nil, err
 	}
 
-	return infos, nil
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_addr=?", rechargeRecordTable)
+	var count int
+	err = n.db.Get(&count, countQuery, userAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	out.Total = count
+	out.List = infos
+
+	return out, nil
 }

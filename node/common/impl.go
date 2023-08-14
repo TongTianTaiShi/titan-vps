@@ -48,10 +48,6 @@ func (a *CommonAPI) AuthVerify(ctx context.Context, token string) (*types.JWTPay
 		return nil, xerrors.Errorf("JWT Verification failed: %w", err)
 	}
 
-	// replace ID to NodeID
-	if len(payload.NodeID) > 0 {
-		payload.ID = payload.NodeID
-	}
 	return &payload, nil
 }
 
