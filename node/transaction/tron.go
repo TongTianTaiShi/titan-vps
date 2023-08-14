@@ -98,7 +98,7 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 	}
 
 	bNum := blockExtention.BlockHeader.RawData.Number
-	log.Debugln(" handleBlock height :", bNum)
+	// log.Debugln(" handleBlock height :", bNum)
 
 	bid := hexutil.Encode(blockExtention.Blockid)
 
@@ -110,17 +110,17 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 		state := te.Transaction.GetRet()[0].ContractRet
 		txid := hexutil.Encode(te.Txid)
 
-		rechargeAddr := string(te.Transaction.RawData.Data)
+		userAddr := string(te.Transaction.RawData.Data)
 
 		for _, contract := range te.Transaction.RawData.Contract {
-			m.filterTransaction(contract, txid, bid, bNum, state, rechargeAddr)
+			m.filterTransaction(contract, txid, bid, bNum, state, userAddr)
 		}
 	}
 
 	return nil
 }
 
-func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, bid string, bNum int64, state core.Transaction_ResultContractResult, rechargeAddr string) {
+func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, bid string, bNum int64, state core.Transaction_ResultContractResult, userAddr string) {
 	if contract.Type == core.Transaction_Contract_TriggerSmartContract {
 		// trc20
 		unObj := &core.TriggerSmartContract{}
@@ -144,7 +144,7 @@ func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, b
 			return
 		}
 
-		m.handleTransfer(txid, from, to, bid, bNum, amount, contractAddress, state, rechargeAddr)
+		m.handleTransfer(txid, from, to, bid, bNum, amount, contractAddress, state, userAddr)
 	}
 }
 
@@ -165,18 +165,18 @@ func (m *Manager) decodeData(trc20 []byte) (to string, amount string, flag bool)
 	return
 }
 
-func (m *Manager) handleTransfer(mCid, from, to, blockCid string, height int64, amount string, contract string, state core.Transaction_ResultContractResult, rechargeAddr string) {
+func (m *Manager) handleTransfer(mCid, from, to, blockCid string, height int64, amount string, contract string, state core.Transaction_ResultContractResult, userAddr string) {
 	log.Infof("Transfer :%s,%s,%s,%s,%s,%s", mCid, to, from, contract, amount, state)
 
 	if to == m.tronAddr {
 		m.notify.Pub(&types.TronTransferWatch{
-			TxHash:       mCid,
-			From:         from,
-			To:           to,
-			Value:        amount,
-			State:        state,
-			Height:       height,
-			RechargeAddr: rechargeAddr,
+			TxHash:   mCid,
+			From:     from,
+			To:       to,
+			Value:    amount,
+			State:    state,
+			Height:   height,
+			UserAddr: userAddr,
 		}, types.EventTronTransferWatch.String())
 	}
 }

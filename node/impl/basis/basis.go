@@ -2,6 +2,7 @@ package basis
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -26,6 +27,7 @@ import (
 	"github.com/LMF709268224/titan-vps/node/transaction"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
+
 	"go.uber.org/fx"
 	"golang.org/x/xerrors"
 )
@@ -284,7 +286,7 @@ func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResp
 		return nil, err
 	}
 	signature := user.Signature
-	address, err := verifyMessage(code, signature)
+	address, err := verifyEthMessage(code, signature)
 	if err != nil {
 		return nil, err
 	}
@@ -313,7 +315,7 @@ func (m *Basis) Logout(ctx context.Context, user *types.UserReq) error {
 
 var _ api.Basis = &Basis{}
 
-func verifyMessage(code string, signedMessage string) (string, error) {
+func verifyEthMessage(code string, signedMessage string) (string, error) {
 	// Hash the unsigned message using EIP-191
 	hashedMessage := []byte("\x19Ethereum Signed Message:\n" + strconv.Itoa(len(code)) + code)
 	hash := crypto.Keccak256Hash(hashedMessage)
@@ -333,4 +335,20 @@ func verifyMessage(code string, signedMessage string) (string, error) {
 	}
 
 	return crypto.PubkeyToAddress(*sigPublicKeyECDSA).String(), nil
+}
+
+func verifyTronMessage(code string, signedMessage string) (string, error) {
+	sig := []byte(signedMessage)
+
+	message, err := crypto.Ecrecover(sha256.New().Sum([]byte(code)), sig)
+	if err != nil {
+		return "", err
+	}
+
+	pubKey, err := crypto.UnmarshalPubkey(message)
+	if err != nil {
+		return "", err
+	}
+
+	return crypto.PubkeyToAddress(*pubKey).String(), err
 }

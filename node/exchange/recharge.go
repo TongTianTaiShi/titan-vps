@@ -67,16 +67,19 @@ func (m *RechargeManager) subscribeEvents() {
 }
 
 func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
+	if tr.State != core.Transaction_Result_SUCCESS {
+		return
+	}
+
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
 
-	rechargeAddr := tr.RechargeAddr
+	userAddr := tr.UserAddr
 	height := getTronHeight(m.cfg.TrxHTTPSAddr)
 
 	info := &types.RechargeRecord{
 		OrderID:       orderID,
-		User:          rechargeAddr,
-		RechargeAddr:  rechargeAddr,
+		User:          userAddr,
 		CreatedHeight: height,
 		DoneHeight:    height,
 		Value:         tr.Value,
@@ -84,19 +87,16 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 		From:          tr.From,
 	}
 
-	info.State = types.ExchangeFail
 	info.Msg = tr.State.String()
 
-	if tr.State == core.Transaction_Result_SUCCESS {
-		info.State = types.ExchangeDone
-
-		client := filecoinbridge.NewGrpcClient(m.cfg.LotusHTTPSAddr, m.cfg.TitanContractorAddr)
-		hash, err := client.Mint(m.cfg.PrivateKeyStr, info.RechargeAddr, tr.Value)
-		if err != nil {
-			info.Msg = err.Error()
-		} else {
-			info.RechargeHash = hash
-		}
+	client := filecoinbridge.NewGrpcClient(m.cfg.LotusHTTPSAddr, m.cfg.TitanContractorAddr)
+	hash, err := client.Mint(m.cfg.PrivateKeyStr, userAddr, tr.Value)
+	if err != nil {
+		info.Msg = err.Error()
+		info.State = types.RechargeRefund
+	} else {
+		info.RechargeHash = hash
+		info.State = types.RechargeDone
 	}
 
 	m.SaveRechargeInfo(info)
