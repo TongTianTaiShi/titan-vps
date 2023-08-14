@@ -40,7 +40,8 @@ func (m *Manager) watchTronTransactions() {
 		return
 	}
 
-	height := int64(0)
+	height := int64(39297600)
+	limit := int64(50)
 	heightStr := ""
 
 	err = m.LoadConfigValue(db.ConfigTronHeight, &heightStr)
@@ -61,20 +62,20 @@ func (m *Manager) watchTronTransactions() {
 		}
 
 		nowHeight := block.BlockHeader.RawData.Number
-		if height == 0 {
-			height = nowHeight - 1
+		endHeight := height + limit
+		if endHeight >= nowHeight {
+			endHeight = nowHeight
 		}
-
-		if height == nowHeight {
+		if height >= endHeight {
 			continue
 		}
 
-		blocks, err := client.GetBlockByLimitNext(height, nowHeight)
+		blocks, err := client.GetBlockByLimitNext(height, endHeight)
 		if err == nil && len(blocks.Block) > 0 {
 			m.handleBlocks(blocks)
 		}
 
-		height = nowHeight
+		height = endHeight
 		str := strconv.FormatInt(height, 10)
 		err = m.SaveConfigValue(db.ConfigTronHeight, str)
 		if err != nil {
@@ -98,7 +99,7 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 	}
 
 	bNum := blockExtention.BlockHeader.RawData.Number
-	// log.Debugln(" handleBlock height :", bNum)
+	log.Debugln(" handleBlock height :", bNum)
 
 	bid := hexutil.Encode(blockExtention.Blockid)
 
@@ -126,13 +127,14 @@ func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, b
 		unObj := &core.TriggerSmartContract{}
 		err := proto.Unmarshal(contract.Parameter.GetValue(), unObj)
 		if err != nil {
-			log.Errorf("parse trc20 err: %v", err)
+			// log.Errorf("parse trc20 err: %s", err.Error())
 			return
 		}
 
 		contractAddress := hdwallet.EncodeCheck(unObj.GetContractAddress())
 
 		if contractAddress != m.cfg.TrxContractorAddr {
+			// log.Errorf("contractAddress: %s", contractAddress)
 			return
 		}
 
@@ -141,6 +143,7 @@ func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, b
 
 		to, amount, isOk := m.decodeData(data)
 		if !isOk {
+			// log.Errorf("decodeData err: %s", txid)
 			return
 		}
 
