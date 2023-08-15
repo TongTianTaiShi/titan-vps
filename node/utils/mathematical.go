@@ -11,9 +11,14 @@ func BigIntAdd(numstr string, value string) string {
 }
 
 // BigIntReduce reduce
-func BigIntReduce(numstr string, value string) string {
+func BigIntReduce(numstr string, value string) (string, bool) {
 	n, _ := new(big.Int).SetString(numstr, 10)
 	m, _ := new(big.Int).SetString(value, 10)
+
+	if n.Cmp(m) < 0 {
+		return "0", false
+	}
 	z := new(big.Int).Sub(n, m)
-	return z.String()
+
+	return z.String(), true
 }

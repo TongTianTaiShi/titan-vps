@@ -180,10 +180,10 @@ type WithdrawState int64
 
 // Constants defining various states of the recharge process.
 const (
+	// WithdrawCreate Withdraw create
+	WithdrawCreate WithdrawState = iota
 	// WithdrawDone Withdraw done
-	WithdrawDone WithdrawState = iota
-	// WithdrawRefund Withdraw done
-	WithdrawRefund
+	WithdrawDone
 )
 
 type LoginType int64

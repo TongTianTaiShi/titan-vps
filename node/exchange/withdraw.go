@@ -9,6 +9,7 @@ import (
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/transaction"
+	"github.com/LMF709268224/titan-vps/node/utils"
 	"github.com/filecoin-project/pubsub"
 	"github.com/google/uuid"
 	"golang.org/x/xerrors"
@@ -180,6 +181,21 @@ func (m *WithdrawManager) changeOrderState(state types.WithdrawState, info *type
 
 // CreateWithdrawOrder create a withdraw order
 func (m *WithdrawManager) CreateWithdrawOrder(userAddr, withdrawAddr, value string) (err error) {
+	original, err := m.LoadUserToken(userAddr)
+	if err != nil {
+		return err
+	}
+
+	newValue, ok := utils.BigIntReduce(original, value)
+	if !ok {
+		return xerrors.New("Insufficient balance")
+	}
+
+	err = m.UpdateUserToken(userAddr, newValue, original)
+	if err != nil {
+		return err
+	}
+
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
 
@@ -189,6 +205,7 @@ func (m *WithdrawManager) CreateWithdrawOrder(userAddr, withdrawAddr, value stri
 		WithdrawAddr:  withdrawAddr,
 		Value:         value,
 		CreatedHeight: getFilecoinHeight(m.cfg.LotusHTTPSAddr),
+		State:         types.WithdrawCreate,
 	}
 
 	return m.SaveWithdrawInfo(info)
