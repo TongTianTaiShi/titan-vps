@@ -50,8 +50,3 @@ func (m *Manager) RecoverOutstandingFvmOrders(addr, orderID string) {
 	m.usedFvmAddrs[addr] = orderID
 	delete(m.usabilityFvmAddrs, addr)
 }
-
-// GetTronAddr get a fvm address
-func (m *Manager) GetTronAddr() string {
-	return m.tronAddr
-}

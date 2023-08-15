@@ -23,7 +23,7 @@ type Manager struct {
 	usedFvmAddrs      map[string]string
 	fvmAddrLock       *sync.Mutex
 
-	tronAddr string
+	tronAddrs map[string]string
 
 	addrWait sync.WaitGroup
 }
@@ -48,7 +48,8 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, db *db.SQLD
 	manager.addrWait.Add(2)
 	manager.initFvmAddress(cfg.PaymentAddresses)
 
-	manager.tronAddr = cfg.RechargeAddress
+	// manager.tronAddr = cfg.RechargeAddress
+	// TODO init
 
 	go manager.watchFvmTransactions()
 	go manager.watchTronTransactions()

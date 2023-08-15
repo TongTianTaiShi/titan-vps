@@ -98,3 +98,17 @@ var cConfigTable = `
 		value      VARCHAR(32)  DEFAULT "",
 		PRIMARY KEY (name)
 	) ENGINE=InnoDB COMMENT='config info';`
+
+var cUserTable = `
+	CREATE TABLE if not exists %s (
+		user_addr      VARCHAR(128) NOT NULL UNIQUE,
+		token          VARCHAR(32)  DEFAULT 0,
+		PRIMARY KEY (user_addr)
+	) ENGINE=InnoDB COMMENT='user info';`
+
+var cRechargeAddressTable = `
+	CREATE TABLE if not exists %s (
+		addr      VARCHAR(128) NOT NULL UNIQUE,
+		user_addr VARCHAR(128) DEFAULT "",
+		PRIMARY KEY (addr)
+	) ENGINE=InnoDB COMMENT='recharge address ';`

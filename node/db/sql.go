@@ -45,6 +45,8 @@ const (
 	rechargeRecordTable    = "recharge_record"
 	withdrawRecordTable    = "withdraw_record"
 	configTable            = "config"
+	userTable              = "user"
+	rechargeAddressTable   = "recharge_address"
 
 	// Default limits for loading table entries.
 	loadOrderRecordsDefaultLimit = 100
@@ -72,6 +74,8 @@ func InitTables(d *SQLDB) error {
 	tx.MustExec(fmt.Sprintf(cRechargeTable, rechargeRecordTable))
 	tx.MustExec(fmt.Sprintf(cWithdrawTable, withdrawRecordTable))
 	tx.MustExec(fmt.Sprintf(cConfigTable, configTable))
+	tx.MustExec(fmt.Sprintf(cUserTable, userTable))
+	tx.MustExec(fmt.Sprintf(cRechargeAddressTable, rechargeAddressTable))
 
 	return tx.Commit()
 }

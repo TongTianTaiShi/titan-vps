@@ -17,6 +17,14 @@ func (n *SQLDB) SaveRechargeInfo(rInfo *types.RechargeRecord) error {
 	return err
 }
 
+// UpdateRechargeRecord update recharge record information
+func (n *SQLDB) UpdateRechargeRecord(info *types.RechargeRecord, newState types.RechargeState) error {
+	query := fmt.Sprintf(`UPDATE %s SET state=?, done_time=NOW(), done_height=?, recharge_hash=?, msg=? WHERE order_id=? AND state=?`, rechargeRecordTable)
+	_, err := n.db.Exec(query, newState, info.DoneHeight, info.RechargeHash, info.Msg, info.OrderID, info.State)
+
+	return err
+}
+
 // LoadRechargeRecord load recharge record information
 func (n *SQLDB) LoadRechargeRecord(orderID string) (*types.RechargeRecord, error) {
 	var info types.RechargeRecord

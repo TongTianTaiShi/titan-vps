@@ -111,17 +111,17 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 		state := te.Transaction.GetRet()[0].ContractRet
 		txid := hexutil.Encode(te.Txid)
 
-		userAddr := string(te.Transaction.RawData.Data)
+		// userAddr := string(te.Transaction.RawData.Data)
 
 		for _, contract := range te.Transaction.RawData.Contract {
-			m.filterTransaction(contract, txid, bid, bNum, state, userAddr)
+			m.filterTransaction(contract, txid, bid, bNum, state)
 		}
 	}
 
 	return nil
 }
 
-func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, bid string, bNum int64, state core.Transaction_ResultContractResult, userAddr string) {
+func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, bid string, bNum int64, state core.Transaction_ResultContractResult) {
 	if contract.Type == core.Transaction_Contract_TriggerSmartContract {
 		// trc20
 		unObj := &core.TriggerSmartContract{}
@@ -147,7 +147,7 @@ func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, b
 			return
 		}
 
-		m.handleTransfer(txid, from, to, bid, bNum, amount, contractAddress, state, userAddr)
+		m.handleTransfer(txid, from, to, bid, bNum, amount, contractAddress, state)
 	}
 }
 
@@ -168,10 +168,10 @@ func (m *Manager) decodeData(trc20 []byte) (to string, amount string, flag bool)
 	return
 }
 
-func (m *Manager) handleTransfer(mCid, from, to, blockCid string, height int64, amount string, contract string, state core.Transaction_ResultContractResult, userAddr string) {
+func (m *Manager) handleTransfer(mCid, from, to, blockCid string, height int64, amount string, contract string, state core.Transaction_ResultContractResult) {
 	log.Infof("Transfer :%s,%s,%s,%s,%s,%s", mCid, to, from, contract, amount, state)
 
-	if to == m.tronAddr {
+	if userAddr, ok := m.tronAddrs[to]; ok {
 		m.notify.Pub(&types.TronTransferWatch{
 			TxHash:   mCid,
 			From:     from,

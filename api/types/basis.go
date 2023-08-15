@@ -167,8 +167,10 @@ type RechargeState int64
 
 // Constants defining various states of the recharge process.
 const (
+	// RechargeCreate Recharge create
+	RechargeCreate RechargeState = iota
 	// RechargeDone Recharge done
-	RechargeDone RechargeState = iota
+	RechargeDone
 	// RechargeRefund Recharge Refund
 	RechargeRefund
 )
@@ -212,9 +214,10 @@ type RechargeRecord struct {
 	DoneTime      time.Time     `db:"done_time"`
 	Msg           string        `db:"msg"`
 	DoneHeight    int64         `db:"done_height"`
-	TxHash        string        `db:"tx_hash"`
-	RechargeAddr  string        `db:"recharge_addr"`
 	RechargeHash  string        `db:"recharge_hash"`
+
+	RechargeAddr string `db:"recharge_addr"`
+	TxHash       string `db:"tx_hash"`
 }
 
 type WithdrawResponse struct {

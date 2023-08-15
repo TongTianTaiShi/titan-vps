@@ -4,30 +4,19 @@ import (
 	"context"
 
 	"github.com/LMF709268224/titan-vps/api/types"
-	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
 	"github.com/LMF709268224/titan-vps/node/handler"
 )
 
 func (m *Basis) GetBalance(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
 
-	cfg, err := m.GetBasisConfigFunc()
-	if err != nil {
-		return "", err
-	}
-
-	client := filecoinbridge.NewGrpcClient(cfg.LotusHTTPSAddr, cfg.TitanContractorAddr)
-
-	value, err := client.GetBalance(userID)
-	if err != nil {
-		return "", err
-	}
-
-	return value.String(), nil
+	return m.LoadUserToken(userID)
 }
 
 func (m *Basis) GetRechargeAddress(ctx context.Context) (string, error) {
-	return m.TransactionMgr.GetTronAddr(), nil
+	userID := handler.GetID(ctx)
+
+	return m.GetRechargeAddressOfUser(userID)
 }
 
 func (m *Basis) Withdraw(ctx context.Context, withdrawAddr, value string) error {
