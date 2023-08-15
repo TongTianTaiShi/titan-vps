@@ -10,8 +10,8 @@ import (
 func (n *SQLDB) SaveRechargeInfo(rInfo *types.RechargeRecord) error {
 	// update record table
 	query := fmt.Sprintf(
-		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, recharge_addr, recharge_hash, msg, user_id, tx_hash) 
-		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :recharge_addr, :recharge_hash, :msg, :user_id, :tx_hash)`, rechargeRecordTable)
+		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state,  user_id) 
+		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :user_id)`, rechargeRecordTable)
 	_, err := n.db.NamedExec(query, rInfo)
 
 	return err

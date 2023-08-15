@@ -84,6 +84,7 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 
 	err := m.SaveRechargeInfo(info)
 	if err != nil {
+		log.Errorf("SaveRechargeInfo:%v", err)
 		return
 	}
 

@@ -2,7 +2,6 @@ package aliyun
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/opentracing/opentracing-go/log"
 	"io/ioutil"
@@ -361,7 +360,6 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 		},
 		DataDisk: []*ecs20140526.DescribePriceRequestDataDisk{},
 	}
-	fmt.Println(describePriceRequest)
 	if len(priceReq.DataDisk) > 0 {
 		for _, v := range priceReq.DataDisk {
 			DataDiskInfo := &ecs20140526.DescribePriceRequestDataDisk{
