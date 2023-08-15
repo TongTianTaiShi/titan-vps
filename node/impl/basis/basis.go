@@ -318,6 +318,21 @@ func (m *Basis) Logout(ctx context.Context, user *types.UserReq) error {
 	return nil
 }
 
+func (m *Basis) GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
+	return m.LoadWithdrawRecords(limit, offset)
+}
+
+func (m *Basis) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error {
+	info, err := m.LoadWithdrawRecord(orderID)
+	if err != nil {
+		return err
+	}
+
+	info.WithdrawHash = withdrawHash
+
+	return m.UpdateWithdrawRecord(info, types.WithdrawDone)
+}
+
 var _ api.Basis = &Basis{}
 
 func verifyEthMessage(code string, signedMessage string) (string, error) {

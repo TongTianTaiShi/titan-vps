@@ -35,9 +35,13 @@ type BasisStruct struct {
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
 
+		GetWithdrawalRecords func(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) `perm:"default"`
+
 		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"admin"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"default"`
+
+		UpdateWithdrawalRecord func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
 	}
 }
 
@@ -107,9 +111,9 @@ type UserAPIStruct struct {
 
 		GetRechargeAddress func(p0 context.Context) (string, error) `perm:"user"`
 
-		GetRechargeRecord func(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) `perm:"user"`
+		GetUserRechargeRecords func(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) `perm:"user"`
 
-		GetWithdrawRecord func(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) `perm:"user"`
+		GetUserWithdrawalRecords func(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) `perm:"user"`
 
 		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"default"`
 
@@ -203,6 +207,17 @@ func (s *BasisStub) DescribeRegions(p0 context.Context) ([]string, error) {
 	return *new([]string), ErrNotSupported
 }
 
+func (s *BasisStruct) GetWithdrawalRecords(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) {
+	if s.Internal.GetWithdrawalRecords == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetWithdrawalRecords(p0, p1, p2)
+}
+
+func (s *BasisStub) GetWithdrawalRecords(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) {
+	return nil, ErrNotSupported
+}
+
 func (s *BasisStruct) MintToken(p0 context.Context, p1 string) (string, error) {
 	if s.Internal.MintToken == nil {
 		return "", ErrNotSupported
@@ -223,6 +238,17 @@ func (s *BasisStruct) RebootInstance(p0 context.Context, p1 string, p2 string) (
 
 func (s *BasisStub) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
 	return "", ErrNotSupported
+}
+
+func (s *BasisStruct) UpdateWithdrawalRecord(p0 context.Context, p1 string, p2 string) error {
+	if s.Internal.UpdateWithdrawalRecord == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.UpdateWithdrawalRecord(p0, p1, p2)
+}
+
+func (s *BasisStub) UpdateWithdrawalRecord(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
 }
 
 func (s *CommonStruct) AuthNew(p0 context.Context, p1 *types.JWTPayload) (string, error) {
@@ -401,25 +427,25 @@ func (s *UserAPIStub) GetRechargeAddress(p0 context.Context) (string, error) {
 	return "", ErrNotSupported
 }
 
-func (s *UserAPIStruct) GetRechargeRecord(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) {
-	if s.Internal.GetRechargeRecord == nil {
+func (s *UserAPIStruct) GetUserRechargeRecords(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) {
+	if s.Internal.GetUserRechargeRecords == nil {
 		return nil, ErrNotSupported
 	}
-	return s.Internal.GetRechargeRecord(p0, p1, p2)
+	return s.Internal.GetUserRechargeRecords(p0, p1, p2)
 }
 
-func (s *UserAPIStub) GetRechargeRecord(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) {
+func (s *UserAPIStub) GetUserRechargeRecords(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) {
 	return nil, ErrNotSupported
 }
 
-func (s *UserAPIStruct) GetWithdrawRecord(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) {
-	if s.Internal.GetWithdrawRecord == nil {
+func (s *UserAPIStruct) GetUserWithdrawalRecords(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) {
+	if s.Internal.GetUserWithdrawalRecords == nil {
 		return nil, ErrNotSupported
 	}
-	return s.Internal.GetWithdrawRecord(p0, p1, p2)
+	return s.Internal.GetUserWithdrawalRecords(p0, p1, p2)
 }
 
-func (s *UserAPIStub) GetWithdrawRecord(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) {
+func (s *UserAPIStub) GetUserWithdrawalRecords(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) {
 	return nil, ErrNotSupported
 }
 

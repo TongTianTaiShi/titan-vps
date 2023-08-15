@@ -34,13 +34,13 @@ func (m *Basis) Withdraw(ctx context.Context, withdrawAddr, value string) error 
 	return m.WithdrawManager.CreateWithdrawOrder(userID, withdrawAddr, value)
 }
 
-func (m *Basis) GetRechargeRecord(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) {
+func (m *Basis) GetUserRechargeRecords(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) {
 	userID := handler.GetID(ctx)
 
 	return m.LoadRechargeRecordsByUser(userID, limit, offset)
 }
 
-func (m *Basis) GetWithdrawRecord(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
+func (m *Basis) GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
 	userID := handler.GetID(ctx)
 
 	return m.LoadWithdrawRecordsByUser(userID, limit, offset)

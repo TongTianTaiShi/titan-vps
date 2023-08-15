@@ -83,16 +83,31 @@ func (n *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.
 }
 
 // LoadWithdrawRecords load the withdraw records from the incoming scheduler
-func (n *SQLDB) LoadWithdrawRecords(state types.WithdrawState) ([]*types.WithdrawRecord, error) {
-	var infos []*types.WithdrawRecord
-	query := fmt.Sprintf("SELECT * FROM %s WHERE state=? ", withdrawRecordTable)
+func (n *SQLDB) LoadWithdrawRecords(limit, offset int64) (*types.WithdrawResponse, error) {
+	out := new(types.WithdrawResponse)
 
-	err := n.db.Select(&infos, query, state)
+	var infos []*types.WithdrawRecord
+	query := fmt.Sprintf("SELECT * FROM %s order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable)
+	if limit > loadOrderRecordsDefaultLimit {
+		limit = loadOrderRecordsDefaultLimit
+	}
+
+	err := n.db.Select(&infos, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
-	return infos, nil
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=?", withdrawRecordTable)
+	var count int
+	err = n.db.Get(&count, countQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	out.Total = count
+	out.List = infos
+
+	return out, nil
 }
 
 // LoadWithdrawRecordsByUser load records

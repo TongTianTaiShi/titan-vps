@@ -21,6 +21,9 @@ type Basis interface {
 	CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error)                                 //perm:default
 	AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)         //perm:default
 	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                                                       //perm:default
+
+	GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) //perm:default
+	UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error                 //perm:default
 }
 
 // OrderAPI is an interface for order
@@ -34,13 +37,13 @@ type OrderAPI interface {
 // UserAPI is an interface for user
 type UserAPI interface {
 	// user
-	GetBalance(ctx context.Context) (string, error)                                              //perm:user
-	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)             //perm:user
-	SignCode(ctx context.Context, userID string) (string, error)                                 //perm:default
-	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)                 //perm:default
-	Logout(ctx context.Context, user *types.UserReq) error                                       //perm:user
-	GetRechargeAddress(ctx context.Context) (string, error)                                      //perm:user
-	Withdraw(ctx context.Context, withdrawAddr, value string) error                              //perm:user
-	GetRechargeRecord(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) //perm:user
-	GetWithdrawRecord(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) //perm:user
+	GetBalance(ctx context.Context) (string, error)                                                     //perm:user
+	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                    //perm:user
+	SignCode(ctx context.Context, userID string) (string, error)                                        //perm:default
+	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)                        //perm:default
+	Logout(ctx context.Context, user *types.UserReq) error                                              //perm:user
+	GetRechargeAddress(ctx context.Context) (string, error)                                             //perm:user
+	Withdraw(ctx context.Context, withdrawAddr, value string) error                                     //perm:user
+	GetUserRechargeRecords(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error)   //perm:user
+	GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) //perm:user
 }
