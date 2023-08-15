@@ -58,18 +58,19 @@ func TestWatch(t *testing.T) {
 }
 
 func TestCreateAddr(t *testing.T) {
-	privateKey, err := hdwallet.NewPrivateKey("")
-	if err != nil {
-		fmt.Println("NewPrivateKey err : ", err)
-		return
+	for i := 0; i < 10; i++ {
+
+		privateKey, err := hdwallet.NewPrivateKey("")
+		if err != nil {
+			fmt.Println("NewPrivateKey err : ", err)
+			return
+		}
+
+		address := hdwallet.PrikeyToAddressTron(privateKey)
+		prikey := hdwallet.PrikeyToHexString(privateKey)
+
+		fmt.Println("\"", address, "\", #", prikey)
 	}
-
-	address := hdwallet.PrikeyToAddressTron(privateKey)
-
-	prikey := hdwallet.PrikeyToHexString(privateKey)
-
-	fmt.Println("NewPrivateKey  : ", prikey)
-	fmt.Println("address  : ", address)
 }
 
 func TestX(t *testing.T) {

@@ -50,7 +50,7 @@ func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 		OrderID:       state.OrderID.String(),
 		State:         types.OrderState(state.State),
 		From:          state.From,
-		User:          state.User,
+		UserID:        state.User,
 		To:            state.To,
 		Value:         state.Value,
 		DoneState:     state.DoneState.Int(),
@@ -75,7 +75,7 @@ func orderInfoFrom(info *types.OrderRecord) *OrderInfo {
 		To:            info.To,
 		VpsID:         info.VpsID,
 		Msg:           info.Msg,
-		User:          info.User,
+		User:          info.UserID,
 		TxHash:        info.TxHash,
 	}
 

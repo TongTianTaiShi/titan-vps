@@ -10,7 +10,7 @@ import (
 func (m *Basis) GetBalance(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
 
-	return m.LoadUserToken(userID)
+	return m.LoadUserBalance(userID)
 }
 
 func (m *Basis) GetRechargeAddress(ctx context.Context) (string, error) {

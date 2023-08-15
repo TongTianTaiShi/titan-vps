@@ -4,8 +4,8 @@ var cOrderRecordTable = `
 	CREATE TABLE if not exists %s (
 		order_id           VARCHAR(128) NOT NULL UNIQUE,
 		from_addr          VARCHAR(128) DEFAULT "",
-		to_addr            VARCHAR(128) NOT NULL,
-		user_addr          VARCHAR(128) DEFAULT "",
+		to_addr            VARCHAR(128) DEFAULT "",
+		user_id            VARCHAR(128) NOT NULL,
 		tx_hash            VARCHAR(128) DEFAULT "",
 		value              VARCHAR(32)  DEFAULT 0,
 		created_height     INT          DEFAULT 0,
@@ -17,8 +17,7 @@ var cOrderRecordTable = `
 		vps_id             BIGINT(20)   NOT NULL,
 		msg                VARCHAR(2048) DEFAULT "",
 		PRIMARY KEY (order_id),
-		KEY idx_user (user_addr),
-		KEY idx_to (to_addr)
+		KEY idx_user (user_id)
 	) ENGINE=InnoDB COMMENT='order record';`
 
 var cVpsInstanceTable = `
@@ -55,19 +54,15 @@ var cRechargeTable = `
 		order_id           VARCHAR(128) NOT NULL UNIQUE,
 		from_addr          VARCHAR(128) DEFAULT "",
 		to_addr            VARCHAR(128) NOT NULL,
-		user_addr          VARCHAR(128) DEFAULT "",
-		tx_hash            VARCHAR(128) DEFAULT "",
-		recharge_addr      VARCHAR(128) NOT NULL,
-		recharge_hash      VARCHAR(128) DEFAULT "",
+		user_id            VARCHAR(128) DEFAULT "",
 		value              VARCHAR(32)  DEFAULT 0,
 		created_height     INT          DEFAULT 0,
 		created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		state              INT          DEFAULT 0,
 		done_time          DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		done_height        INT          DEFAULT 0,
-		msg                VARCHAR(2048) DEFAULT "",
 		PRIMARY KEY (order_id),
-		KEY idx_user (user_addr),
+		KEY idx_user (user_id),
 		KEY idx_to (to_addr)
 	) ENGINE=InnoDB COMMENT='recharge info';`
 
@@ -76,8 +71,7 @@ var cWithdrawTable = `
 		order_id           VARCHAR(128) NOT NULL UNIQUE,
 		from_addr          VARCHAR(128) DEFAULT "",
 		to_addr            VARCHAR(128) NOT NULL,
-		user_addr          VARCHAR(128) DEFAULT "",
-		tx_hash            VARCHAR(128) DEFAULT "",
+		user_id            VARCHAR(128) DEFAULT "",
 		withdraw_addr      VARCHAR(128) NOT NULL,
 		withdraw_hash      VARCHAR(128) DEFAULT "",
 		value              VARCHAR(32)  DEFAULT 0,
@@ -86,9 +80,8 @@ var cWithdrawTable = `
 		state              INT          DEFAULT 0,
 		done_time          DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		done_height        INT          DEFAULT 0,
-		msg                VARCHAR(2048) DEFAULT "",
 		PRIMARY KEY (order_id),
-		KEY idx_user (user_addr),
+		KEY idx_user (user_id),
 		KEY idx_to (to_addr)
 	) ENGINE=InnoDB COMMENT='withdraw info';`
 
@@ -101,14 +94,14 @@ var cConfigTable = `
 
 var cUserTable = `
 	CREATE TABLE if not exists %s (
-		user_addr      VARCHAR(128) NOT NULL UNIQUE,
-		token          VARCHAR(32)  DEFAULT 0,
-		PRIMARY KEY (user_addr)
+		user_id      VARCHAR(128) NOT NULL UNIQUE,
+		balance        VARCHAR(32)  DEFAULT 0,
+		PRIMARY KEY (user_id)
 	) ENGINE=InnoDB COMMENT='user info';`
 
 var cRechargeAddressTable = `
 	CREATE TABLE if not exists %s (
 		addr      VARCHAR(128) NOT NULL UNIQUE,
-		user_addr VARCHAR(128) DEFAULT "",
+		user_id   VARCHAR(128) DEFAULT "",
 		PRIMARY KEY (addr)
 	) ENGINE=InnoDB COMMENT='recharge address ';`

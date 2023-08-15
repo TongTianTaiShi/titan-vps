@@ -1,9 +1,9 @@
 package orders
 
 import (
-	"math/big"
 	"time"
 
+	"github.com/LMF709268224/titan-vps/node/utils"
 	"github.com/filecoin-project/go-statemachine"
 )
 
@@ -41,21 +41,39 @@ func (m *Manager) handleCreated(ctx statemachine.Context, info OrderInfo) error 
 func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle wait payment, %s , info : %v", info.OrderID, info.PaymentInfo)
 
-	if info.PaymentInfo != nil {
-		if info.To == info.PaymentInfo.To {
-			orderAmount := new(big.Int)
-			orderAmount.SetString(info.Value, 10)
-
-			paymentAmount := new(big.Int)
-			paymentAmount.SetString(info.PaymentInfo.Value, 10)
-
-			if orderAmount.Cmp(paymentAmount) <= 0 {
-				return ctx.Send(PaymentSucceed{PaymentInfo: info.PaymentInfo})
-			}
-		}
+	height := m.getHeight()
+	original, err := m.LoadUserBalance(info.User)
+	if err != nil {
+		return ctx.Send(OrderCancel{Height: height})
 	}
 
-	return nil
+	newValue, ok := utils.BigIntReduce(original, info.Value)
+	if !ok {
+		return ctx.Send(OrderCancel{Height: height})
+	}
+
+	err = m.UpdateUserBalance(info.User, newValue, original)
+	if err != nil {
+		return ctx.Send(OrderCancel{Height: height})
+	}
+
+	return ctx.Send(PaymentSucceed{PaymentInfo: info.PaymentInfo})
+
+	// if info.PaymentInfo != nil {
+	// 	if info.To == info.PaymentInfo.To {
+	// 		orderAmount := new(big.Int)
+	// 		orderAmount.SetString(info.Value, 10)
+
+	// 		paymentAmount := new(big.Int)
+	// 		paymentAmount.SetString(info.PaymentInfo.Value, 10)
+
+	// 		if orderAmount.Cmp(paymentAmount) <= 0 {
+	// 			return ctx.Send(PaymentSucceed{PaymentInfo: info.PaymentInfo})
+	// 		}
+	// 	}
+	// }
+
+	// return nil
 }
 
 // handleBuyGoods handles the order to buy goods
@@ -88,7 +106,6 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle done, %s, goods info:%v", info.OrderID, info.GoodsInfo)
 
-	m.tMgr.RevertFvmAddress(info.To)
 	m.removeOrder(info.User)
 
 	return nil

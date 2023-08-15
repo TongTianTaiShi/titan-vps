@@ -44,11 +44,6 @@ func NewWithdrawManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasis
 		orderLock:     &sync.Mutex{},
 	}
 
-	m.initOngeingOrders()
-
-	// go m.checkOrdersTimeout()
-	go m.subscribeEvents()
-
 	return m, nil
 }
 
@@ -83,11 +78,10 @@ func (m *WithdrawManager) handleFvmTransfer(orderID string, tr *types.FvmTransfe
 	// }
 
 	info.Value = tr.Value
-	info.TxHash = tr.TxHash
+	info.OrderID = tr.TxHash
 	info.From = tr.From
 	info.DoneHeight = getFilecoinHeight(m.cfg.LotusHTTPSAddr)
 
-	// TODO notify
 	log.Warnf("need transfer %s USDT to %s", tr.Value, info.WithdrawAddr)
 
 	err = m.changeOrderState(types.WithdrawDone, info)
@@ -96,49 +90,6 @@ func (m *WithdrawManager) handleFvmTransfer(orderID string, tr *types.FvmTransfe
 		return
 	}
 }
-
-func (m *WithdrawManager) initOngeingOrders() {
-	records, err := m.LoadWithdrawRecords(types.WithdrawDone)
-	if err != nil {
-		log.Errorln("LoadWithdrawRecords err:", err.Error())
-		return
-	}
-
-	for _, info := range records {
-		m.tMgr.RecoverOutstandingFvmOrders(info.To, info.OrderID)
-		m.addOrder(info)
-	}
-}
-
-// func (m *WithdrawManager) checkOrdersTimeout() {
-// 	ticker := time.NewTicker(checkOrderInterval)
-// 	defer ticker.Stop()
-
-// 	for {
-// 		<-ticker.C
-
-// 		for _, orderRecord := range m.ongoingOrders {
-// 			orderID := orderRecord.OrderID
-// 			addr := orderRecord.To
-
-// 			info, err := m.LoadWithdrawRecord(orderID)
-// 			if err != nil {
-// 				log.Errorf("checkOrderTimeout LoadOrderRecord %s , %s err:%s", addr, orderID, err.Error())
-// 				continue
-// 			}
-
-// 			log.Debugf("checkout %s , %s ", addr, orderID)
-
-// 			if info.State == types.ExchangeCreated && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
-// 				err := m.changeOrderState(types.ExchangeTimeout, info)
-// 				if err != nil {
-// 					log.Errorf("checkOrderTimeout changeOrderState %s , %s err:%s", addr, orderID, err.Error())
-// 					continue
-// 				}
-// 			}
-// 		}
-// 	}
-// }
 
 func (m *WithdrawManager) getOrderIDByToAddress(to string) (string, bool) {
 	for _, orderRecord := range m.ongoingOrders {
@@ -151,20 +102,6 @@ func (m *WithdrawManager) getOrderIDByToAddress(to string) (string, bool) {
 	return "", false
 }
 
-// // CancelWithdrawOrder cancel the order
-// func (m *WithdrawManager) CancelWithdrawOrder(orderID string) error {
-// 	info, err := m.LoadWithdrawRecord(orderID)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	if info.State != types.ExchangeCreated {
-// 		return xerrors.Errorf("Invalid order status %d", info.State)
-// 	}
-
-// 	return m.changeOrderState(types.ExchangeCancel, info)
-// }
-
 func (m *WithdrawManager) changeOrderState(state types.WithdrawState, info *types.WithdrawRecord) error {
 	info.DoneHeight = getFilecoinHeight(m.cfg.LotusHTTPSAddr)
 
@@ -173,15 +110,12 @@ func (m *WithdrawManager) changeOrderState(state types.WithdrawState, info *type
 		return err
 	}
 
-	m.removeOrder(info.User)
-	m.tMgr.RevertFvmAddress(info.To)
-
 	return nil
 }
 
 // CreateWithdrawOrder create a withdraw order
-func (m *WithdrawManager) CreateWithdrawOrder(userAddr, withdrawAddr, value string) (err error) {
-	original, err := m.LoadUserToken(userAddr)
+func (m *WithdrawManager) CreateWithdrawOrder(userID, withdrawAddr, value string) (err error) {
+	original, err := m.LoadUserBalance(userID)
 	if err != nil {
 		return err
 	}
@@ -191,7 +125,7 @@ func (m *WithdrawManager) CreateWithdrawOrder(userAddr, withdrawAddr, value stri
 		return xerrors.New("Insufficient balance")
 	}
 
-	err = m.UpdateUserToken(userAddr, newValue, original)
+	err = m.UpdateUserBalance(userID, newValue, original)
 	if err != nil {
 		return err
 	}
@@ -201,7 +135,7 @@ func (m *WithdrawManager) CreateWithdrawOrder(userAddr, withdrawAddr, value stri
 
 	info := &types.WithdrawRecord{
 		OrderID:       orderID,
-		User:          userAddr,
+		User:          userID,
 		WithdrawAddr:  withdrawAddr,
 		Value:         value,
 		CreatedHeight: getFilecoinHeight(m.cfg.LotusHTTPSAddr),
@@ -209,24 +143,4 @@ func (m *WithdrawManager) CreateWithdrawOrder(userAddr, withdrawAddr, value stri
 	}
 
 	return m.SaveWithdrawInfo(info)
-}
-
-func (m *WithdrawManager) addOrder(info *types.WithdrawRecord) error {
-	m.orderLock.Lock()
-	defer m.orderLock.Unlock()
-
-	if _, exist := m.ongoingOrders[info.User]; exist {
-		return xerrors.New("user have order")
-	}
-
-	m.ongoingOrders[info.User] = info
-
-	return nil
-}
-
-func (m *WithdrawManager) removeOrder(userID string) {
-	m.orderLock.Lock()
-	defer m.orderLock.Unlock()
-
-	delete(m.ongoingOrders, userID)
 }

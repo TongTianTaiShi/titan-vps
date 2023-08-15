@@ -10,26 +10,26 @@ import (
 func (n *SQLDB) SaveUserInfo(rInfo *types.UserInfo) error {
 	// update record table
 	query := fmt.Sprintf(
-		`INSERT INTO %s (user_addr, token) 
-		        VALUES (:user_addr, :token)`, userTable)
+		`INSERT INTO %s (user_id, balance) 
+		        VALUES (:user_id, :balance)`, userTable)
 	_, err := n.db.NamedExec(query, rInfo)
 
 	return err
 }
 
-// UpdateUserToken update user token
-func (n *SQLDB) UpdateUserToken(userAddr, token, oldToken string) error {
-	query := fmt.Sprintf(`UPDATE %s SET token=? WHERE user_addr=? AND token=?`, userTable)
-	_, err := n.db.Exec(query, token, userAddr, oldToken)
+// UpdateUserBalance update user balance
+func (n *SQLDB) UpdateUserBalance(userID, balance, oldBalance string) error {
+	query := fmt.Sprintf(`UPDATE %s SET balance=? WHERE user_id=? AND balance=?`, userTable)
+	_, err := n.db.Exec(query, balance, userID, oldBalance)
 
 	return err
 }
 
-// LoadUserToken load user token
-func (n *SQLDB) LoadUserToken(userAddr string) (string, error) {
+// LoadUserBalance load user balance
+func (n *SQLDB) LoadUserBalance(userID string) (string, error) {
 	var info string
-	query := fmt.Sprintf("SELECT token FROM %s WHERE user_addr=?", userTable)
-	err := n.db.Get(&info, query, userAddr)
+	query := fmt.Sprintf("SELECT balance FROM %s WHERE user_id=?", userTable)
+	err := n.db.Get(&info, query, userID)
 	if err != nil {
 		return "0", err
 	}

@@ -148,7 +148,7 @@ type AttachKeyPairResponse struct {
 type OrderRecord struct {
 	OrderID       string     `db:"order_id"`
 	From          string     `db:"from_addr"`
-	User          string     `db:"user_addr"`
+	UserID        string     `db:"user_id"`
 	To            string     `db:"to_addr"`
 	Value         string     `db:"value"`
 	State         OrderState `db:"state"`
@@ -205,19 +205,14 @@ type RechargeResponse struct {
 type RechargeRecord struct {
 	OrderID       string        `db:"order_id"`
 	From          string        `db:"from_addr"`
-	User          string        `db:"user_addr"`
+	UserID        string        `db:"user_id"`
 	To            string        `db:"to_addr"`
 	Value         string        `db:"value"`
 	State         RechargeState `db:"state"`
 	CreatedHeight int64         `db:"created_height"`
 	CreatedTime   time.Time     `db:"created_time"`
 	DoneTime      time.Time     `db:"done_time"`
-	Msg           string        `db:"msg"`
 	DoneHeight    int64         `db:"done_height"`
-	RechargeHash  string        `db:"recharge_hash"`
-
-	RechargeAddr string `db:"recharge_addr"`
-	TxHash       string `db:"tx_hash"`
 }
 
 type WithdrawResponse struct {
@@ -229,16 +224,14 @@ type WithdrawResponse struct {
 type WithdrawRecord struct {
 	OrderID       string        `db:"order_id"`
 	From          string        `db:"from_addr"`
-	User          string        `db:"user_addr"`
+	User          string        `db:"user_id"`
 	To            string        `db:"to_addr"`
 	Value         string        `db:"value"`
 	State         WithdrawState `db:"state"`
 	CreatedHeight int64         `db:"created_height"`
 	CreatedTime   time.Time     `db:"created_time"`
 	DoneTime      time.Time     `db:"done_time"`
-	Msg           string        `db:"msg"`
 	DoneHeight    int64         `db:"done_height"`
-	TxHash        string        `db:"tx_hash"`
 	WithdrawAddr  string        `db:"withdraw_addr"`
 	WithdrawHash  string        `db:"withdraw_hash"`
 }
@@ -292,16 +285,16 @@ type FvmTransferWatch struct {
 }
 
 type TronTransferWatch struct {
-	TxHash   string
-	From     string
-	To       string
-	Value    string
-	State    core.Transaction_ResultContractResult
-	Height   int64
-	UserAddr string
+	TxHash string
+	From   string
+	To     string
+	Value  string
+	State  core.Transaction_ResultContractResult
+	Height int64
+	UserID string
 }
 
 type RechargeAddress struct {
-	Addr     string `db:"addr"`
-	UserAddr string `db:"user_addr"`
+	Addr   string `db:"addr"`
+	UserID string `db:"user_id"`
 }

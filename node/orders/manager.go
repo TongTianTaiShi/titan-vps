@@ -75,7 +75,7 @@ func (m *Manager) Start(ctx context.Context) {
 		log.Errorf("restartStateMachines err: %s", err.Error())
 	}
 
-	go m.subscribeEvents()
+	// go m.subscribeEvents()
 	go m.checkOrdersTimeout()
 }
 
@@ -173,13 +173,6 @@ func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 		return err
 	}
 
-	address, err := m.tMgr.AllocateFvmAddress(orderID)
-	if err != nil {
-		m.removeOrder(req.User)
-		return err
-	}
-
-	req.To = address
 	req.OrderID = orderID
 	req.CreatedHeight = m.getHeight()
 
@@ -191,11 +184,11 @@ func (m *Manager) addOrder(req *types.OrderRecord) error {
 	m.orderLock.Lock()
 	defer m.orderLock.Unlock()
 
-	if _, exist := m.ongoingOrders[req.User]; exist {
+	if _, exist := m.ongoingOrders[req.UserID]; exist {
 		return xerrors.New("user have order")
 	}
 
-	m.ongoingOrders[req.User] = req
+	m.ongoingOrders[req.UserID] = req
 
 	return nil
 }

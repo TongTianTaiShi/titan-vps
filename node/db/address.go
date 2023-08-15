@@ -20,10 +20,10 @@ func (n *SQLDB) SaveRechargeAddress(addresses []string) error {
 }
 
 // UpdateRechargeAddressOfUser save user information
-func (n *SQLDB) UpdateRechargeAddressOfUser(addr, userAddr string) error {
+func (n *SQLDB) UpdateRechargeAddressOfUser(addr, userID string) error {
 	// update record table
-	dQuery := fmt.Sprintf(`UPDATE %s SET user_addr=? WHERE addr=? AND user_addr="" `, rechargeAddressTable)
-	_, err := n.db.Exec(dQuery, userAddr, addr)
+	dQuery := fmt.Sprintf(`UPDATE %s SET user_id=? WHERE addr=? AND user_id="" `, rechargeAddressTable)
+	_, err := n.db.Exec(dQuery, userID, addr)
 
 	return err
 }
@@ -31,7 +31,7 @@ func (n *SQLDB) UpdateRechargeAddressOfUser(addr, userAddr string) error {
 // GetUserOfRechargeAddress get user address
 func (n *SQLDB) GetUserOfRechargeAddress(addr string) (string, error) {
 	var info string
-	query := fmt.Sprintf("SELECT user_addr FROM %s WHERE addr=?", rechargeAddressTable)
+	query := fmt.Sprintf("SELECT user_id FROM %s WHERE addr=?", rechargeAddressTable)
 	err := n.db.Get(&info, query, addr)
 	if err != nil {
 		return "", err
@@ -41,10 +41,10 @@ func (n *SQLDB) GetUserOfRechargeAddress(addr string) (string, error) {
 }
 
 // GetRechargeAddressOfUser get user recharge address
-func (n *SQLDB) GetRechargeAddressOfUser(userAddr string) (string, error) {
+func (n *SQLDB) GetRechargeAddressOfUser(userID string) (string, error) {
 	var info string
-	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_addr=?", rechargeAddressTable)
-	err := n.db.Get(&info, query, userAddr)
+	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_id=?", rechargeAddressTable)
+	err := n.db.Get(&info, query, userID)
 	if err != nil && err != sql.ErrNoRows {
 		return "", err
 	}
@@ -55,7 +55,7 @@ func (n *SQLDB) GetRechargeAddressOfUser(userAddr string) (string, error) {
 // GetRechargeAddresses get user recharge address
 func (n *SQLDB) GetRechargeAddresses() ([]string, error) {
 	var infos []string
-	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_addr=''", rechargeAddressTable)
+	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_id=''", rechargeAddressTable)
 	err := n.db.Select(&infos, query)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (n *SQLDB) GetRechargeAddresses() ([]string, error) {
 // GetAllRechargeAddresses get user recharge address
 func (n *SQLDB) GetAllRechargeAddresses() ([]types.RechargeAddress, error) {
 	var infos []types.RechargeAddress
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_addr!=''", rechargeAddressTable)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id !='' ", rechargeAddressTable)
 	err := n.db.Select(&infos, query)
 	if err != nil {
 		return nil, err

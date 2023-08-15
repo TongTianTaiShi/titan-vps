@@ -26,7 +26,6 @@ type Manager struct {
 
 	tronAddrs map[string]string
 
-	addrWait     sync.WaitGroup
 	tronAddrLock *sync.Mutex
 }
 
@@ -50,11 +49,8 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, db *db.SQLD
 		tronAddrLock: &sync.Mutex{},
 	}
 
-	manager.addrWait.Add(2)
-	manager.initFvmAddress(cfg.PaymentAddresses)
 	manager.initTronAddress(cfg.RechargeAddresses)
 
-	go manager.watchFvmTransactions()
 	go manager.watchTronTransactions()
 
 	return manager, nil

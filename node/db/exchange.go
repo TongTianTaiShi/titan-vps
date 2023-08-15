@@ -10,8 +10,8 @@ import (
 func (n *SQLDB) SaveRechargeInfo(rInfo *types.RechargeRecord) error {
 	// update record table
 	query := fmt.Sprintf(
-		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, recharge_addr, recharge_hash, msg, user_addr, tx_hash) 
-		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :recharge_addr, :recharge_hash, :msg, :user_addr, :tx_hash)`, rechargeRecordTable)
+		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, recharge_addr, recharge_hash, msg, user_id, tx_hash) 
+		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :recharge_addr, :recharge_hash, :msg, :user_id, :tx_hash)`, rechargeRecordTable)
 	_, err := n.db.NamedExec(query, rInfo)
 
 	return err
@@ -19,8 +19,8 @@ func (n *SQLDB) SaveRechargeInfo(rInfo *types.RechargeRecord) error {
 
 // UpdateRechargeRecord update recharge record information
 func (n *SQLDB) UpdateRechargeRecord(info *types.RechargeRecord, newState types.RechargeState) error {
-	query := fmt.Sprintf(`UPDATE %s SET state=?, done_time=NOW(), done_height=?, recharge_hash=?, msg=? WHERE order_id=? AND state=?`, rechargeRecordTable)
-	_, err := n.db.Exec(query, newState, info.DoneHeight, info.RechargeHash, info.Msg, info.OrderID, info.State)
+	query := fmt.Sprintf(`UPDATE %s SET state=?, done_time=NOW(), done_height=? WHERE order_id=? AND state=?`, rechargeRecordTable)
+	_, err := n.db.Exec(query, newState, info.DoneHeight, info.OrderID, info.State)
 
 	return err
 }
@@ -54,8 +54,8 @@ func (n *SQLDB) LoadRechargeRecords(state types.RechargeState) ([]*types.Recharg
 func (n *SQLDB) SaveWithdrawInfo(rInfo *types.WithdrawRecord) error {
 	// update record table
 	query := fmt.Sprintf(
-		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, withdraw_addr, withdraw_hash, msg, user_addr, tx_hash) 
-		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :withdraw_addr, :withdraw_hash, :msg, :user_addr, :tx_hash)`, withdrawRecordTable)
+		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, withdraw_addr, withdraw_hash, msg, user_id, tx_hash) 
+		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :withdraw_addr, :withdraw_hash, :msg, :user_id, :tx_hash)`, withdrawRecordTable)
 	_, err := n.db.NamedExec(query, rInfo)
 
 	return err
@@ -76,8 +76,8 @@ func (n *SQLDB) LoadWithdrawRecord(orderID string) (*types.WithdrawRecord, error
 // UpdateWithdrawRecord update withdraw record information
 func (n *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.WithdrawState) error {
 	query := fmt.Sprintf(`UPDATE %s SET state=?, value=?, done_time=NOW(), from_addr=?,
-	    done_height=?, tx_hash=?, withdraw_hash=?, msg=? WHERE order_id=? AND state=?`, withdrawRecordTable)
-	_, err := n.db.Exec(query, newState, info.Value, info.From, info.DoneHeight, info.TxHash, info.WithdrawHash, info.Msg, info.OrderID, info.State)
+	    done_height=?, withdraw_hash=? WHERE order_id=? AND state=?`, withdrawRecordTable)
+	_, err := n.db.Exec(query, newState, info.Value, info.From, info.DoneHeight, info.WithdrawHash, info.OrderID, info.State)
 
 	return err
 }
@@ -96,23 +96,23 @@ func (n *SQLDB) LoadWithdrawRecords(state types.WithdrawState) ([]*types.Withdra
 }
 
 // LoadWithdrawRecordsByUser load records
-func (n *SQLDB) LoadWithdrawRecordsByUser(userAddr string, limit, offset int64) (*types.WithdrawResponse, error) {
+func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, offset int64) (*types.WithdrawResponse, error) {
 	out := new(types.WithdrawResponse)
 
 	var infos []*types.WithdrawRecord
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_addr=? order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable)
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
 
-	err := n.db.Select(&infos, query, userAddr, limit, offset)
+	err := n.db.Select(&infos, query, userID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_addr=?", withdrawRecordTable)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=?", withdrawRecordTable)
 	var count int
-	err = n.db.Get(&count, countQuery, userAddr)
+	err = n.db.Get(&count, countQuery, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -124,23 +124,23 @@ func (n *SQLDB) LoadWithdrawRecordsByUser(userAddr string, limit, offset int64) 
 }
 
 // LoadRechargeRecordsByUser load records
-func (n *SQLDB) LoadRechargeRecordsByUser(userAddr string, limit, offset int64) (*types.RechargeResponse, error) {
+func (n *SQLDB) LoadRechargeRecordsByUser(userID string, limit, offset int64) (*types.RechargeResponse, error) {
 	out := new(types.RechargeResponse)
 
 	var infos []*types.RechargeRecord
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_addr=? order by created_time desc LIMIT ? OFFSET ?", rechargeRecordTable)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? order by created_time desc LIMIT ? OFFSET ?", rechargeRecordTable)
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
 
-	err := n.db.Select(&infos, query, userAddr, limit, offset)
+	err := n.db.Select(&infos, query, userID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_addr=?", rechargeRecordTable)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=?", rechargeRecordTable)
 	var count int
-	err = n.db.Get(&count, countQuery, userAddr)
+	err = n.db.Get(&count, countQuery, userID)
 	if err != nil {
 		return nil, err
 	}

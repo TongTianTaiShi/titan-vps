@@ -2,7 +2,6 @@ package basis
 
 import (
 	"context"
-	"crypto/sha256"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -304,7 +303,7 @@ func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResp
 	rsp.UserId = address
 	rsp.Token = string(tk)
 
-	err = m.SaveUserInfo(&types.UserInfo{User: address, Token: "0"})
+	err = m.SaveUserInfo(&types.UserInfo{UserID: address, Balance: "0"})
 	if err != nil {
 		log.Debugf("SaveUserInfo err:%s", err.Error())
 	}
@@ -341,20 +340,4 @@ func verifyEthMessage(code string, signedMessage string) (string, error) {
 	}
 
 	return crypto.PubkeyToAddress(*sigPublicKeyECDSA).String(), nil
-}
-
-func verifyTronMessage(code string, signedMessage string) (string, error) {
-	sig := []byte(signedMessage)
-
-	message, err := crypto.Ecrecover(sha256.New().Sum([]byte(code)), sig)
-	if err != nil {
-		return "", err
-	}
-
-	pubKey, err := crypto.UnmarshalPubkey(message)
-	if err != nil {
-		return "", err
-	}
-
-	return crypto.PubkeyToAddress(*pubKey).String(), err
 }

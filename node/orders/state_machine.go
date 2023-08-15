@@ -163,7 +163,6 @@ func (m *Manager) initStateMachines(ctx context.Context) error {
 			continue
 		}
 
-		m.tMgr.RecoverOutstandingFvmOrders(order.To, order.OrderID.String())
 		m.addOrder(order.ToOrderRecord())
 	}
 

@@ -19,9 +19,9 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateInstanceReq) (s
 	}
 
 	info := &types.OrderRecord{
-		VpsID: id,
-		User:  userID,
-		Value: "10000000000",
+		VpsID:  id,
+		UserID: userID,
+		Value:  "10000000000",
 	}
 
 	err = m.OrderMgr.CreatedOrder(info)

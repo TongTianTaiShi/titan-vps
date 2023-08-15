@@ -69,12 +69,12 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 		return
 	}
 
-	userAddr := tr.UserAddr
+	userID := tr.UserID
 	height := getTronHeight(m.cfg.TrxHTTPSAddr)
 
 	info := &types.RechargeRecord{
 		OrderID:       tr.TxHash,
-		User:          userAddr,
+		UserID:        userID,
 		CreatedHeight: height,
 		DoneHeight:    height,
 		Value:         tr.Value,
@@ -82,7 +82,6 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 		State:         types.RechargeCreate,
 	}
 
-	info.Msg = tr.State.String()
 	err := m.SaveRechargeInfo(info)
 	if err != nil {
 		return
@@ -90,16 +89,16 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 
 	state := types.RechargeRefund
 
-	oldValue, err := m.LoadUserToken(userAddr)
+	original, err := m.LoadUserBalance(userID)
 	if err != nil {
-		log.Errorf("%s LoadUserToken hash:%s,state:%d, err:%s", info.OrderID, info.RechargeHash, state, err.Error())
+		log.Errorf("%s LoadUserToken state:%d, err:%s", info.OrderID, state, err.Error())
 		return
 	}
 
-	value := utils.BigIntAdd(oldValue, tr.Value)
-	err = m.UpdateUserToken(userAddr, value, oldValue)
+	value := utils.BigIntAdd(original, tr.Value)
+	err = m.UpdateUserBalance(userID, value, original)
 	if err != nil {
-		log.Errorf("%s UpdateUserToken hash:%s,state:%d, err:%s", info.OrderID, info.RechargeHash, state, err.Error())
+		log.Errorf("%s UpdateUserToken state:%d, err:%s", info.OrderID, state, err.Error())
 		return
 	}
 
@@ -107,6 +106,6 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 
 	err = m.UpdateRechargeRecord(info, state)
 	if err != nil {
-		log.Errorf("%s UpdateRechargeRecord hash:%s,state:%d, err:%s", info.OrderID, info.RechargeHash, state, err.Error())
+		log.Errorf("%s UpdateRechargeRecord state:%d, err:%s", info.OrderID, state, err.Error())
 	}
 }
