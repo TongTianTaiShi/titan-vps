@@ -100,7 +100,7 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 	}
 
 	bNum := blockExtention.BlockHeader.RawData.Number
-	log.Debugln(" handleBlock height :", bNum)
+	// log.Debugln(" handleBlock height :", bNum)
 
 	bid := hexutil.Encode(blockExtention.Blockid)
 

@@ -56,7 +56,7 @@ func (n *SQLDB) GetRechargeAddressOfUser(userAddr string) (string, error) {
 func (n *SQLDB) GetRechargeAddresses() ([]string, error) {
 	var infos []string
 	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_addr=''", rechargeAddressTable)
-	err := n.db.Get(&infos, query)
+	err := n.db.Select(&infos, query)
 	if err != nil {
 		return nil, err
 	}
