@@ -15,6 +15,7 @@ var BasisCMDs = []*cli.Command{
 	describeInstanceTypeCmd,
 	mintCmd,
 	describeImageCmd,
+	describePriceCmd,
 }
 
 var orderCmds = &cli.Command{
@@ -85,6 +86,37 @@ var describeImageCmd = &cli.Command{
 		defer closer()
 
 		list, err := api.DescribeImages(ctx, "cn-hangzhou", "")
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(list)
+		return nil
+	},
+}
+
+var describePriceCmd = &cli.Command{
+	Name:  "dpc",
+	Usage: "describe price",
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+
+		list, err := api.DescribePrice(ctx,
+			&types.DescribePriceReq{
+				RegionId:           "cn-hangzhou",
+				InstanceType:       "ecs.s2.xlarge",
+				PriceUnit:          "Week",
+				Period:             1,
+				Amount:             1,
+				InternetChargeType: "PayByTraffic",
+			})
 		if err != nil {
 			return err
 		}

@@ -13,14 +13,15 @@ type Basis interface {
 
 	MintToken(ctx context.Context, address string) (string, error) //perm:admin
 
-	DescribeRegions(ctx context.Context) ([]string, error)                                                                                 //perm:default
-	DescribeInstanceType(ctx context.Context, instanceTypeReq *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) //perm:default
-	DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error)                             //perm:default
-	DescribePrice(ctx context.Context, describePriceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error)                     //perm:default
-	CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error)                           //perm:default
-	CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error)                                 //perm:default
-	AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)         //perm:default
-	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                                                       //perm:default
+	DescribeRegions(ctx context.Context) ([]string, error)                                                                                                          //perm:default
+	DescribeInstanceType(ctx context.Context, instanceTypeReq *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error)                          //perm:default
+	DescribeRecommendInstanceType(ctx context.Context, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) //perm:default
+	DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error)                                                      //perm:default
+	DescribePrice(ctx context.Context, describePriceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error)                                              //perm:default
+	CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error)                                                    //perm:default
+	CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error)                                                          //perm:default
+	AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)                                  //perm:default
+	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                                                                                //perm:default
 
 	GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) //perm:default
 	UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error                 //perm:default

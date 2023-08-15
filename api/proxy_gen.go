@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -32,6 +31,8 @@ type BasisStruct struct {
 		DescribeInstanceType func(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) `perm:"default"`
 
 		DescribePrice func(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) `perm:"default"`
+
+		DescribeRecommendInstanceType func(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) `perm:"default"`
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
 
@@ -194,6 +195,17 @@ func (s *BasisStruct) DescribePrice(p0 context.Context, p1 *types.DescribePriceR
 
 func (s *BasisStub) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	return nil, ErrNotSupported
+}
+
+func (s *BasisStruct) DescribeRecommendInstanceType(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
+	if s.Internal.DescribeRecommendInstanceType == nil {
+		return *new([]*types.DescribeRecommendInstanceResponse), ErrNotSupported
+	}
+	return s.Internal.DescribeRecommendInstanceType(p0, p1)
+}
+
+func (s *BasisStub) DescribeRecommendInstanceType(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
+	return *new([]*types.DescribeRecommendInstanceResponse), ErrNotSupported
 }
 
 func (s *BasisStruct) DescribeRegions(p0 context.Context) ([]string, error) {

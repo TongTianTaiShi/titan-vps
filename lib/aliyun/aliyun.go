@@ -2,8 +2,11 @@ package aliyun
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/opentracing/opentracing-go/log"
+	"io/ioutil"
+	"net/http"
 
 	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
 	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
@@ -45,7 +48,6 @@ func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceRe
 	if err != nil {
 		return out, err
 	}
-
 	createInstanceRequest := &ecs20140526.CreateInstanceRequest{
 		RegionId:           tea.String(instanceReq.RegionId),
 		InstanceType:       tea.String(instanceReq.InstanceType),
@@ -341,10 +343,10 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 	if err != nil {
 		return out, err
 	}
-
 	describePriceRequest := &ecs20140526.DescribePriceRequest{
 		RegionId:           tea.String(priceReq.RegionId),
 		InstanceType:       tea.String(priceReq.InstanceType),
+		ResourceType:       tea.String("instance"),
 		PriceUnit:          tea.String(priceReq.PriceUnit),
 		Period:             tea.Int32(priceReq.Period),
 		ImageId:            tea.String(priceReq.ImageID),
@@ -359,6 +361,7 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 		},
 		DataDisk: []*ecs20140526.DescribePriceRequestDataDisk{},
 	}
+	fmt.Println(describePriceRequest)
 	if len(priceReq.DataDisk) > 0 {
 		for _, v := range priceReq.DataDisk {
 			DataDiskInfo := &ecs20140526.DescribePriceRequestDataDisk{
@@ -387,6 +390,7 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 			Currency:      *price.Currency,
 			OriginalPrice: *price.OriginalPrice,
 			TradePrice:    *price.TradePrice,
+			USDPrice:      getExchangeRate(*price.TradePrice),
 		}
 		return nil
 	}()
@@ -485,21 +489,26 @@ func DescribeRegions(keyID, keySecret string) (*ecs20140526.DescribeRegionsRespo
 }
 
 // DescribeRecommendInstanceType Describe Instance Type
-func DescribeRecommendInstanceType(regionID, keyID, keySecret string, cores int32, memory float32) (*ecs20140526.DescribeRecommendInstanceTypeResponse, *tea.SDKError) {
+func DescribeRecommendInstanceType(keyID, keySecret string, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) (*ecs20140526.DescribeRecommendInstanceTypeResponse, *tea.SDKError) {
 	var result *ecs20140526.DescribeRecommendInstanceTypeResponse
-	client, err := newClient(regionID, keyID, keySecret)
+	client, err := newClient(instanceTypeReq.RegionId, keyID, keySecret)
 	if err != nil {
 		return result, err
 	}
 
 	describeRecommendInstanceTypeRequest := &ecs20140526.DescribeRecommendInstanceTypeRequest{
 		NetworkType:        tea.String("vpc"),
-		RegionId:           tea.String(regionID),
-		Cores:              tea.Int32(cores),
-		Memory:             tea.Float32(memory),
-		InstanceChargeType: tea.String("PrePaid"),
+		RegionId:           tea.String(instanceTypeReq.RegionId),
+		InstanceChargeType: tea.String(instanceTypeReq.InstanceChargeType),
 	}
+	if instanceTypeReq.Cores > 0 {
+		describeRecommendInstanceTypeRequest.Cores = tea.Int32(instanceTypeReq.Cores)
 
+	}
+	if instanceTypeReq.Memory > 0 {
+		describeRecommendInstanceTypeRequest.Memory = tea.Float32(instanceTypeReq.Memory)
+
+	}
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {
 		defer func() {
@@ -743,20 +752,22 @@ func DescribeInstances(regionID, keyID, keySecret string, InstanceIds []string) 
 }
 
 // DescribeAvailableResource Describe Resource
-func DescribeAvailableResource(regionID, keyID, keySecret string, cores int32, memory float32) (*ecs20140526.DescribeAvailableResourceResponse, *tea.SDKError) {
+func DescribeAvailableResource(keyID, keySecret string, instanceType *types.DescribeInstanceTypeReq) (*ecs20140526.DescribeAvailableResourceResponse, *tea.SDKError) {
 	var result *ecs20140526.DescribeAvailableResourceResponse
 
-	client, err := newClient(regionID, keyID, keySecret)
+	client, err := newClient(instanceType.RegionId, keyID, keySecret)
 	if err != nil {
 		return result, err
 	}
 
 	describeAvailableResourceRequest := &ecs20140526.DescribeAvailableResourceRequest{
-		RegionId:            tea.String(regionID),
+		NetworkCategory:     tea.String("vpc"),
+		ResourceType:        tea.String("instance"),
+		RegionId:            tea.String(instanceType.RegionId),
 		DestinationResource: tea.String("InstanceType"),
 		InstanceChargeType:  tea.String("PrePaid"),
-		Cores:               tea.Int32(cores),
-		Memory:              tea.Float32(memory),
+		Cores:               tea.Int32(instanceType.CpuCoreCount),
+		Memory:              tea.Float32(instanceType.MemorySize),
 	}
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {
@@ -920,4 +931,21 @@ func RebootInstance(regionID, keyID, keySecret, instanceId string) (*ecs20140526
 		return result, errors
 	}
 	return result, nil
+}
+
+func getExchangeRate(price float32) float32 {
+	client := &http.Client{}
+	// todo
+	resp, err := client.Get("https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD")
+	if err != nil {
+		return 0
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	var ExchangeRateRsp types.ExchangeRateRsp
+	err = json.Unmarshal(body, &ExchangeRateRsp)
+	if err != nil {
+		return 0
+	}
+	return price / ExchangeRateRsp.Data.Rate
 }

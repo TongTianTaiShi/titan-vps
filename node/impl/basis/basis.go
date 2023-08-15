@@ -74,29 +74,26 @@ func (m *Basis) DescribeRegions(ctx context.Context) ([]string, error) {
 	return rpsData, nil
 }
 
-func (m *Basis) DescribeRecommendInstanceType(ctx context.Context, regionID string, cores int32, memory float32) ([]string, error) {
+func (m *Basis) DescribeRecommendInstanceType(ctx context.Context, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
 	k, s := m.getAccessKeys()
-	rsp, err := aliyun.DescribeRecommendInstanceType(regionID, k, s, cores, memory)
+	rsp, err := aliyun.DescribeRecommendInstanceType(k, s, instanceTypeReq)
 	if err != nil {
 		log.Errorf("DescribeRecommendInstanceType err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
 
-	resources := make(map[string]string)
+	var rspDataList []*types.DescribeRecommendInstanceResponse
 	for _, data := range rsp.Body.Data.RecommendInstanceType {
-		instanceType := data.InstanceType.InstanceType
-		if *instanceType == "" {
-			continue
+		rspData := &types.DescribeRecommendInstanceResponse{
+			InstanceType:       *data.InstanceType.InstanceType,
+			Memory:             *data.InstanceType.Memory,
+			Cores:              *data.InstanceType.Cores,
+			InstanceTypeFamily: *data.InstanceType.InstanceTypeFamily,
 		}
-		resources[*instanceType] = *instanceType
+		rspDataList = append(rspDataList, rspData)
 	}
 
-	var rpsData []string
-	for value := range resources {
-		rpsData = append(rpsData, value)
-	}
-
-	return rpsData, nil
+	return rspDataList, nil
 }
 
 func (m *Basis) DescribeInstanceType(ctx context.Context, instanceType *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
@@ -106,10 +103,34 @@ func (m *Basis) DescribeInstanceType(ctx context.Context, instanceType *types.De
 		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
+	AvailableResource, err := aliyun.DescribeAvailableResource(k, s, instanceType)
+	if err != nil {
+		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
+		return nil, xerrors.New(*err.Data)
+	}
+	instanceTypes := make(map[string]int)
+	for _, data := range AvailableResource.Body.AvailableZones.AvailableZone {
+		availableTypes := data.AvailableResources.AvailableResource
+		if len(availableTypes) > 0 {
+			for _, instanceTypeResource := range availableTypes {
+				Resources := instanceTypeResource.SupportedResources.SupportedResource
+				if len(Resources) > 0 {
+					for _, Resource := range Resources {
+						if *Resource.Status == "Available" {
+							instanceTypes[*Resource.Value] = 1
+						}
+					}
+				}
+			}
+		}
+	}
 	rspDataList := &types.DescribeInstanceTypeResponse{
 		NextToken: *rsp.Body.NextToken,
 	}
 	for _, data := range rsp.Body.InstanceTypes.InstanceType {
+		if _, ok := instanceTypes[*data.InstanceTypeId]; !ok {
+			continue
+		}
 		rspData := &types.DescribeInstanceType{
 			InstanceCategory:       *data.InstanceCategory,
 			InstanceTypeId:         *data.InstanceTypeId,
@@ -218,7 +239,7 @@ func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanc
 	}
 
 	log.Debugf("securityGroupID : ", securityGroupID)
-
+	// todo amount > 1
 	result, err := aliyun.CreateInstance(k, s, vpsInfo, false)
 	if err != nil {
 		log.Errorf("CreateInstance err: %s", err.Error())

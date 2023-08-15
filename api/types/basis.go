@@ -66,6 +66,7 @@ type DescribePriceResponse struct {
 	Currency      string
 	OriginalPrice float32
 	TradePrice    float32
+	USDPrice      float32
 }
 
 type DescribeImageResponse struct {
@@ -114,6 +115,20 @@ type DescribeInstanceTypeReq struct {
 	CpuCoreCount     int32
 	MaxResults       int64
 	NextToken        string
+}
+
+type DescribeRecommendInstanceTypeReq struct {
+	RegionId           string
+	Memory             float32
+	Cores              int32
+	InstanceChargeType string
+}
+
+type DescribeRecommendInstanceResponse struct {
+	Memory             int32
+	Cores              int32
+	InstanceType       string
+	InstanceTypeFamily string
 }
 
 type DescribeInstanceTypeResponse struct {
@@ -292,6 +307,14 @@ type TronTransferWatch struct {
 	State  core.Transaction_ResultContractResult
 	Height int64
 	UserID string
+}
+
+type ExchangeRateRsp struct {
+	Code int32               `json:"code"`
+	Data ExchangeRateDataRsp `json:"data"`
+}
+type ExchangeRateDataRsp struct {
+	Rate float32 `json:"rate"`
 }
 
 type RechargeAddress struct {

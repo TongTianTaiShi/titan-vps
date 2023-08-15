@@ -36,6 +36,19 @@ var cVpsInstanceTable = `
 		PRIMARY KEY (id)
 	) ENGINE=InnoDB COMMENT='vps instance';`
 
+var cMyServersTable = `
+	CREATE TABLE if not exists %s (
+		id          		BIGINT(20) NOT NULL AUTO_INCREMENT,
+		server_name         VARCHAR(128) NOT NULL,
+		system       		VARCHAR(128) NOT NULL,
+		location             VARCHAR(128) NOT NULL,
+		price      		VARCHAR(128) NOT NULL,
+		status  		TINYINT(1) NOT NULL DEFAULT 0,
+		internet_charge_type 	TINYINT(1) NOT NULL DEFAULT 0,
+		created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (id)
+	) ENGINE=InnoDB COMMENT='instance info';`
+
 var cInstanceInfoTable = `
 	CREATE TABLE if not exists %s (
 		id          		BIGINT(20) NOT NULL AUTO_INCREMENT,
