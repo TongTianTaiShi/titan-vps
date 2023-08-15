@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 )
 
@@ -40,9 +41,21 @@ func (n *SQLDB) GetRechargeAddressOfUser(userAddr string) (string, error) {
 	var info string
 	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_addr=?", rechargeAddressTable)
 	err := n.db.Get(&info, query, userAddr)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return "", err
 	}
 
 	return info, nil
+}
+
+// GetRechargeAddresses get user recharge address
+func (n *SQLDB) GetRechargeAddresses() ([]string, error) {
+	var infos []string
+	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_addr=''", rechargeAddressTable)
+	err := n.db.Get(&infos, query)
+	if err != nil && err != sql.ErrNoRows {
+		return infos, err
+	}
+
+	return infos, nil
 }

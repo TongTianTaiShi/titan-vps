@@ -303,6 +303,12 @@ func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResp
 	}
 	rsp.UserId = address
 	rsp.Token = string(tk)
+
+	err = m.SaveUserInfo(&types.UserInfo{User: address, Token: "0"})
+	if err != nil {
+		log.Debugf("SaveUserInfo err:%s", err.Error())
+	}
+
 	return rsp, nil
 }
 

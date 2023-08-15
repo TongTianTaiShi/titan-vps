@@ -171,15 +171,22 @@ func (m *Manager) decodeData(trc20 []byte) (to string, amount string, flag bool)
 func (m *Manager) handleTransfer(mCid, from, to, blockCid string, height int64, amount string, contract string, state core.Transaction_ResultContractResult) {
 	log.Infof("Transfer :%s,%s,%s,%s,%s,%s", mCid, to, from, contract, amount, state)
 
-	if userAddr, ok := m.tronAddrs[to]; ok {
-		m.notify.Pub(&types.TronTransferWatch{
-			TxHash:   mCid,
-			From:     from,
-			To:       to,
-			Value:    amount,
-			State:    state,
-			Height:   height,
-			UserAddr: userAddr,
-		}, types.EventTronTransferWatch.String())
+	userAddr, err := m.GetUserOfRechargeAddress(to)
+	if err != nil {
+		return
 	}
+
+	if userAddr == "" {
+		return
+	}
+
+	m.notify.Pub(&types.TronTransferWatch{
+		TxHash:   mCid,
+		From:     from,
+		To:       to,
+		Value:    amount,
+		State:    state,
+		Height:   height,
+		UserAddr: userAddr,
+	}, types.EventTronTransferWatch.String())
 }

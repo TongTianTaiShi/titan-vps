@@ -5,6 +5,7 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/handler"
+	"golang.org/x/xerrors"
 )
 
 func (m *Basis) GetBalance(ctx context.Context) (string, error) {
@@ -16,7 +17,29 @@ func (m *Basis) GetBalance(ctx context.Context) (string, error) {
 func (m *Basis) GetRechargeAddress(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
 
-	return m.GetRechargeAddressOfUser(userID)
+	addr, err := m.GetRechargeAddressOfUser(userID)
+	if err != nil {
+		return "", err
+	}
+
+	if addr == "" {
+		list, err := m.GetRechargeAddresses()
+		if err != nil {
+			return "", err
+		}
+
+		if len(list) == 0 {
+			return "", xerrors.New("not found address")
+		}
+
+		addr := list[0]
+		err = m.UpdateRechargeAddressOfUser(addr, userID)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return addr, nil
 }
 
 func (m *Basis) Withdraw(ctx context.Context, withdrawAddr, value string) error {
