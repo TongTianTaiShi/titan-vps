@@ -4,12 +4,12 @@ import (
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
-	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
 	"github.com/LMF709268224/titan-vps/lib/trxbridge/core"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/transaction"
+	"github.com/LMF709268224/titan-vps/node/utils"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
 )
@@ -88,16 +88,22 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 		return
 	}
 
-	state := types.RechargeCreate
-	client := filecoinbridge.NewGrpcClient(m.cfg.LotusHTTPSAddr, m.cfg.TitanContractorAddr)
-	hash, err := client.Mint(m.cfg.PrivateKeyStr, userAddr, tr.Value)
+	state := types.RechargeRefund
+
+	oldValue, err := m.LoadUserToken(userAddr)
 	if err != nil {
-		info.Msg = err.Error()
-		state = types.RechargeRefund
-	} else {
-		info.RechargeHash = hash
-		state = types.RechargeDone
+		log.Errorf("%s LoadUserToken hash:%s,state:%d, err:%s", info.OrderID, info.RechargeHash, state, err.Error())
+		return
 	}
+
+	value := utils.BigIntAdd(oldValue, tr.Value)
+	err = m.UpdateUserToken(userAddr, value, oldValue)
+	if err != nil {
+		log.Errorf("%s UpdateUserToken hash:%s,state:%d, err:%s", info.OrderID, info.RechargeHash, state, err.Error())
+		return
+	}
+
+	state = types.RechargeDone
 
 	err = m.UpdateRechargeRecord(info, state)
 	if err != nil {
