@@ -8,6 +8,7 @@ import (
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
+	"golang.org/x/xerrors"
 )
 
 var log = logging.Logger("transaction")
@@ -25,7 +26,8 @@ type Manager struct {
 
 	tronAddrs map[string]string
 
-	addrWait sync.WaitGroup
+	addrWait     sync.WaitGroup
+	tronAddrLock *sync.Mutex
 }
 
 // NewManager creates a new instance of the node manager
@@ -43,16 +45,39 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, db *db.SQLD
 		usabilityFvmAddrs: make(map[string]string),
 		usedFvmAddrs:      make(map[string]string),
 		fvmAddrLock:       &sync.Mutex{},
+
+		tronAddrs:    make(map[string]string),
+		tronAddrLock: &sync.Mutex{},
 	}
 
 	manager.addrWait.Add(2)
 	manager.initFvmAddress(cfg.PaymentAddresses)
-
-	// manager.tronAddr = cfg.RechargeAddress
-	// TODO init
+	manager.initTronAddress(cfg.RechargeAddresses)
 
 	go manager.watchFvmTransactions()
 	go manager.watchTronTransactions()
 
 	return manager, nil
+}
+
+// AllocateTronAddress get a fvm address
+func (m *Manager) AllocateTronAddress(userID string) (string, error) {
+	list, err := m.GetRechargeAddresses()
+	if err != nil {
+		return "", err
+	}
+
+	if len(list) == 0 {
+		return "", xerrors.New("not found address")
+	}
+
+	addr := list[0]
+	err = m.UpdateRechargeAddressOfUser(addr, userID)
+	if err != nil {
+		return "", err
+	}
+
+	m.addTronAddr(addr, userID)
+
+	return addr, nil
 }

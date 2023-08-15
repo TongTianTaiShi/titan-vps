@@ -4,6 +4,29 @@ import (
 	"golang.org/x/xerrors"
 )
 
+func (m *Manager) initTronAddress(as []string) {
+	err := m.SaveRechargeAddress(as)
+	if err != nil {
+		log.Errorf("SaveRechargeAddress err:%s", err.Error())
+	}
+
+	list, err := m.GetAllRechargeAddresses()
+	if err != nil {
+		log.Errorf("GetAllRechargeAddresses err:%s", err.Error())
+	}
+
+	for _, addr := range list {
+		m.tronAddrs[addr.Addr] = addr.UserAddr
+	}
+}
+
+func (m *Manager) addTronAddr(addr, userID string) {
+	m.tronAddrLock.Lock()
+	defer m.tronAddrLock.Unlock()
+
+	m.tronAddrs[addr] = userID
+}
+
 func (m *Manager) initFvmAddress(as []string) {
 	defer m.addrWait.Done()
 

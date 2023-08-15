@@ -300,3 +300,8 @@ type TronTransferWatch struct {
 	Height   int64
 	UserAddr string
 }
+
+type RechargeAddress struct {
+	Addr     string `db:"addr"`
+	UserAddr string `db:"user_addr"`
+}

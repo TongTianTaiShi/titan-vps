@@ -3,16 +3,20 @@ package db
 import (
 	"database/sql"
 	"fmt"
+
+	"github.com/LMF709268224/titan-vps/api/types"
 )
 
 // SaveRechargeAddress save user information
 func (n *SQLDB) SaveRechargeAddress(addresses []string) error {
 	// update record table
-	query := fmt.Sprintf(
-		`INSERT INTO %s (addr) VALUES (?)`, rechargeAddressTable)
-	_, err := n.db.NamedExec(query, addresses)
+	for _, addr := range addresses {
+		query := fmt.Sprintf(
+			`INSERT INTO %s (addr) VALUES (?)`, rechargeAddressTable)
+		n.db.Exec(query, addr)
+	}
 
-	return err
+	return nil
 }
 
 // UpdateRechargeAddressOfUser save user information
@@ -53,8 +57,20 @@ func (n *SQLDB) GetRechargeAddresses() ([]string, error) {
 	var infos []string
 	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_addr=''", rechargeAddressTable)
 	err := n.db.Get(&infos, query)
-	if err != nil && err != sql.ErrNoRows {
-		return infos, err
+	if err != nil {
+		return nil, err
+	}
+
+	return infos, nil
+}
+
+// GetAllRechargeAddresses get user recharge address
+func (n *SQLDB) GetAllRechargeAddresses() ([]types.RechargeAddress, error) {
+	var infos []types.RechargeAddress
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_addr!=''", rechargeAddressTable)
+	err := n.db.Select(&infos, query)
+	if err != nil {
+		return nil, err
 	}
 
 	return infos, nil
