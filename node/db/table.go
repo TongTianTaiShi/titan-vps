@@ -20,10 +20,11 @@ var cOrderRecordTable = `
 		KEY idx_user (user_id)
 	) ENGINE=InnoDB COMMENT='order record';`
 
-var cVpsInstanceTable = `
+var cInstanceDetailsTable = `
 	CREATE TABLE if not exists %s (
 		id          		BIGINT(20) NOT NULL AUTO_INCREMENT,
 		region_id          	VARCHAR(128) ,
+		instance_id          	VARCHAR(128) ,
 		instance_type       VARCHAR(128) NOT NULL,
 		dry_run             TINYINT(1) NOT NULL DEFAULT 0,
 		image_id      		VARCHAR(128) NOT NULL,
@@ -33,34 +34,40 @@ var cVpsInstanceTable = `
 		period          	INT          DEFAULT 0,
 		bandwidth_out       INT          DEFAULT 0,
 		bandwidth_in        INT          DEFAULT 0,
+	    publicIpAddress 	VARCHAR(128) NOT NULL,
+	    trade_price  		VARCHAR(128) NOT NULL,
 		PRIMARY KEY (id)
 	) ENGINE=InnoDB COMMENT='vps instance';`
 
-var cMyServersTable = `
+//var cMyServersTable = `
+//	CREATE TABLE if not exists %s (
+//		id          		BIGINT(20) NOT NULL AUTO_INCREMENT,
+//		server_name         VARCHAR(128) NOT NULL,
+//		system       		VARCHAR(128) NOT NULL,
+//		location             VARCHAR(128) NOT NULL,
+//		price      		VARCHAR(128) NOT NULL,
+//		status  		TINYINT(1) NOT NULL DEFAULT 0,
+//		internet_charge_type 	TINYINT(1) NOT NULL DEFAULT 0,
+//		created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
+//		PRIMARY KEY (id)
+//	) ENGINE=InnoDB COMMENT='instance info';`
+
+var cMyInstancesTable = `
 	CREATE TABLE if not exists %s (
 		id          		BIGINT(20) NOT NULL AUTO_INCREMENT,
-		server_name         VARCHAR(128) NOT NULL,
-		system       		VARCHAR(128) NOT NULL,
+		instance_id         VARCHAR(128) NOT NULL,
+		order_id       		VARCHAR(128) NOT NULL,
+		user_id       		VARCHAR(128) NOT NULL,
+		PrivateKeyStatus    TINYINT(1) NOT NULL DEFAULT 0,
+	    instance_name         VARCHAR(128) NOT NULL,
+		instance_system       		VARCHAR(128) NOT NULL,
 		location             VARCHAR(128) NOT NULL,
 		price      		VARCHAR(128) NOT NULL,
 		status  		TINYINT(1) NOT NULL DEFAULT 0,
 		internet_charge_type 	TINYINT(1) NOT NULL DEFAULT 0,
 		created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (id)
-	) ENGINE=InnoDB COMMENT='instance info';`
-
-var cInstanceInfoTable = `
-	CREATE TABLE if not exists %s (
-		id          		BIGINT(20) NOT NULL AUTO_INCREMENT,
-		instance_id         VARCHAR(128) NOT NULL,
-		order_id       		VARCHAR(128) NOT NULL,
-		dry_run             VARCHAR(128) NOT NULL,
-		RequestId      		VARCHAR(128) NOT NULL,
-		TradePrice  		VARCHAR(128) NOT NULL,
-		PublicIpAddress 	VARCHAR(128) NOT NULL,
-		PrivateKeyStatus    TINYINT(1) NOT NULL DEFAULT 0,
-		PRIMARY KEY (id)
-	) ENGINE=InnoDB COMMENT='instance info';`
+	) ENGINE=InnoDB COMMENT='my instance';`
 
 var cRechargeTable = `
 	CREATE TABLE if not exists %s (

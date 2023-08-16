@@ -54,8 +54,8 @@ func (n *SQLDB) LoadRechargeRecords(state types.RechargeState) ([]*types.Recharg
 func (n *SQLDB) SaveWithdrawInfo(rInfo *types.WithdrawRecord) error {
 	// update record table
 	query := fmt.Sprintf(
-		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, withdraw_addr, withdraw_hash, msg, user_id, tx_hash) 
-		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :withdraw_addr, :withdraw_hash, :msg, :user_id, :tx_hash)`, withdrawRecordTable)
+		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, withdraw_addr, withdraw_hash,  user_id) 
+		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :withdraw_addr, :withdraw_hash, :user_id)`, withdrawRecordTable)
 	_, err := n.db.NamedExec(query, rInfo)
 
 	return err

@@ -152,6 +152,7 @@ type CreateKeyPairResponse struct {
 	KeyPairName    string
 	PrivateKeyBody string
 }
+
 type AttachKeyPairResponse struct {
 	Code       string
 	InstanceId string
@@ -272,6 +273,7 @@ type UserInfoTmp struct {
 	UserLogin UserResponse
 	OrderInfo OrderRecord
 }
+
 type Token struct {
 	TokenString string
 	UserId      string
@@ -320,4 +322,14 @@ type ExchangeRateDataRsp struct {
 type RechargeAddress struct {
 	Addr   string `db:"addr"`
 	UserID string `db:"user_id"`
+}
+
+type MyInstances struct {
+	ID         string `db:"id"`
+	InstanceId string `db:"instance_id"`
+}
+
+type InstanceDetails struct {
+	ID         string `db:"id"`
+	InstanceId string `db:"instance_id"`
 }

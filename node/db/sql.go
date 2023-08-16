@@ -42,11 +42,14 @@ const (
 	orderRecordTable       = "order_record"
 	vpsInstanceTable       = "vps_instance"
 	vpsInstanceDeviceTable = "vps_instance_device"
+	instancesDetailsTable  = "instances_details"
+	myInstancesTable       = "my_instances"
 	rechargeRecordTable    = "recharge_record"
 	withdrawRecordTable    = "withdraw_record"
 	configTable            = "config"
 	userTable              = "user"
 	rechargeAddressTable   = "recharge_address"
+	myServers              = "my_servers"
 
 	// Default limits for loading table entries.
 	loadOrderRecordsDefaultLimit = 100
@@ -69,13 +72,14 @@ func InitTables(d *SQLDB) error {
 
 	// Execute table creation statements
 	tx.MustExec(fmt.Sprintf(cOrderRecordTable, orderRecordTable))
-	tx.MustExec(fmt.Sprintf(cVpsInstanceTable, vpsInstanceTable))
-	tx.MustExec(fmt.Sprintf(cInstanceInfoTable, vpsInstanceDeviceTable))
+	tx.MustExec(fmt.Sprintf(cInstanceDetailsTable, instancesDetailsTable))
+	tx.MustExec(fmt.Sprintf(cMyInstancesTable, myInstancesTable))
 	tx.MustExec(fmt.Sprintf(cRechargeTable, rechargeRecordTable))
 	tx.MustExec(fmt.Sprintf(cWithdrawTable, withdrawRecordTable))
 	tx.MustExec(fmt.Sprintf(cConfigTable, configTable))
 	tx.MustExec(fmt.Sprintf(cUserTable, userTable))
 	tx.MustExec(fmt.Sprintf(cRechargeAddressTable, rechargeAddressTable))
+	//tx.MustExec(fmt.Sprintf(cMyServersTable, myServers))
 
 	return tx.Commit()
 }
