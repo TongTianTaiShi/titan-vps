@@ -57,7 +57,7 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 		return ctx.Send(OrderCancel{Height: height})
 	}
 
-	return ctx.Send(PaymentSucceed{PaymentInfo: info.PaymentInfo})
+	return ctx.Send(PaymentSucceed{})
 
 	// if info.PaymentInfo != nil {
 	// 	if info.To == info.PaymentInfo.To {
