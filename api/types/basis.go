@@ -250,6 +250,7 @@ type WithdrawRecord struct {
 	DoneHeight    int64         `db:"done_height"`
 	WithdrawAddr  string        `db:"withdraw_addr"`
 	WithdrawHash  string        `db:"withdraw_hash"`
+	Executor      string        `db:"executor"`
 }
 
 type PaymentCompletedReq struct {

@@ -10,8 +10,7 @@ type Basis interface {
 	Common
 	OrderAPI
 	UserAPI
-
-	MintToken(ctx context.Context, address string) (string, error) //perm:admin
+	AdminAPI
 
 	DescribeRegions(ctx context.Context) ([]string, error)                                                                                                          //perm:default
 	DescribeInstanceType(ctx context.Context, instanceTypeReq *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error)                          //perm:default
@@ -22,9 +21,15 @@ type Basis interface {
 	CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error)                                                          //perm:default
 	AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)                                  //perm:default
 	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                                                                                //perm:default
+}
 
+// AdminAPI is an interface for admin
+type AdminAPI interface {
+	GetAdminSignCode(ctx context.Context, userID string) (string, error)                            //perm:default
+	LoginAdmin(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)               //perm:default
+	MintToken(ctx context.Context, address string) (string, error)                                  //perm:admin
 	GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) //perm:default
-	UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error                 //perm:default
+	UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error                 //perm:admin
 }
 
 // OrderAPI is an interface for order
@@ -39,7 +44,7 @@ type UserAPI interface {
 	// user
 	GetBalance(ctx context.Context) (string, error)                                                     //perm:user
 	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                    //perm:user
-	SignCode(ctx context.Context, userID string) (string, error)                                        //perm:default
+	GetSignCode(ctx context.Context, userID string) (string, error)                                     //perm:default
 	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)                        //perm:default
 	Logout(ctx context.Context, user *types.UserReq) error                                              //perm:user
 	GetRechargeAddress(ctx context.Context) (string, error)                                             //perm:user

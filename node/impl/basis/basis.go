@@ -295,7 +295,7 @@ func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
 	return client.Mint(cfg.PrivateKeyStr, address, valueStr)
 }
 
-func (m *Basis) SignCode(ctx context.Context, userId string) (string, error) {
+func (m *Basis) GetSignCode(ctx context.Context, userId string) (string, error) {
 	return m.UserMgr.SetSignCode(userId)
 }
 
@@ -346,25 +346,10 @@ func (m *Basis) initUser(userID string) error {
 }
 
 func (m *Basis) Logout(ctx context.Context, user *types.UserReq) error {
-	nodeID := handler.GetID(ctx)
-	log.Warnf("user id : %s", nodeID)
+	userID := handler.GetID(ctx)
+	log.Warnf("user id : %s", userID)
 	// delete(m.UserMgr.User, user.UserId)
 	return nil
-}
-
-func (m *Basis) GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
-	return m.LoadWithdrawRecords(limit, offset)
-}
-
-func (m *Basis) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error {
-	info, err := m.LoadWithdrawRecord(orderID)
-	if err != nil {
-		return err
-	}
-
-	info.WithdrawHash = withdrawHash
-
-	return m.UpdateWithdrawRecord(info, types.WithdrawDone)
 }
 
 var _ api.Basis = &Basis{}

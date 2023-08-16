@@ -76,8 +76,8 @@ func (n *SQLDB) LoadWithdrawRecord(orderID string) (*types.WithdrawRecord, error
 // UpdateWithdrawRecord update withdraw record information
 func (n *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.WithdrawState) error {
 	query := fmt.Sprintf(`UPDATE %s SET state=?, value=?, done_time=NOW(), from_addr=?,
-	    done_height=?, withdraw_hash=? WHERE order_id=? AND state=?`, withdrawRecordTable)
-	_, err := n.db.Exec(query, newState, info.Value, info.From, info.DoneHeight, info.WithdrawHash, info.OrderID, info.State)
+	    done_height=?, withdraw_hash=?, executor=? WHERE order_id=? AND state=?`, withdrawRecordTable)
+	_, err := n.db.Exec(query, newState, info.Value, info.From, info.DoneHeight, info.WithdrawHash, info.Executor, info.OrderID, info.State)
 
 	return err
 }

@@ -39,7 +39,7 @@ var cInstanceDetailsTable = `
 		PRIMARY KEY (id)
 	) ENGINE=InnoDB COMMENT='vps instance';`
 
-//var cMyServersTable = `
+// var cMyServersTable = `
 //	CREATE TABLE if not exists %s (
 //		id          		BIGINT(20) NOT NULL AUTO_INCREMENT,
 //		server_name         VARCHAR(128) NOT NULL,
@@ -100,6 +100,7 @@ var cWithdrawTable = `
 		state              INT          DEFAULT 0,
 		done_time          DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		done_height        INT          DEFAULT 0,
+		executor           VARCHAR(128) DEFAULT "",
 		PRIMARY KEY (order_id),
 		KEY idx_user (user_id),
 		KEY idx_to (to_addr)
