@@ -324,12 +324,25 @@ func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResp
 	rsp.UserId = address
 	rsp.Token = string(tk)
 
-	err = m.SaveUserInfo(&types.UserInfo{UserID: address, Balance: "0"})
+	err = m.initUser(address)
 	if err != nil {
-		log.Debugf("SaveUserInfo err:%s", err.Error())
+		return nil, xerrors.Errorf("initUser err:%s", err.Error())
 	}
 
 	return rsp, nil
+}
+
+func (m *Basis) initUser(userID string) error {
+	exist, err := m.UserExists(userID)
+	if err != nil {
+		return err
+	}
+
+	if exist {
+		return nil
+	}
+
+	return m.SaveUserInfo(&types.UserInfo{UserID: userID, Balance: "0"})
 }
 
 func (m *Basis) Logout(ctx context.Context, user *types.UserReq) error {

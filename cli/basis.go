@@ -11,11 +11,18 @@ import (
 var BasisCMDs = []*cli.Command{
 	WithCategory("order", orderCmds),
 	WithCategory("user", userCmds),
-	describeRegionsCmd,
-	describeInstanceTypeCmd,
-	mintCmd,
-	describeImageCmd,
-	describePriceCmd,
+	WithCategory("vps", vpsCmds),
+}
+
+var vpsCmds = &cli.Command{
+	Name:  "vps",
+	Usage: "Manage vps",
+	Subcommands: []*cli.Command{
+		describeRegionsCmd,
+		describeInstanceTypeCmd,
+		describeImageCmd,
+		describePriceCmd,
+	},
 }
 
 var orderCmds = &cli.Command{
@@ -24,7 +31,6 @@ var orderCmds = &cli.Command{
 	Subcommands: []*cli.Command{
 		createOrderCmd,
 		cancelOrderCmd,
-		paymentCompletedCmd,
 	},
 }
 
@@ -32,11 +38,8 @@ var userCmds = &cli.Command{
 	Name:  "user",
 	Usage: "Manage user",
 	Subcommands: []*cli.Command{
-		signCodeCmd,
-		loginCmd,
-		logoutCmd,
 		getBalanceCmd,
-		rechargeCmd,
+		getRechargeAddrCmd,
 		withdrawCmd,
 	},
 }
@@ -128,21 +131,21 @@ var describePriceCmd = &cli.Command{
 
 var describeInstanceTypeCmd = &cli.Command{
 	Name:  "dit",
-	Usage: "describe regions",
+	Usage: "describe instance type",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "region_id",
-			Usage: "node type: edge 1, update 6",
+			Name:  "rid",
+			Usage: "region id",
 			Value: "",
 		},
 		&cli.StringFlag{
 			Name:  "core",
-			Usage: "node type: edge 1, update 6",
+			Usage: "core size",
 			Value: "",
 		},
 		&cli.StringFlag{
 			Name:  "memory",
-			Usage: "node type: edge 1, update 6",
+			Usage: "memory size",
 			Value: "",
 		},
 	},
@@ -155,10 +158,10 @@ var describeInstanceTypeCmd = &cli.Command{
 		}
 
 		defer closer()
-		regionId := cctx.String("region_id")
+		regionID := cctx.String("rid")
 		core := int32(cctx.Int("core"))
 		memory := float32(cctx.Float64("memory"))
-		list, err := api.DescribeInstanceType(ctx, &types.DescribeInstanceTypeReq{RegionId: regionId, CpuArchitecture: "X86", CpuCoreCount: core, MemorySize: memory, InstanceCategory: "General-purpose"})
+		list, err := api.DescribeInstanceType(ctx, &types.DescribeInstanceTypeReq{RegionId: regionID, CpuArchitecture: "X86", CpuCoreCount: core, MemorySize: memory, InstanceCategory: "General-purpose"})
 		if err != nil {
 			return err
 		}
@@ -204,8 +207,8 @@ var cancelOrderCmd = &cli.Command{
 	Usage: "cancel order",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "order_id",
-			Usage: "node type: edge 1, update 6",
+			Name:  "oid",
+			Usage: "order id",
 			Value: "",
 		},
 	},
@@ -218,52 +221,14 @@ var cancelOrderCmd = &cli.Command{
 		}
 		defer closer()
 
-		orderID := cctx.String("order_id")
+		orderID := cctx.String("oid")
 
 		return api.CancelOrder(ctx, orderID)
 	},
 }
 
-var paymentCompletedCmd = &cli.Command{
-	Name:  "pc",
-	Usage: "payment completed",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "order_id",
-			Usage: "node type: edge 1, update 6",
-			Value: "",
-		},
-		&cli.StringFlag{
-			Name:  "tr_id",
-			Usage: "node type: edge 1, update 6",
-			Value: "",
-		},
-	},
-	Action: func(cctx *cli.Context) error {
-		ctx := ReqContext(cctx)
-
-		api, closer, err := GetBasisAPI(cctx)
-		if err != nil {
-			return err
-		}
-
-		defer closer()
-
-		orderID := cctx.String("order_id")
-		trID := cctx.String("tr_id")
-
-		str, err := api.PaymentCompleted(ctx, types.PaymentCompletedReq{OrderID: orderID, TransactionID: trID})
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(str)
-		return nil
-	},
-}
-
 var getBalanceCmd = &cli.Command{
-	Name:  "gb",
+	Name:  "balance",
 	Usage: "get balance",
 	Flags: []cli.Flag{},
 	Action: func(cctx *cli.Context) error {
@@ -286,9 +251,9 @@ var getBalanceCmd = &cli.Command{
 	},
 }
 
-var rechargeCmd = &cli.Command{
-	Name:  "recharge",
-	Usage: "recharge",
+var getRechargeAddrCmd = &cli.Command{
+	Name:  "gra",
+	Usage: "get recharge address",
 	Flags: []cli.Flag{},
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
@@ -315,13 +280,13 @@ var withdrawCmd = &cli.Command{
 	Usage: "withdraw",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "wa",
-			Usage: "node type: edge 1, update 6",
+			Name:  "addr",
+			Usage: "user withdraw address",
 			Value: "",
 		},
 		&cli.StringFlag{
 			Name:  "value",
-			Usage: "node type: edge 1, update 6",
+			Usage: "withdraw value",
 			Value: "",
 		},
 	},
@@ -335,141 +300,9 @@ var withdrawCmd = &cli.Command{
 
 		defer closer()
 
-		withdrawAddr := cctx.String("wa")
+		withdrawAddr := cctx.String("addr")
 		value := cctx.String("value")
 
 		return api.Withdraw(ctx, withdrawAddr, value)
-	},
-}
-
-var mintCmd = &cli.Command{
-	Name:  "mint",
-	Usage: "mint token",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "address",
-			Usage: "node type: edge 1, update 6",
-			Value: "",
-		},
-	},
-	Action: func(cctx *cli.Context) error {
-		ctx := ReqContext(cctx)
-
-		api, closer, err := GetBasisAPI(cctx)
-		if err != nil {
-			return err
-		}
-
-		defer closer()
-
-		address := cctx.String("address")
-
-		info, err := api.MintToken(ctx, address)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(info)
-		return nil
-	},
-}
-
-var signCodeCmd = &cli.Command{
-	Name:  "sc",
-	Usage: "user get code",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "user_id",
-			Usage: "",
-			Value: "",
-		},
-	},
-	Action: func(cctx *cli.Context) error {
-		ctx := ReqContext(cctx)
-
-		api, closer, err := GetBasisAPI(cctx)
-		if err != nil {
-			return err
-		}
-
-		defer closer()
-
-		userId := cctx.String("user_id")
-
-		str, err := api.SignCode(ctx, userId)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(str)
-		return nil
-	},
-}
-
-var loginCmd = &cli.Command{
-	Name:  "login",
-	Usage: "user login",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "",
-			Usage: "",
-			Value: "",
-		},
-	},
-	Action: func(cctx *cli.Context) error {
-		ctx := ReqContext(cctx)
-
-		api, closer, err := GetBasisAPI(cctx)
-		if err != nil {
-			return err
-		}
-
-		defer closer()
-
-		userId := cctx.String("user_id")
-		signature := cctx.String("signature")
-
-		str, err := api.Login(ctx, &types.UserReq{
-			UserId:    userId,
-			Signature: signature,
-		})
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(str)
-		return nil
-	},
-}
-
-var logoutCmd = &cli.Command{
-	Name:  "logout",
-	Usage: "user logout",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "",
-			Usage: "",
-			Value: "",
-		},
-	},
-	Action: func(cctx *cli.Context) error {
-		ctx := ReqContext(cctx)
-
-		api, closer, err := GetBasisAPI(cctx)
-		if err != nil {
-			return err
-		}
-
-		defer closer()
-
-		userId := cctx.String("user_id")
-
-		err = api.Logout(ctx, &types.UserReq{
-			UserId: userId,
-		})
-		if err != nil {
-			return err
-		}
-		return nil
 	},
 }

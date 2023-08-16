@@ -30,9 +30,8 @@ type Basis interface {
 // OrderAPI is an interface for order
 type OrderAPI interface {
 	// order
-	CreateOrder(ctx context.Context, req types.CreateInstanceReq) (string, error)        //perm:user
-	PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) //perm:user
-	CancelOrder(ctx context.Context, orderID string) error                               //perm:user
+	CreateOrder(ctx context.Context, req types.CreateInstanceReq) (string, error) //perm:user
+	CancelOrder(ctx context.Context, orderID string) error                        //perm:user
 }
 
 // UserAPI is an interface for user

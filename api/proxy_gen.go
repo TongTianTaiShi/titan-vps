@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -86,8 +87,6 @@ type OrderAPIStruct struct {
 		CancelOrder func(p0 context.Context, p1 string) error `perm:"user"`
 
 		CreateOrder func(p0 context.Context, p1 types.CreateInstanceReq) (string, error) `perm:"user"`
-
-		PaymentCompleted func(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) `perm:"user"`
 	}
 }
 
@@ -392,17 +391,6 @@ func (s *OrderAPIStruct) CreateOrder(p0 context.Context, p1 types.CreateInstance
 }
 
 func (s *OrderAPIStub) CreateOrder(p0 context.Context, p1 types.CreateInstanceReq) (string, error) {
-	return "", ErrNotSupported
-}
-
-func (s *OrderAPIStruct) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
-	if s.Internal.PaymentCompleted == nil {
-		return "", ErrNotSupported
-	}
-	return s.Internal.PaymentCompleted(p0, p1)
-}
-
-func (s *OrderAPIStub) PaymentCompleted(p0 context.Context, p1 types.PaymentCompletedReq) (string, error) {
 	return "", ErrNotSupported
 }
 

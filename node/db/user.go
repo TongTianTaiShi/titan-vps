@@ -36,3 +36,14 @@ func (n *SQLDB) LoadUserBalance(userID string) (string, error) {
 
 	return info, nil
 }
+
+// UserExists checks if an user exists
+func (n *SQLDB) UserExists(orderID string) (bool, error) {
+	var total int64
+	countSQL := fmt.Sprintf(`SELECT count(user_id) FROM %s WHERE user_id=? `, userTable)
+	if err := n.db.Get(&total, countSQL, orderID); err != nil {
+		return false, err
+	}
+
+	return total > 0, nil
+}
