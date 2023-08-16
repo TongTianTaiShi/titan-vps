@@ -12,6 +12,17 @@ var BasisCMDs = []*cli.Command{
 	WithCategory("order", orderCmds),
 	WithCategory("user", userCmds),
 	WithCategory("vps", vpsCmds),
+	WithCategory("admin", adminCmds),
+}
+
+var adminCmds = &cli.Command{
+	Name:  "admin",
+	Usage: "Manage admin",
+	Subcommands: []*cli.Command{
+		createAdminCmd,
+		updateWithdrawalCmd,
+		getWithdrawalCmd,
+	},
 }
 
 var vpsCmds = &cli.Command{
@@ -304,5 +315,93 @@ var withdrawCmd = &cli.Command{
 		value := cctx.String("value")
 
 		return api.Withdraw(ctx, withdrawAddr, value)
+	},
+}
+
+var updateWithdrawalCmd = &cli.Command{
+	Name:  "withdrawal",
+	Usage: "update withdrawal",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "oid",
+			Usage: "user id",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "hash",
+			Usage: "txHash",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+		defer closer()
+
+		oid := cctx.String("oid")
+		hash := cctx.String("hash")
+
+		return api.UpdateWithdrawalRecord(ctx, oid, hash)
+	},
+}
+
+var createAdminCmd = &cli.Command{
+	Name:  "create",
+	Usage: "create admin",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "uid",
+			Usage: "user id",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "name",
+			Usage: "nick name",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+		defer closer()
+
+		uid := cctx.String("uid")
+		name := cctx.String("name")
+
+		return api.AddAdminUser(ctx, uid, name)
+	},
+}
+
+var getWithdrawalCmd = &cli.Command{
+	Name:  "list-withdrawal",
+	Usage: "list withdrawals",
+	Flags: []cli.Flag{},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+		defer closer()
+
+		info, err := api.GetWithdrawalRecords(ctx, 10, 0)
+		if err != nil {
+			return err
+		}
+
+		for _, r := range info.List {
+			fmt.Println(r.OrderID)
+		}
+
+		return nil
 	},
 }

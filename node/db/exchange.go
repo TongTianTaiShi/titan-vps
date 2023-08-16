@@ -95,7 +95,7 @@ func (n *SQLDB) LoadWithdrawRecords(limit, offset int64) (*types.WithdrawRespons
 		return nil, err
 	}
 
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=?", withdrawRecordTable)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s ", withdrawRecordTable)
 	var count int
 	err = n.db.Get(&count, countQuery)
 	if err != nil {
