@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"strings"
 	"sync"
 	"time"
 
@@ -17,7 +16,6 @@ import (
 	"github.com/LMF709268224/titan-vps/node/transaction"
 	"github.com/filecoin-project/go-statemachine"
 	"github.com/filecoin-project/pubsub"
-	"github.com/google/uuid"
 	"github.com/ipfs/go-datastore"
 	"golang.org/x/xerrors"
 
@@ -164,20 +162,10 @@ func (m *Manager) CancelOrder(orderID string) error {
 // CreatedOrder create vps order
 func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 	m.stateMachineWait.Wait()
-
-	hash := uuid.NewString()
-	orderID := strings.Replace(hash, "-", "", -1)
-
-	err := m.addOrder(req)
-	if err != nil {
-		return err
-	}
-
-	req.OrderID = orderID
 	req.CreatedHeight = m.getHeight()
 
 	// create order task
-	return m.orderStateMachines.Send(OrderHash(orderID), CreateOrder{orderInfoFrom(req)})
+	return m.orderStateMachines.Send(OrderHash(req.OrderID), CreateOrder{orderInfoFrom(req)})
 }
 
 func (m *Manager) addOrder(req *types.OrderRecord) error {
@@ -264,7 +252,20 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 		err := aliyun.StartInstance(regionID, k, s, result.InstanceID)
 		log.Infoln("StartInstance err:", err)
 	}()
+	info := &types.MyInstance{
+		OrderID:            vpsInfo.OrderID,
+		UserID:             vpsInfo.UserID,
+		InstanceId:         result.InstanceID,
+		Price:              vpsInfo.TradePrice,
+		InternetChargeType: vpsInfo.InternetChargeType,
+		Location:           vpsInfo.RegionId,
+	}
 
+	saveErr := m.SaveMyInstancesInfo(info)
+	if err != nil {
+		log.Errorf("SaveMyInstancesInfo:%v", saveErr)
+	}
+	fmt.Println("-------SaveMyInstancesInfo----------")
 	return result, nil
 }
 

@@ -32,6 +32,56 @@ func (n *SQLDB) LoadOrderRecord(orderID string) (*types.OrderRecord, error) {
 	return &info, nil
 }
 
+func (n *SQLDB) LoadOrderRecordByUserUndone(userID string, limit, offset int64) (*types.OrderRecordResponse, error) {
+	out := new(types.OrderRecordResponse)
+	var infos []*types.OrderRecord
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? and state=1  order by created_time desc LIMIT ? OFFSET ?", orderRecordTable)
+	if limit > loadOrderRecordsDefaultLimit {
+		limit = loadOrderRecordsDefaultLimit
+	}
+	err := n.db.Select(&infos, query, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=? and state=1", orderRecordTable)
+	var count int
+	err = n.db.Get(&count, countQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	out.Total = count
+	out.List = infos
+
+	return out, nil
+}
+
+func (n *SQLDB) LoadOrderRecordByUserAll(userID string, limit, offset int64) (*types.OrderRecordResponse, error) {
+	out := new(types.OrderRecordResponse)
+	var infos []*types.OrderRecord
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=?  order by created_time desc LIMIT ? OFFSET ?", orderRecordTable)
+	if limit > loadOrderRecordsDefaultLimit {
+		limit = loadOrderRecordsDefaultLimit
+	}
+	err := n.db.Select(&infos, query, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=?", orderRecordTable)
+	var count int
+	err = n.db.Get(&count, countQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	out.Total = count
+	out.List = infos
+
+	return out, nil
+}
+
 // OrderExists checks if an order exists in the state machine table of the specified server.
 func (n *SQLDB) OrderExists(orderID string) (bool, error) {
 	var total int64

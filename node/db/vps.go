@@ -9,7 +9,7 @@ import (
 // LoadVpsInfo  load  vps information
 func (n *SQLDB) LoadVpsInfo(vpsID int64) (*types.CreateInstanceReq, error) {
 	var info types.CreateInstanceReq
-	query := fmt.Sprintf("SELECT * FROM %s WHERE id=?", vpsInstanceTable)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE id=?", instancesDetailsTable)
 	err := n.db.Get(&info, query, vpsID)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func (n *SQLDB) LoadVpsDeviceInfo(instanceID int64) (*types.CreateInstanceReq, e
 // VpsExists  checks if this vps info exists in the state machine table of the specified server.
 func (n *SQLDB) VpsExists(vpsID int64) (bool, error) {
 	var total int64
-	countSQL := fmt.Sprintf(`SELECT count(id) FROM %s WHERE id=? `, vpsInstanceTable)
+	countSQL := fmt.Sprintf(`SELECT count(id) FROM %s WHERE id=? `, instancesDetailsTable)
 	if err := n.db.Get(&total, countSQL, vpsID); err != nil {
 		return false, err
 	}
@@ -42,7 +42,7 @@ func (n *SQLDB) VpsExists(vpsID int64) (bool, error) {
 
 func (n *SQLDB) VpsDeviceExists(instanceID int64) (bool, error) {
 	var total int64
-	countSQL := fmt.Sprintf(`SELECT count(instance_id) FROM %s WHERE instance_id=? `, vpsInstanceTable)
+	countSQL := fmt.Sprintf(`SELECT count(instance_id) FROM %s WHERE instance_id=? `, instancesDetailsTable)
 	if err := n.db.Get(&total, countSQL, instanceID); err != nil {
 		return false, err
 	}
@@ -51,10 +51,10 @@ func (n *SQLDB) VpsDeviceExists(instanceID int64) (bool, error) {
 }
 
 // SaveVpsInstance   saves vps info into the database.
-func (n *SQLDB) SaveVpsInstance(rInfo *types.CreateInstanceReq) (int64, error) {
+func (n *SQLDB) SaveVpsInstance(rInfo *types.CreateOrderReq) (int64, error) {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (region_id, instance_type, dry_run, image_id, security_group_id, instanceCharge_type, period_unit, period, bandwidth_out,bandwidth_in) 
-				VALUES (:region_id, :instance_type, :dry_run, :image_id, :security_group_id, :instanceCharge_type, :period_unit, :period, :bandwidth_out,bandwidth_in)`, vpsInstanceTable)
+		`INSERT INTO %s (region_id,instance_id,user_id,order_id, instance_type, dry_run, image_id, security_group_id, instance_charge_type,internet_charge_type, period_unit, period, bandwidth_out,bandwidth_in,ip_address,trade_price,system_disk_category,system_disk_size) 
+				VALUES (:region_id,:instance_id,:user_id,:order_id, :instance_type, :dry_run, :image_id, :security_group_id, :instance_charge_type,:internet_charge_type, :period_unit, :period, :bandwidth_out,:bandwidth_in,:ip_address,:trade_price,:system_disk_category,:system_disk_size)`, instancesDetailsTable)
 
 	result, err := n.db.NamedExec(query, rInfo)
 	if err != nil {

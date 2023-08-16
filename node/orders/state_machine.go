@@ -2,6 +2,7 @@ package orders
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	"github.com/filecoin-project/go-statemachine"
@@ -106,7 +107,8 @@ func planOne(ts ...func() (mut mutator, next func(info *OrderInfo) (more bool, e
 				if err, isErr := event.User.(error); isErr {
 					log.Warnf("order %s got error event %T: %+v", state.OrderID, event.User, err)
 				}
-
+				fmt.Println("-------------------------")
+				fmt.Println(state)
 				event.User.(mutator).apply(state)
 				more, err := next(state)
 				if err != nil || !more {

@@ -2,6 +2,9 @@ package basis
 
 import (
 	"context"
+	"fmt"
+	"github.com/google/uuid"
+	"strings"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
@@ -10,18 +13,47 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func (m *Basis) CreateOrder(ctx context.Context, req types.CreateInstanceReq) (string, error) {
+func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
 	userID := handler.GetID(ctx)
-
-	id, err := m.SaveVpsInstance(&req)
+	priceReq := &types.DescribePriceReq{
+		RegionId:                req.RegionId,
+		InstanceType:            req.InstanceType,
+		PriceUnit:               req.PeriodUnit,
+		Period:                  req.Period,
+		Amount:                  req.Amount,
+		InternetChargeType:      req.InternetChargeType,
+		ImageID:                 req.ImageId,
+		InternetMaxBandwidthOut: req.InternetMaxBandwidthOut,
+		SystemDiskCategory:      req.SystemDiskCategory,
+		SystemDiskSize:          req.SystemDiskSize,
+	}
+	priceInfo, err := m.DescribePrice(ctx, priceReq)
 	if err != nil {
 		return "", err
 	}
 
+	hash := uuid.NewString()
+	orderID := strings.Replace(hash, "-", "", -1)
+	req.OrderID = orderID
+	fmt.Println(priceInfo.USDPrice)
+	fmt.Println(priceInfo.TradePrice)
+	req.TradePrice = priceInfo.TradePrice / float32(req.Amount)
+	//for i := int32(0); i < req.Amount; i++ {
+	//	id, err = m.SaveVpsInstance(&req)
+	//	if err != nil {
+	//		log.Errorf("SaveVpsInstance:%v", err)
+	//	}
+	//}
+	id, err := m.SaveVpsInstance(&req)
+	if err != nil {
+		log.Errorf("SaveVpsInstance:%v", err)
+	}
 	info := &types.OrderRecord{
-		VpsID:  id,
-		UserID: userID,
-		Value:  "10000000000",
+		VpsID:      id,
+		OrderID:    orderID,
+		UserID:     userID,
+		Value:      "10000000000",
+		TradePrice: priceInfo.TradePrice,
 	}
 
 	err = m.OrderMgr.CreatedOrder(info)
@@ -30,6 +62,28 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateInstanceReq) (s
 	}
 
 	return info.To, nil
+}
+
+func (m *Basis) GetOrderWaitingPayment(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
+	userID := handler.GetID(ctx)
+
+	info, err := m.LoadOrderRecordByUserUndone(userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	return info, nil
+}
+
+func (m *Basis) GetOrderInfo(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
+	userID := handler.GetID(ctx)
+
+	info, err := m.LoadOrderRecordByUserAll(userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	return info, nil
 }
 
 func (m *Basis) PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) {

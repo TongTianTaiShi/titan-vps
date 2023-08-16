@@ -277,7 +277,6 @@ func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanc
 		err := aliyun.StartInstance(regionID, k, s, result.InstanceID)
 		log.Infoln("StartInstance err:", err)
 	}()
-
 	return result, nil
 }
 

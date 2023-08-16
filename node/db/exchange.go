@@ -113,6 +113,9 @@ func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, offset int64) (*
 	out := new(types.WithdrawResponse)
 
 	var infos []*types.WithdrawRecord
+	fmt.Println(userID)
+	fmt.Println(limit)
+	fmt.Println(offset)
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable)
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit

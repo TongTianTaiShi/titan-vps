@@ -88,16 +88,18 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
 	}
 
-	rsp, err := m.createAliyunInstance(vInfo)
+	vInfo.UserID = info.User
+	vInfo.OrderID = info.OrderID.String()
+	_, err = m.createAliyunInstance(vInfo)
 	if err != nil {
 		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
 	}
 
-	// Save To DB
-	err = m.SaveVpsInstanceDevice(rsp)
-	if err != nil {
-		log.Errorf("SaveVpsInstanceDevice err:%s", err.Error())
-	}
+	//// Save To DB
+	//err = m.SaveVpsInstanceDevice(rsp)
+	//if err != nil {
+	//	log.Errorf("SaveVpsInstanceDevice err:%s", err.Error())
+	//}
 
 	return ctx.Send(BuySucceed{GoodsInfo: &GoodsInfo{ID: "vps_id", Password: "abc"}, Height: height})
 }

@@ -78,23 +78,31 @@ type DescribeImageResponse struct {
 	OSName       string
 	Architecture string
 }
+type CreateOrderReq struct {
+	CreateInstanceReq
+	Amount int32
+}
 
-// todo
 type CreateInstanceReq struct {
-	Id                      string `db:"id"`
-	RegionId                string `db:"region_id"`
-	InstanceType            string `db:"instance_type"`
-	DryRun                  bool   `db:"dry_run"`
-	ImageId                 string `db:"image_id"`
-	SecurityGroupId         string `db:"security_group_id"`
-	InstanceChargeType      string `db:"instanceCharge_type"`
-	PeriodUnit              string `db:"period_unit"`
-	Period                  int32  `db:"period"`
-	InternetMaxBandwidthOut int32  `db:"bandwidth_out"`
-	InternetMaxBandwidthIn  int32  `db:"bandwidth_in"`
-	SystemDiskCategory      string
-	InternetChargeType      string
-	SystemDiskSize          int32
+	Id                      string  `db:"id"`
+	RegionId                string  `db:"region_id"`
+	InstanceId              string  `db:"instance_id"`
+	UserID                  string  `db:"user_id"`
+	OrderID                 string  `db:"order_id"`
+	InstanceType            string  `db:"instance_type"`
+	DryRun                  bool    `db:"dry_run"`
+	ImageId                 string  `db:"image_id"`
+	SecurityGroupId         string  `db:"security_group_id"`
+	InstanceChargeType      string  `db:"instance_charge_type"`
+	PeriodUnit              string  `db:"period_unit"`
+	Period                  int32   `db:"period"`
+	InternetMaxBandwidthOut int32   `db:"bandwidth_out"`
+	InternetMaxBandwidthIn  int32   `db:"bandwidth_in"`
+	IpAddress               string  `db:"ip_address"`
+	TradePrice              float32 `db:"trade_price"`
+	SystemDiskCategory      string  `db:"system_disk_category"`
+	InternetChargeType      string  `db:"internet_charge_type"`
+	SystemDiskSize          int32   `db:"system_disk_size"`
 	DataDisk                []*DescribePriceRequestDataDisk
 }
 
@@ -168,6 +176,7 @@ type OrderRecord struct {
 	To            string     `db:"to_addr"`
 	Value         string     `db:"value"`
 	State         OrderState `db:"state"`
+	TradePrice    float32    `db:"trade_price"`
 	DoneState     int64      `db:"done_state"`
 	CreatedHeight int64      `db:"created_height"`
 	CreatedTime   time.Time  `db:"created_time"`
@@ -176,6 +185,11 @@ type OrderRecord struct {
 	VpsID         int64      `db:"vps_id"`
 	Msg           string     `db:"msg"`
 	TxHash        string     `db:"tx_hash"`
+}
+
+type OrderRecordResponse struct {
+	Total int
+	List  []*OrderRecord
 }
 
 // RechargeState Recharge order state
@@ -200,6 +214,20 @@ const (
 	WithdrawCreate WithdrawState = iota
 	// WithdrawDone Withdraw done
 	WithdrawDone
+)
+
+type MyInstanceKeyState int64
+type MyInstanceState int64
+
+const (
+	KeyNoSet MyInstanceKeyState = iota
+	KeyHaveSet
+)
+
+const (
+	InstanceCreate MyInstanceState = iota
+	InstanceSuccess
+	InstanceField
 )
 
 type LoginType int64
@@ -325,9 +353,24 @@ type RechargeAddress struct {
 	UserID string `db:"user_id"`
 }
 
-type MyInstances struct {
-	ID         string `db:"id"`
-	InstanceId string `db:"instance_id"`
+type MyInstanceResponse struct {
+	Total int
+	List  []*MyInstance
+}
+
+type MyInstance struct {
+	ID                 string             `db:"id"`
+	InstanceId         string             `db:"instance_id"`
+	OrderID            string             `db:"order_id"`
+	UserID             string             `db:"user_id"`
+	PrivateKeyStatus   MyInstanceKeyState `db:"private_key_status"`
+	InstanceName       string             `db:"instance_name"`
+	InstanceSystem     string             `db:"instance_system"`
+	Location           string             `db:"location"`
+	Price              float32            `db:"price"`
+	State              MyInstanceState    `db:"state"`
+	InternetChargeType string             `db:"internet_charge_type"`
+	CreatedTime        time.Time          `db:"created_time"`
 }
 
 type InstanceDetails struct {

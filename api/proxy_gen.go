@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -103,7 +102,11 @@ type OrderAPIStruct struct {
 	Internal struct {
 		CancelOrder func(p0 context.Context, p1 string) error `perm:"user"`
 
-		CreateOrder func(p0 context.Context, p1 types.CreateInstanceReq) (string, error) `perm:"user"`
+		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"user"`
+
+		GetOrderInfo func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
+
+		GetOrderWaitingPayment func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
 	}
 }
 
@@ -129,6 +132,8 @@ type UserAPIStruct struct {
 		GetRechargeAddress func(p0 context.Context) (string, error) `perm:"user"`
 
 		GetSignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
+
+		GetUserInstanceRecords func(p0 context.Context, p1 int64, p2 int64) (*types.MyInstanceResponse, error) `perm:"user"`
 
 		GetUserRechargeRecords func(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) `perm:"user"`
 
@@ -433,15 +438,37 @@ func (s *OrderAPIStub) CancelOrder(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 
-func (s *OrderAPIStruct) CreateOrder(p0 context.Context, p1 types.CreateInstanceReq) (string, error) {
+func (s *OrderAPIStruct) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
 	if s.Internal.CreateOrder == nil {
 		return "", ErrNotSupported
 	}
 	return s.Internal.CreateOrder(p0, p1)
 }
 
-func (s *OrderAPIStub) CreateOrder(p0 context.Context, p1 types.CreateInstanceReq) (string, error) {
+func (s *OrderAPIStub) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
 	return "", ErrNotSupported
+}
+
+func (s *OrderAPIStruct) GetOrderInfo(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
+	if s.Internal.GetOrderInfo == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetOrderInfo(p0, p1, p2)
+}
+
+func (s *OrderAPIStub) GetOrderInfo(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *OrderAPIStruct) GetOrderWaitingPayment(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
+	if s.Internal.GetOrderWaitingPayment == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetOrderWaitingPayment(p0, p1, p2)
+}
+
+func (s *OrderAPIStub) GetOrderWaitingPayment(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
+	return nil, ErrNotSupported
 }
 
 func (s *TransactionStruct) Hello(p0 context.Context) error {
@@ -486,6 +513,17 @@ func (s *UserAPIStruct) GetSignCode(p0 context.Context, p1 string) (string, erro
 
 func (s *UserAPIStub) GetSignCode(p0 context.Context, p1 string) (string, error) {
 	return "", ErrNotSupported
+}
+
+func (s *UserAPIStruct) GetUserInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.MyInstanceResponse, error) {
+	if s.Internal.GetUserInstanceRecords == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetUserInstanceRecords(p0, p1, p2)
+}
+
+func (s *UserAPIStub) GetUserInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.MyInstanceResponse, error) {
+	return nil, ErrNotSupported
 }
 
 func (s *UserAPIStruct) GetUserRechargeRecords(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) {
