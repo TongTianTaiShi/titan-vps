@@ -8,13 +8,12 @@ import (
 type ConfigType string
 
 const (
-	// ConfigTronHeight
+	// ConfigTronHeight scanning blocks height
 	ConfigTronHeight ConfigType = "tron_height"
 )
 
 // SaveConfigValue save config value
 func (n *SQLDB) SaveConfigValue(key ConfigType, value string) error {
-	// update record table
 	query := fmt.Sprintf(
 		`INSERT INTO %s (name, value) VALUES (?, ?)
 				ON DUPLICATE KEY UPDATE value=?`, configTable)

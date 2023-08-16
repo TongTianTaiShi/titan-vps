@@ -8,14 +8,34 @@ import (
 	"github.com/LMF709268224/titan-vps/node/handler"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/gbrlsnchs/jwt/v3"
+	"golang.org/x/xerrors"
 )
 
-func (m *Basis) GetAdminSignCode(ctx context.Context, userId string) (string, error) {
-	return m.UserMgr.SetSignCode(userId)
+func (m *Basis) GetAdminSignCode(ctx context.Context, userID string) (string, error) {
+	exist, err := m.AdminExists(userID)
+	if err != nil {
+		return "", err
+	}
+
+	if !exist {
+		return "", xerrors.New("you are not an administrator")
+	}
+
+	return m.UserMgr.SetSignCode(userID)
 }
 
 func (m *Basis) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
 	userID := user.UserId
+
+	exist, err := m.AdminExists(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exist {
+		return nil, xerrors.New("you are not an administrator")
+	}
+
 	code, err := m.UserMgr.GetSignCode(userID)
 	if err != nil {
 		return nil, err
@@ -58,4 +78,8 @@ func (m *Basis) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHas
 	info.Executor = userID
 
 	return m.UpdateWithdrawRecord(info, types.WithdrawDone)
+}
+
+func (m *Basis) AddAdminUser(ctx context.Context, userID, nickName string) error {
+	return m.SaveAdminInfo(userID, nickName)
 }

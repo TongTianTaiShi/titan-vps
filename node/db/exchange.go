@@ -8,7 +8,6 @@ import (
 
 // SaveRechargeInfo save recharge information
 func (n *SQLDB) SaveRechargeInfo(rInfo *types.RechargeRecord) error {
-	// update record table
 	query := fmt.Sprintf(
 		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state,  user_id) 
 		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :user_id)`, rechargeRecordTable)
@@ -52,7 +51,6 @@ func (n *SQLDB) LoadRechargeRecords(state types.RechargeState) ([]*types.Recharg
 
 // SaveWithdrawInfo save withdraw information
 func (n *SQLDB) SaveWithdrawInfo(rInfo *types.WithdrawRecord) error {
-	// update record table
 	query := fmt.Sprintf(
 		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, withdraw_addr, withdraw_hash,  user_id) 
 		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :withdraw_addr, :withdraw_hash, :user_id)`, withdrawRecordTable)

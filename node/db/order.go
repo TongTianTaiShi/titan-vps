@@ -10,7 +10,6 @@ import (
 
 // SaveOrderInfo save order information
 func (n *SQLDB) SaveOrderInfo(rInfo *types.OrderRecord) error {
-	// update record table
 	query := fmt.Sprintf(
 		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, done_state, vps_id, msg, user_id, tx_hash) 
 		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :done_state, :vps_id, :msg, :user_id, :tx_hash)

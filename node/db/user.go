@@ -8,7 +8,6 @@ import (
 
 // SaveUserInfo save user information
 func (n *SQLDB) SaveUserInfo(rInfo *types.UserInfo) error {
-	// update record table
 	query := fmt.Sprintf(
 		`INSERT INTO %s (user_id, balance) 
 		        VALUES (:user_id, :balance)`, userTable)
@@ -38,10 +37,31 @@ func (n *SQLDB) LoadUserBalance(userID string) (string, error) {
 }
 
 // UserExists checks if an user exists
-func (n *SQLDB) UserExists(orderID string) (bool, error) {
+func (n *SQLDB) UserExists(userID string) (bool, error) {
 	var total int64
 	countSQL := fmt.Sprintf(`SELECT count(user_id) FROM %s WHERE user_id=? `, userTable)
-	if err := n.db.Get(&total, countSQL, orderID); err != nil {
+	if err := n.db.Get(&total, countSQL, userID); err != nil {
+		return false, err
+	}
+
+	return total > 0, nil
+}
+
+// SaveAdminInfo save admin information
+func (n *SQLDB) SaveAdminInfo(userID, nickName string) error {
+	query := fmt.Sprintf(
+		`INSERT INTO %s (user_id, nick_name) 
+		        VALUES (?, ?)`, adminTable)
+	_, err := n.db.Exec(query, userID, nickName)
+
+	return err
+}
+
+// AdminExists checks if an admin exists
+func (n *SQLDB) AdminExists(userID string) (bool, error) {
+	var total int64
+	countSQL := fmt.Sprintf(`SELECT count(user_id) FROM %s WHERE user_id=? `, adminTable)
+	if err := n.db.Get(&total, countSQL, userID); err != nil {
 		return false, err
 	}
 

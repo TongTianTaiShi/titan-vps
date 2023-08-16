@@ -48,6 +48,7 @@ const (
 	withdrawRecordTable    = "withdraw_record"
 	configTable            = "config"
 	userTable              = "user"
+	adminTable             = "admin"
 	rechargeAddressTable   = "recharge_address"
 	myServers              = "my_servers"
 
@@ -79,7 +80,8 @@ func InitTables(d *SQLDB) error {
 	tx.MustExec(fmt.Sprintf(cConfigTable, configTable))
 	tx.MustExec(fmt.Sprintf(cUserTable, userTable))
 	tx.MustExec(fmt.Sprintf(cRechargeAddressTable, rechargeAddressTable))
-	//tx.MustExec(fmt.Sprintf(cMyServersTable, myServers))
+	tx.MustExec(fmt.Sprintf(cAdminTable, adminTable))
+	// tx.MustExec(fmt.Sprintf(cMyServersTable, myServers))
 
 	return tx.Commit()
 }

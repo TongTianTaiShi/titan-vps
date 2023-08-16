@@ -2,14 +2,15 @@ package db
 
 import (
 	"fmt"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 )
 
 // LoadMyInstancesInfo   load  my server information
-func (n *SQLDB) LoadMyInstancesInfo(userId string) (*types.MyInstances, error) {
+func (n *SQLDB) LoadMyInstancesInfo(userID string) (*types.MyInstances, error) {
 	var info types.MyInstances
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=?", myInstancesTable)
-	err := n.db.Get(&info, query, userId)
+	err := n.db.Get(&info, query, userID)
 	if err != nil {
 		return nil, err
 	}

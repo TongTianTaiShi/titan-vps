@@ -126,3 +126,10 @@ var cRechargeAddressTable = `
 		user_id   VARCHAR(128) DEFAULT "",
 		PRIMARY KEY (addr)
 	) ENGINE=InnoDB COMMENT='recharge address ';`
+
+var cAdminTable = `
+	CREATE TABLE if not exists %s (
+		user_id      VARCHAR(128) NOT NULL UNIQUE,
+		nick_name    VARCHAR(32)  DEFAULT 0,
+		PRIMARY KEY (user_id)
+	) ENGINE=InnoDB COMMENT='admin info';`

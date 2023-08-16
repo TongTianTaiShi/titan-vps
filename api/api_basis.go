@@ -18,13 +18,14 @@ type Basis interface {
 	DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error)                                                      //perm:default
 	DescribePrice(ctx context.Context, describePriceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error)                                              //perm:default
 	CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error)                                                    //perm:default
-	CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error)                                                          //perm:default
-	AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)                                  //perm:default
+	CreateKeyPair(ctx context.Context, regionID, keyPairName string) (*types.CreateKeyPairResponse, error)                                                          //perm:default
+	AttachKeyPair(ctx context.Context, regionID, keyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)                                  //perm:default
 	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                                                                                //perm:default
 }
 
 // AdminAPI is an interface for admin
 type AdminAPI interface {
+	AddAdminUser(ctx context.Context, userID, nickName string) error                                //perm:admin
 	GetAdminSignCode(ctx context.Context, userID string) (string, error)                            //perm:default
 	LoginAdmin(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)               //perm:default
 	MintToken(ctx context.Context, address string) (string, error)                                  //perm:admin

@@ -181,10 +181,10 @@ func (m *Basis) DescribePrice(ctx context.Context, priceReq *types.DescribePrice
 	return price, nil
 }
 
-func (m *Basis) CreateKeyPair(ctx context.Context, regionID, KeyPairName string) (*types.CreateKeyPairResponse, error) {
+func (m *Basis) CreateKeyPair(ctx context.Context, regionID, keyPairName string) (*types.CreateKeyPairResponse, error) {
 	k, s := m.getAccessKeys()
 
-	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, KeyPairName)
+	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairName)
 	if err != nil {
 		log.Errorf("CreateKeyPair err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
@@ -193,9 +193,9 @@ func (m *Basis) CreateKeyPair(ctx context.Context, regionID, KeyPairName string)
 	return keyInfo, nil
 }
 
-func (m *Basis) AttachKeyPair(ctx context.Context, regionID, KeyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error) {
+func (m *Basis) AttachKeyPair(ctx context.Context, regionID, keyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error) {
 	k, s := m.getAccessKeys()
-	AttachResult, err := aliyun.AttachKeyPair(regionID, k, s, KeyPairName, instanceIds)
+	AttachResult, err := aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
@@ -295,8 +295,8 @@ func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
 	return client.Mint(cfg.PrivateKeyStr, address, valueStr)
 }
 
-func (m *Basis) GetSignCode(ctx context.Context, userId string) (string, error) {
-	return m.UserMgr.SetSignCode(userId)
+func (m *Basis) GetSignCode(ctx context.Context, userID string) (string, error) {
+	return m.UserMgr.SetSignCode(userID)
 }
 
 func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {

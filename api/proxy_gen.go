@@ -15,6 +15,8 @@ var ErrNotSupported = xerrors.New("method not supported")
 
 type AdminAPIStruct struct {
 	Internal struct {
+		AddAdminUser func(p0 context.Context, p1 string, p2 string) error `perm:"admin"`
+
 		GetAdminSignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
 		GetWithdrawalRecords func(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) `perm:"default"`
@@ -143,6 +145,17 @@ type UserAPIStruct struct {
 }
 
 type UserAPIStub struct {
+}
+
+func (s *AdminAPIStruct) AddAdminUser(p0 context.Context, p1 string, p2 string) error {
+	if s.Internal.AddAdminUser == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.AddAdminUser(p0, p1, p2)
+}
+
+func (s *AdminAPIStub) AddAdminUser(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
 }
 
 func (s *AdminAPIStruct) GetAdminSignCode(p0 context.Context, p1 string) (string, error) {
