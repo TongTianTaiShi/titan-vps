@@ -1,8 +1,6 @@
 package exchange
 
 import (
-	"time"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/trxbridge/core"
 	"github.com/LMF709268224/titan-vps/node/config"
@@ -15,11 +13,6 @@ import (
 )
 
 var log = logging.Logger("exchange")
-
-const (
-	checkOrderInterval = 10 * time.Second
-	orderTimeoutTime   = 10 * time.Minute
-)
 
 // RechargeManager manager recharge order
 type RechargeManager struct {
@@ -70,7 +63,7 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 	}
 
 	userID := tr.UserID
-	height := getTronHeight(m.cfg.TrxHTTPSAddr)
+	height := getFilecoinHeight(m.cfg.LotusHTTPSAddr)
 
 	info := &types.RechargeRecord{
 		OrderID:       tr.TxHash,

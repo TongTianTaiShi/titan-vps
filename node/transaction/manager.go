@@ -20,10 +20,6 @@ type Manager struct {
 
 	cfg config.BasisCfg
 
-	usabilityFvmAddrs map[string]string
-	usedFvmAddrs      map[string]string
-	fvmAddrLock       *sync.Mutex
-
 	tronAddrs map[string]string
 
 	tronAddrLock *sync.Mutex
@@ -40,10 +36,6 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, db *db.SQLD
 		notify: pb,
 		cfg:    cfg,
 		SQLDB:  db,
-
-		usabilityFvmAddrs: make(map[string]string),
-		usedFvmAddrs:      make(map[string]string),
-		fvmAddrLock:       &sync.Mutex{},
 
 		tronAddrs:    make(map[string]string),
 		tronAddrLock: &sync.Mutex{},

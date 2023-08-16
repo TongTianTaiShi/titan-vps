@@ -40,7 +40,7 @@ func (m *Manager) watchTronTransactions() {
 		return
 	}
 
-	height := int64(39297600)
+	startHeight := int64(39297600)
 	limit := int64(50)
 	heightStr := ""
 
@@ -48,7 +48,7 @@ func (m *Manager) watchTronTransactions() {
 	if err == nil {
 		i, err := strconv.ParseInt(heightStr, 10, 64)
 		if err == nil {
-			height = i
+			startHeight = i
 		}
 	}
 
@@ -62,31 +62,33 @@ func (m *Manager) watchTronTransactions() {
 		}
 
 		nowHeight := block.BlockHeader.RawData.Number
-		endHeight := height + limit
+		endHeight := startHeight + limit
 		if endHeight >= nowHeight {
 			endHeight = nowHeight
 		}
-		if height >= endHeight {
+		if startHeight >= endHeight {
 			continue
 		}
 
-		log.Debugf(" handleBlock height :%d, endHeight:%d \n", height, endHeight)
-		blocks, err := client.GetBlockByLimitNext(height, endHeight)
-		if err == nil && len(blocks.Block) > 0 {
-			m.handleBlocks(blocks)
+		log.Debugf(" handleBlock height :%d, endHeight:%d \n", startHeight, endHeight)
+		blockInfo, err := client.GetBlockByLimitNext(startHeight, endHeight)
+		if err != nil {
+			log.Errorf("GetBlockByLimitNext err:%s \n", err.Error())
+			continue
 		}
+		m.handleBlocks(blockInfo)
 
-		height = endHeight
-		str := strconv.FormatInt(height, 10)
+		startHeight = endHeight
+		str := strconv.FormatInt(startHeight, 10)
 		err = m.SaveConfigValue(db.ConfigTronHeight, str)
 		if err != nil {
-			log.Errorf("SaveConfigValue err:%s", err.Error())
+			log.Errorf("SaveConfigValue err:%s \n", err.Error())
 		}
 	}
 }
 
-func (m *Manager) handleBlocks(blocks *api.BlockListExtention) {
-	for _, v := range blocks.Block {
+func (m *Manager) handleBlocks(blockInfo *api.BlockListExtention) {
+	for _, v := range blockInfo.Block {
 		err := m.handleBlock(v)
 		if err != nil {
 			log.Errorln(" handleBlock err :", err.Error())
@@ -99,10 +101,7 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 		return xerrors.New("block is nil")
 	}
 
-	bNum := blockExtention.BlockHeader.RawData.Number
-	// log.Debugln(" handleBlock height :", bNum)
-
-	bid := hexutil.Encode(blockExtention.Blockid)
+	height := blockExtention.BlockHeader.RawData.Number
 
 	for _, te := range blockExtention.Transactions {
 		if len(te.Transaction.GetRet()) == 0 {
@@ -110,19 +109,19 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 		}
 
 		state := te.Transaction.GetRet()[0].ContractRet
-		txid := hexutil.Encode(te.Txid)
+		txID := hexutil.Encode(te.Txid)
 
 		// userAddr := string(te.Transaction.RawData.Data)
 
 		for _, contract := range te.Transaction.RawData.Contract {
-			m.filterTransaction(contract, txid, bid, bNum, state)
+			m.filterTransaction(contract, txID, height, state)
 		}
 	}
 
 	return nil
 }
 
-func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, bid string, bNum int64, state core.Transaction_ResultContractResult) {
+func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txID string, height int64, state core.Transaction_ResultContractResult) {
 	if contract.Type == core.Transaction_Contract_TriggerSmartContract {
 		// trc20
 		unObj := &core.TriggerSmartContract{}
@@ -135,7 +134,6 @@ func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, b
 		contractAddress := hdwallet.EncodeCheck(unObj.GetContractAddress())
 
 		if contractAddress != m.cfg.TrxContractorAddr {
-			// log.Errorf("contractAddress: %s", contractAddress)
 			return
 		}
 
@@ -148,7 +146,7 @@ func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txid, b
 			return
 		}
 
-		m.handleTransfer(txid, from, to, bid, bNum, amount, contractAddress, state)
+		m.handleTransfer(txID, from, to, height, amount, state)
 	}
 }
 
@@ -169,12 +167,12 @@ func (m *Manager) decodeData(trc20 []byte) (to string, amount string, flag bool)
 	return
 }
 
-func (m *Manager) handleTransfer(mCid, from, to, blockCid string, height int64, amount string, contract string, state core.Transaction_ResultContractResult) {
-	log.Infof("Transfer :%s,%s,%s,%s,%s,%s", mCid, to, from, contract, amount, state)
+func (m *Manager) handleTransfer(txID, from, to string, height int64, amount string, state core.Transaction_ResultContractResult) {
+	log.Infof("Transfer :%s,%s,%s,%s,%s,%s", txID, to, from, amount, state)
 
 	if userID, ok := m.tronAddrs[to]; ok {
 		m.notify.Pub(&types.TronTransferWatch{
-			TxHash: mCid,
+			TxHash: txID,
 			From:   from,
 			To:     to,
 			Value:  amount,

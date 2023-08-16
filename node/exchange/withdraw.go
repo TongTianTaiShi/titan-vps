@@ -2,7 +2,6 @@ package exchange
 
 import (
 	"strings"
-	"sync"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/config"
@@ -21,8 +20,6 @@ type WithdrawManager struct {
 	cfg    config.BasisCfg
 	notify *pubsub.PubSub
 
-	ongoingOrders map[string]*types.WithdrawRecord
-	orderLock     *sync.Mutex
 	tMgr          *transaction.Manager
 }
 
@@ -39,78 +36,9 @@ func NewWithdrawManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasis
 		cfg:    cfg,
 
 		tMgr: fm,
-
-		ongoingOrders: make(map[string]*types.WithdrawRecord),
-		orderLock:     &sync.Mutex{},
 	}
 
 	return m, nil
-}
-
-func (m *WithdrawManager) subscribeEvents() {
-	subTransfer := m.notify.Sub(types.EventFvmTransferWatch.String())
-	defer m.notify.Unsub(subTransfer)
-
-	for {
-		select {
-		case u := <-subTransfer:
-			tr := u.(*types.FvmTransferWatch)
-
-			log.Debugf("subscribeEvents tr %s ", tr.To)
-			if orderID, exist := m.getOrderIDByToAddress(tr.To); exist {
-				log.Debugf("getOrderIDByToAddress orderID %s ", orderID)
-				m.handleFvmTransfer(orderID, tr)
-			}
-		}
-	}
-}
-
-func (m *WithdrawManager) handleFvmTransfer(orderID string, tr *types.FvmTransferWatch) {
-	info, err := m.LoadWithdrawRecord(orderID)
-	if err != nil {
-		log.Errorf("handleFvmTransfer LoadOrderRecord %s , %s err:%s", tr.To, orderID, err.Error())
-		return
-	}
-
-	// if info.State != types.ExchangeCreated {
-	// 	log.Errorf("handleFvmTransfer Invalid order status %d , %s", info.State, orderID)
-	// 	return
-	// }
-
-	info.Value = tr.Value
-	info.OrderID = tr.TxHash
-	info.From = tr.From
-	info.DoneHeight = getFilecoinHeight(m.cfg.LotusHTTPSAddr)
-
-	log.Warnf("need transfer %s USDT to %s", tr.Value, info.WithdrawAddr)
-
-	err = m.changeOrderState(types.WithdrawDone, info)
-	if err != nil {
-		log.Errorf("handleFvmTransfer changeOrderState %s err:%s", orderID, err.Error())
-		return
-	}
-}
-
-func (m *WithdrawManager) getOrderIDByToAddress(to string) (string, bool) {
-	for _, orderRecord := range m.ongoingOrders {
-		log.Debugf("getOrderIDByToAddress orderRecord %v ", orderRecord)
-		if orderRecord.To == to {
-			return orderRecord.OrderID, true
-		}
-	}
-
-	return "", false
-}
-
-func (m *WithdrawManager) changeOrderState(state types.WithdrawState, info *types.WithdrawRecord) error {
-	info.DoneHeight = getFilecoinHeight(m.cfg.LotusHTTPSAddr)
-
-	err := m.UpdateWithdrawRecord(info, state)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // CreateWithdrawOrder create a withdraw order

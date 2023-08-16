@@ -18,7 +18,7 @@ func TestWatch(t *testing.T) {
 		return
 	}
 
-	prikey := "455f29c1c74a5749b1cafcc489c3f40445dbafe7665735b60e7f7018f66b1b42"
+	prikey := ""
 	toAddr := "TNXS7Xybbq8ZKiueGWomNNoUWqGhHCT1qe"
 	valueStr := "23456789000000"
 	privateKey, err := hdwallet.GetPrivateKeyByHexString(prikey)
@@ -71,11 +71,4 @@ func TestCreateAddr(t *testing.T) {
 
 		fmt.Println("\"", address, "\", #", prikey)
 	}
-}
-
-func TestX(t *testing.T) {
-	bu := big.NewInt(int64(1000000000000000000))
-	amount := bu.Int64()
-
-	fmt.Println("amount  : ", amount)
 }

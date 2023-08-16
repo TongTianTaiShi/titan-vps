@@ -34,7 +34,7 @@ func getTronHeight(addr string) int64 {
 
 func getFilecoinHeight(addr string) int64 {
 	var msg filecoinbridge.TipSet
-	err := filecoinbridge.ChainHead(&msg,addr)
+	err := filecoinbridge.ChainHead(&msg, addr)
 	if err != nil {
 		log.Errorf("ChainHead err:%s", err.Error())
 		return 0
