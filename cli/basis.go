@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/urfave/cli/v2"
 )
@@ -263,12 +264,12 @@ var createOrderCmd = &cli.Command{
 		defer closer()
 
 		address, err := api.CreateOrder(ctx, types.CreateOrderReq{
-			//RegionId:     "cn-qingdao",
-			//ImageId:      "aliyun_2_1903_x64_20G_alibase_20230704.vhd",
-			//PeriodUnit:   "week",
-			//Period:       1,
-			//InstanceType: "ecs.t5-lc1m1.small",
-			//DryRun:       true,
+			// RegionId:     "cn-qingdao",
+			// ImageId:      "aliyun_2_1903_x64_20G_alibase_20230704.vhd",
+			// PeriodUnit:   "week",
+			// Period:       1,
+			// InstanceType: "ecs.t5-lc1m1.small",
+			// DryRun:       true,
 		})
 		if err != nil {
 			return err
@@ -311,16 +312,20 @@ var getBalanceCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		bApi, closer, err := GetBasisAPI(cctx)
 		if err != nil {
 			return err
 		}
 
 		defer closer()
 
-		str, err := api.GetBalance(ctx)
+		str, err := bApi.GetBalance(ctx)
 		if err != nil {
-			return err
+			if webErr, ok := err.(*api.ErrWeb); ok {
+				fmt.Printf("web error code %d,message:%s \n", webErr.Code, webErr.Message)
+			} else {
+				fmt.Printf("web error message:%v \n", err)
+			}
 		}
 
 		fmt.Println(str)

@@ -25,6 +25,7 @@ func NewTransaction(ctx context.Context, addr string, requestHeader http.Header)
 		api.GetInternalStructs(&res),
 		requestHeader,
 		rpcenc.ReaderParamEncoder(pushURL),
+		jsonrpc.WithErrors(api.RPCErrors),
 	)
 
 	return &res, closer, err
@@ -59,6 +60,7 @@ func NewBasis(ctx context.Context, addr string, requestHeader http.Header, opts 
 		api.GetInternalStructs(&res), requestHeader,
 		append([]jsonrpc.Option{
 			rpcenc.ReaderParamEncoder(pushURL),
+			jsonrpc.WithErrors(api.RPCErrors),
 		}, opts...)...)
 
 	return &res, closer, err

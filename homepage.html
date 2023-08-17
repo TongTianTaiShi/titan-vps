@@ -251,7 +251,7 @@
                         he = { "Content-Type": "application/json" }
                     }
 
-                    return fetch("192.168.0.78:5577/rpc/v0", {
+                    return fetch("/rpc/v0", {
                         method: "POST",
                         headers: he,
                         body: JSON.stringify(data)
