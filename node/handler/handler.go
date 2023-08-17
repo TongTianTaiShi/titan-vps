@@ -53,10 +53,6 @@ func GetID(ctx context.Context) string {
 
 // GetLoginType returns the login type of the client
 func GetLoginType(ctx context.Context) types.LoginType {
-	if !api.HasPerm(ctx, api.RoleDefault, api.RoleUser) {
-		return -1
-	}
-
 	v, ok := ctx.Value(LoginType{}).(types.LoginType)
 	if !ok {
 		return -1

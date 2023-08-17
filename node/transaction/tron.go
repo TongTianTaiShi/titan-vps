@@ -70,7 +70,7 @@ func (m *Manager) watchTronTransactions() {
 			continue
 		}
 
-		log.Debugf(" handleBlock height :%d, endHeight:%d \n", startHeight, endHeight)
+		// log.Debugf(" handleBlock height :%d, endHeight:%d \n", startHeight, endHeight)
 		blockInfo, err := client.GetBlockByLimitNext(startHeight, endHeight)
 		if err != nil {
 			log.Errorf("GetBlockByLimitNext err:%s \n", err.Error())
@@ -168,7 +168,7 @@ func (m *Manager) decodeData(trc20 []byte) (to string, amount string, flag bool)
 }
 
 func (m *Manager) handleTransfer(txID, from, to string, height int64, amount string, state core.Transaction_ResultContractResult) {
-	log.Infof("Transfer :%s,%s,%s,%s,%s,%s", txID, to, from, amount, state)
+	log.DPanicf("Transfer :%s,%s,%s,%s,%s,%s", txID, to, from, amount, state)
 
 	if userID, ok := m.tronAddrs[to]; ok {
 		m.notify.Pub(&types.TronTransferWatch{

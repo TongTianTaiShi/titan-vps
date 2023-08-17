@@ -46,8 +46,8 @@ const (
 	rechargeRecordTable    = "recharge_record"
 	withdrawRecordTable    = "withdraw_record"
 	configTable            = "config"
-	userTable              = "user"
-	adminTable             = "admin"
+	userTable              = "user_info"
+	adminTable             = "admin_info"
 	rechargeAddressTable   = "recharge_address"
 
 	// Default limits for loading table entries.
