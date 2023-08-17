@@ -33,6 +33,8 @@ import (
 
 var log = logging.Logger("basis")
 
+var USDRate float32
+
 // Basis represents a base service in a cloud computing system.
 type Basis struct {
 	fx.In
@@ -174,8 +176,15 @@ func (m *Basis) DescribePrice(ctx context.Context, priceReq *types.DescribePrice
 
 	price, err := aliyun.DescribePrice(k, s, priceReq)
 	if err != nil {
-		log.Errorf("DescribePrice err:", err.Error())
+		log.Errorf("DescribePrice err:%v", err.Error())
 		return nil, xerrors.New(*err.Data)
+	}
+	UsdRate := aliyun.GetExchangeRate()
+	if UsdRate > 0 {
+		price.USDPrice = price.USDPrice / UsdRate
+		USDRate = UsdRate
+	} else {
+		price.USDPrice = price.USDPrice / USDRate
 	}
 
 	return price, nil
@@ -203,7 +212,6 @@ func (m *Basis) CreateKeyPair(ctx context.Context, regionID, instanceID string) 
 			log.Infoln("RebootInstance err:", err)
 		}
 	}()
-	fmt.Println(keyInfo.PrivateKeyBody)
 	return keyInfo, nil
 }
 
@@ -226,6 +234,20 @@ func (m *Basis) RebootInstance(ctx context.Context, regionID, instanceId string)
 		return xerrors.New(*err.Data)
 	}
 
+	return nil
+}
+
+func (m *Basis) DescribeInstances(ctx context.Context, regionID, instanceId string) error {
+	k, s := m.getAccessKeys()
+	var instanceIds []string
+	instanceIds = append(instanceIds, instanceId)
+	instanceInfo, err := aliyun.DescribeInstances(regionID, k, s, instanceIds)
+	if err != nil {
+		log.Errorf("AttachKeyPair err: %s", err.Error())
+		return xerrors.New(*err.Data)
+	}
+	fmt.Println(instanceInfo.Body.Instances.Instance[0])
+	fmt.Println(instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0])
 	return nil
 }
 

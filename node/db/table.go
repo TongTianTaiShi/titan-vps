@@ -41,7 +41,12 @@ var cInstanceDetailsTable = `
 		system_disk_size        Float  NOT NULL DEFAULT 0,
 	    ip_address 	VARCHAR(128) NOT NULL,
 	    trade_price  		Float   NOT NULL DEFAULT 0,
+	    memory  		Float   NOT NULL DEFAULT 0,
+	    memory_used  		Float   NOT NULL DEFAULT 0,
+	    cores        INT          DEFAULT 0,
+	    cores_used  		Float   NOT NULL DEFAULT 0,
 	    system_disk_category  		VARCHAR(128) NOT NULL,
+	    os_type 		VARCHAR(128) NOT NULL,
 		created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (id)
 	) ENGINE=InnoDB COMMENT='vps instance';`

@@ -30,6 +30,7 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (stri
 	}
 	priceInfo, err := m.DescribePrice(ctx, priceReq)
 	if err != nil {
+		log.Errorf("DescribePrice:%v", err)
 		return "", err
 	}
 
@@ -52,7 +53,7 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (stri
 		OrderID:    orderID,
 		UserID:     userID,
 		Value:      "10000000000",
-		TradePrice: priceInfo.TradePrice,
+		TradePrice: req.TradePrice,
 	}
 	oldBalance, err := m.LoadUserBalance(userID)
 	if err != nil {

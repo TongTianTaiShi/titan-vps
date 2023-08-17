@@ -87,7 +87,6 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	if err != nil {
 		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
 	}
-
 	vInfo.UserID = info.User
 	vInfo.OrderID = info.OrderID.String()
 	_, err = m.createAliyunInstance(vInfo)

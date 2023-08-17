@@ -51,6 +51,8 @@ type BasisStruct struct {
 
 		DescribeInstanceType func(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) `perm:"default"`
 
+		DescribeInstances func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
+
 		DescribePrice func(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) `perm:"default"`
 
 		DescribeRecommendInstanceType func(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) `perm:"default"`
@@ -273,6 +275,17 @@ func (s *BasisStruct) DescribeInstanceType(p0 context.Context, p1 *types.Describ
 
 func (s *BasisStub) DescribeInstanceType(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
 	return nil, ErrNotSupported
+}
+
+func (s *BasisStruct) DescribeInstances(p0 context.Context, p1 string, p2 string) error {
+	if s.Internal.DescribeInstances == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.DescribeInstances(p0, p1, p2)
+}
+
+func (s *BasisStub) DescribeInstances(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
 }
 
 func (s *BasisStruct) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) {

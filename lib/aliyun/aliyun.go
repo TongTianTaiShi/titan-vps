@@ -6,6 +6,7 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
 	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
@@ -371,7 +372,7 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 		}
 	}
 
-	runtime := &util.RuntimeOptions{}
+	runtime := &util.RuntimeOptions{ConnectTimeout: tea.Int(int(5 * time.Second))}
 
 	tryErr := func() (_e error) {
 		defer func() {
@@ -388,7 +389,7 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 			Currency:      *price.Currency,
 			OriginalPrice: *price.OriginalPrice,
 			TradePrice:    *price.TradePrice,
-			USDPrice:      GetExchangeRate(*price.TradePrice),
+			USDPrice:      *price.TradePrice,
 		}
 		return nil
 	}()
@@ -929,7 +930,7 @@ func RebootInstance(regionID, keyID, keySecret, instanceId string) *tea.SDKError
 	return nil
 }
 
-func GetExchangeRate(price float32) float32 {
+func GetExchangeRate() float32 {
 	client := &http.Client{}
 	// todo
 	resp, err := client.Get("https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD")
@@ -943,5 +944,5 @@ func GetExchangeRate(price float32) float32 {
 	if err != nil {
 		return 0
 	}
-	return price / ExchangeRateRsp.Data.Rate
+	return ExchangeRateRsp.Data.Rate
 }

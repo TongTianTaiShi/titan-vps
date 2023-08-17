@@ -21,6 +21,7 @@ type Basis interface {
 	CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error)                                                           //perm:default
 	AttachKeyPair(ctx context.Context, regionID, keyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)                                  //perm:default
 	RebootInstance(ctx context.Context, regionID, instanceID string) error                                                                                          //perm:default
+	DescribeInstances(ctx context.Context, regionID, instanceId string) error                                                                                       //perm:default
 }
 
 // AdminAPI is an interface for admin

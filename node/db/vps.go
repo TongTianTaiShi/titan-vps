@@ -53,8 +53,8 @@ func (n *SQLDB) VpsDeviceExists(instanceID int64) (bool, error) {
 // SaveVpsInstance   saves vps info into the database.
 func (n *SQLDB) SaveVpsInstance(rInfo *types.CreateOrderReq) (int64, error) {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (region_id,instance_id,user_id,order_id, instance_type, dry_run, image_id, security_group_id, instance_charge_type,internet_charge_type, period_unit, period, bandwidth_out,bandwidth_in,ip_address,trade_price,system_disk_category,system_disk_size) 
-				VALUES (:region_id,:instance_id,:user_id,:order_id, :instance_type, :dry_run, :image_id, :security_group_id, :instance_charge_type,:internet_charge_type, :period_unit, :period, :bandwidth_out,:bandwidth_in,:ip_address,:trade_price,:system_disk_category,:system_disk_size)`, instancesDetailsTable)
+		`INSERT INTO %s (region_id,instance_id,user_id,order_id, instance_type, dry_run, image_id, security_group_id, instance_charge_type,internet_charge_type, period_unit, period, bandwidth_out,bandwidth_in,ip_address,trade_price,system_disk_category,system_disk_size,os_type) 
+				VALUES (:region_id,:instance_id,:user_id,:order_id, :instance_type, :dry_run, :image_id, :security_group_id, :instance_charge_type,:internet_charge_type, :period_unit, :period, :bandwidth_out,:bandwidth_in,:ip_address,:trade_price,:system_disk_category,:system_disk_size,:os_type)`, instancesDetailsTable)
 
 	result, err := n.db.NamedExec(query, rInfo)
 	if err != nil {
@@ -62,6 +62,14 @@ func (n *SQLDB) SaveVpsInstance(rInfo *types.CreateOrderReq) (int64, error) {
 	}
 
 	return result.LastInsertId()
+}
+
+func (n *SQLDB) UpdateVpsInstance(info *types.CreateInstanceReq) error {
+	query := fmt.Sprintf(`UPDATE %s SET ip_address=?, instance_id=?, user_id=?,
+	    security_group_id=? WHERE order_id=?`, instancesDetailsTable)
+	_, err := n.db.Exec(query, info.IpAddress, info.InstanceId, info.UserID, info.SecurityGroupId, info.OrderID)
+
+	return err
 }
 
 func (n *SQLDB) SaveVpsInstanceDevice(rInfo *types.CreateInstanceResponse) error {

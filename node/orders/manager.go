@@ -2,6 +2,7 @@ package orders
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -210,14 +211,12 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 			return nil, xerrors.New(*err.Data)
 		}
 	}
-
 	log.Debugln("securityGroupID:", securityGroupID, " , DryRun:", vpsInfo.DryRun)
 	result, err := aliyun.CreateInstance(k, s, vpsInfo, vpsInfo.DryRun)
 	if err != nil {
 		log.Errorf("CreateInstance err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
-
 	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceID)
 	if err != nil {
 		log.Errorf("AllocatePublicIpAddress err: %s", err.Error())
@@ -262,6 +261,28 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	saveErr := m.SaveMyInstancesInfo(info)
 	if err != nil {
 		log.Errorf("SaveMyInstancesInfo:%v", saveErr)
+	}
+	var instanceIds []string
+	instanceIds = append(instanceIds, result.InstanceID)
+	instanceInfo, err := aliyun.DescribeInstances(regionID, k, s, instanceIds)
+	if err != nil {
+		log.Errorf("AttachKeyPair err: %s", err.Error())
+	}
+	//todo
+	fmt.Println(instanceInfo.Body.Instances.Instance[0])
+	fmt.Println(instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0])
+	ip := instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0]
+	securityGroupId := instanceInfo.Body.Instances.Instance[0].SecurityGroupIds.SecurityGroupId[0]
+	instanceDetailsInfo := &types.CreateInstanceReq{
+		IpAddress:       *ip,
+		InstanceId:      result.InstanceID,
+		SecurityGroupId: *securityGroupId,
+		OrderID:         vpsInfo.OrderID,
+		UserID:          vpsInfo.UserID,
+	}
+	errU := m.UpdateVpsInstance(instanceDetailsInfo)
+	if errU != nil {
+		log.Errorf("UpdateVpsInstance:%v", errU)
 	}
 	return result, nil
 }
