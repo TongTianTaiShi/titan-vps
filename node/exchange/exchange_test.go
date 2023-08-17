@@ -11,7 +11,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func TestWatch(t *testing.T) {
+func TestTransfer(t *testing.T) {
 	client, err := getGrpcClient("47.252.19.181:50051")
 	if err != nil {
 		fmt.Println("getGrpcClient err:", err.Error())
@@ -57,7 +57,7 @@ func TestWatch(t *testing.T) {
 	fmt.Println("Transfer hash:", tHash)
 }
 
-func TestCreateAddr(t *testing.T) {
+func TestCreateAddrs(t *testing.T) {
 	for i := 0; i < 10; i++ {
 
 		privateKey, err := hdwallet.NewPrivateKey("")

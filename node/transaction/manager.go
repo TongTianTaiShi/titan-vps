@@ -20,8 +20,7 @@ type Manager struct {
 
 	cfg config.BasisCfg
 
-	tronAddrs map[string]string
-
+	tronAddrs    map[string]string
 	tronAddrLock *sync.Mutex
 }
 

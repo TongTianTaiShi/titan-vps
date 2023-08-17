@@ -40,7 +40,7 @@ func (m *Manager) watchTronTransactions() {
 		return
 	}
 
-	startHeight := int64(39297600)
+	startHeight := int64(0)
 	limit := int64(50)
 	heightStr := ""
 
@@ -60,12 +60,17 @@ func (m *Manager) watchTronTransactions() {
 			log.Errorf("GetNowBlock err:%s", err.Error())
 			continue
 		}
-
 		nowHeight := block.BlockHeader.RawData.Number
+
+		if startHeight < 1 {
+			startHeight = nowHeight
+		}
+
 		endHeight := startHeight + limit
 		if endHeight >= nowHeight {
 			endHeight = nowHeight
 		}
+
 		if startHeight >= endHeight {
 			continue
 		}
