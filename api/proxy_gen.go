@@ -129,6 +129,8 @@ type UserAPIStruct struct {
 	Internal struct {
 		GetBalance func(p0 context.Context) (string, error) `perm:"user"`
 
+		GetInstanceDetailsInfo func(p0 context.Context, p1 string) (*types.InstanceDetails, error) `perm:"user"`
+
 		GetRechargeAddress func(p0 context.Context) (string, error) `perm:"user"`
 
 		GetSignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
@@ -491,6 +493,17 @@ func (s *UserAPIStruct) GetBalance(p0 context.Context) (string, error) {
 
 func (s *UserAPIStub) GetBalance(p0 context.Context) (string, error) {
 	return "", ErrNotSupported
+}
+
+func (s *UserAPIStruct) GetInstanceDetailsInfo(p0 context.Context, p1 string) (*types.InstanceDetails, error) {
+	if s.Internal.GetInstanceDetailsInfo == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetInstanceDetailsInfo(p0, p1)
+}
+
+func (s *UserAPIStub) GetInstanceDetailsInfo(p0 context.Context, p1 string) (*types.InstanceDetails, error) {
+	return nil, ErrNotSupported
 }
 
 func (s *UserAPIStruct) GetRechargeAddress(p0 context.Context) (string, error) {

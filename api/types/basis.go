@@ -226,8 +226,8 @@ const (
 
 const (
 	InstanceCreate MyInstanceState = iota
-	InstanceSuccess
-	InstanceField
+	InstanceRunning
+	InstanceStop
 )
 
 type LoginType int64
@@ -368,7 +368,7 @@ type MyInstance struct {
 	InstanceSystem     string             `db:"instance_system"`
 	Location           string             `db:"location"`
 	Price              float32            `db:"price"`
-	State              MyInstanceState    `db:"state"`
+	State              string             `db:"state"`
 	InternetChargeType string             `db:"internet_charge_type"`
 	CreatedTime        time.Time          `db:"created_time"`
 }

@@ -181,15 +181,27 @@ func (m *Basis) DescribePrice(ctx context.Context, priceReq *types.DescribePrice
 	return price, nil
 }
 
-func (m *Basis) CreateKeyPair(ctx context.Context, regionID, keyPairName string) (*types.CreateKeyPairResponse, error) {
+func (m *Basis) CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error) {
 	k, s := m.getAccessKeys()
-
-	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairName)
+	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
+	keyPairNameNew := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
+	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairNameNew)
 	if err != nil {
 		log.Errorf("CreateKeyPair err: %s", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
+	var instanceIds []string
+	instanceIds = append(instanceIds, instanceID)
+	_, err = aliyun.AttachKeyPair(regionID, k, s, keyPairNameNew, instanceIds)
+	if err != nil {
+		log.Errorf("AttachKeyPair err: %s", err.Error())
+	}
+	go func() {
+		time.Sleep(1 * time.Minute)
 
+		err := aliyun.StartInstance(regionID, k, s, instanceID)
+		log.Infoln("StartInstance err:", err)
+	}()
 	return keyInfo, nil
 }
 
@@ -239,7 +251,6 @@ func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanc
 	}
 
 	log.Debugf("securityGroupID : ", securityGroupID)
-	// todo amount > 1
 	result, err := aliyun.CreateInstance(k, s, vpsInfo, false)
 	if err != nil {
 		log.Errorf("CreateInstance err: %s", err.Error())

@@ -41,10 +41,10 @@ func (n *SQLDB) LoadMyInstancesInfo(userID string, limit, offset int64) (*types.
 	return out, nil
 }
 
-func (n *SQLDB) LoadInstanceDetailsInfo(instanceId string) (*types.InstanceDetails, error) {
+func (n *SQLDB) LoadInstanceDetailsInfo(userID, instanceId string) (*types.InstanceDetails, error) {
 	var info types.InstanceDetails
-	query := fmt.Sprintf("SELECT * FROM %s WHERE instance_id=?", instancesDetailsTable)
-	err := n.db.Get(&info, query, instanceId)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? and instance_id=?", instancesDetailsTable)
+	err := n.db.Get(&info, query, userID, instanceId)
 	if err != nil {
 		return nil, err
 	}

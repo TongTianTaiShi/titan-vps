@@ -40,7 +40,6 @@ func NewSQLDB(path string) (*SQLDB, error) {
 const (
 	// Database table names.
 	orderRecordTable       = "order_record"
-	vpsInstanceTable       = "vps_instance"
 	vpsInstanceDeviceTable = "vps_instance_device"
 	instancesDetailsTable  = "instances_details"
 	myInstancesTable       = "my_instances"
@@ -50,7 +49,6 @@ const (
 	userTable              = "user"
 	adminTable             = "admin"
 	rechargeAddressTable   = "recharge_address"
-	myServers              = "my_servers"
 
 	// Default limits for loading table entries.
 	loadOrderRecordsDefaultLimit = 100

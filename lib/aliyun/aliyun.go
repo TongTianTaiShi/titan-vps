@@ -388,7 +388,7 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 			Currency:      *price.Currency,
 			OriginalPrice: *price.OriginalPrice,
 			TradePrice:    *price.TradePrice,
-			USDPrice:      getExchangeRate(*price.TradePrice),
+			USDPrice:      GetExchangeRate(*price.TradePrice),
 		}
 		return nil
 	}()
@@ -931,7 +931,7 @@ func RebootInstance(regionID, keyID, keySecret, instanceId string) (*ecs20140526
 	return result, nil
 }
 
-func getExchangeRate(price float32) float32 {
+func GetExchangeRate(price float32) float32 {
 	client := &http.Client{}
 	// todo
 	resp, err := client.Get("https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD")

@@ -18,7 +18,7 @@ type Basis interface {
 	DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error)                                                      //perm:default
 	DescribePrice(ctx context.Context, describePriceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error)                                              //perm:default
 	CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error)                                                    //perm:default
-	CreateKeyPair(ctx context.Context, regionID, keyPairName string) (*types.CreateKeyPairResponse, error)                                                          //perm:default
+	CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error)                                                           //perm:default
 	AttachKeyPair(ctx context.Context, regionID, keyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)                                  //perm:default
 	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                                                                                //perm:default
 }
@@ -55,4 +55,5 @@ type UserAPI interface {
 	GetUserRechargeRecords(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error)   //perm:user
 	GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) //perm:user
 	GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error) //perm:user
+	GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error)      //perm:user
 }

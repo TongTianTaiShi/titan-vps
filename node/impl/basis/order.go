@@ -2,8 +2,9 @@ package basis
 
 import (
 	"context"
-	"fmt"
+	"github.com/LMF709268224/titan-vps/node/utils"
 	"github.com/google/uuid"
+	"strconv"
 	"strings"
 
 	"github.com/LMF709268224/titan-vps/api/types"
@@ -35,9 +36,7 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (stri
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
 	req.OrderID = orderID
-	fmt.Println(priceInfo.USDPrice)
-	fmt.Println(priceInfo.TradePrice)
-	req.TradePrice = priceInfo.TradePrice / float32(req.Amount)
+	req.TradePrice = priceInfo.USDPrice / float32(req.Amount)
 	//for i := int32(0); i < req.Amount; i++ {
 	//	id, err = m.SaveVpsInstance(&req)
 	//	if err != nil {
@@ -55,7 +54,19 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (stri
 		Value:      "10000000000",
 		TradePrice: priceInfo.TradePrice,
 	}
-
+	oldBalance, err := m.LoadUserBalance(userID)
+	if err != nil {
+		log.Errorf("LoadUserBalance:%v", err)
+	}
+	newBalanceString := strconv.FormatFloat(float64(priceInfo.USDPrice)*1000000000000000000, 'f', -1, 64)
+	newBalanceString, ok := utils.BigIntReduce(oldBalance, newBalanceString)
+	if ok {
+		err = m.UpdateUserBalance(userID, newBalanceString, oldBalance)
+		if err != nil {
+			log.Errorf("UpdateUserBalance:%v", err)
+			return "", err
+		}
+	}
 	err = m.OrderMgr.CreatedOrder(info)
 	if err != nil {
 		return "", err

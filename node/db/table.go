@@ -16,6 +16,7 @@ var cOrderRecordTable = `
 		done_height        INT          DEFAULT 0,
 		vps_id             BIGINT(20)   NOT NULL,
 		msg                VARCHAR(2048) DEFAULT "",
+	    trade_price  		Float   NOT NULL DEFAULT 0,
 		PRIMARY KEY (order_id),
 		KEY idx_user (user_id)
 	) ENGINE=InnoDB COMMENT='order record';`
@@ -69,7 +70,7 @@ var cMyInstancesTable = `
 		instance_system       		VARCHAR(128) NOT NULL,
 		location             VARCHAR(128) NOT NULL,
 		price      		float NOT NULL DEFAULT 0,
-		state  		TINYINT(1) NOT NULL DEFAULT 0,
+		state  		 VARCHAR(28) NOT NULL,
 		internet_charge_type 	VARCHAR(128) NOT NULL,
 		created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (id)

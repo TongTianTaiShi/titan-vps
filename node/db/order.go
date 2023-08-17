@@ -11,10 +11,10 @@ import (
 // SaveOrderInfo save order information
 func (n *SQLDB) SaveOrderInfo(rInfo *types.OrderRecord) error {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, done_state, vps_id, msg, user_id, tx_hash) 
-		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :done_state, :vps_id, :msg, :user_id, :tx_hash)
+		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, done_state, vps_id, msg, user_id, tx_hash,trade_price) 
+		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :done_state, :vps_id, :msg, :user_id, :tx_hash,:trade_price)
 				ON DUPLICATE KEY UPDATE state=:state, done_height=:done_height, done_state=:done_state, done_time=NOW(), user_id=:user_id,
-				from_addr=:from_addr, to_addr=:to_addr, value=:value, vps_id=:vps_id, created_height=:created_height, msg=:msg, tx_hash=:tx_hash`, orderRecordTable)
+				from_addr=:from_addr, to_addr=:to_addr, value=:value, vps_id=:vps_id, created_height=:created_height, msg=:msg, tx_hash=:tx_hash, trade_price=:trade_price`, orderRecordTable)
 	_, err := n.db.NamedExec(query, rInfo)
 
 	return err

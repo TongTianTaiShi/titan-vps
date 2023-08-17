@@ -2,7 +2,8 @@ package basis
 
 import (
 	"context"
-	"fmt"
+	"github.com/LMF709268224/titan-vps/lib/aliyun"
+	"golang.org/x/xerrors"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/handler"
@@ -16,8 +17,6 @@ func (m *Basis) GetBalance(ctx context.Context) (string, error) {
 
 func (m *Basis) GetRechargeAddress(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
-	fmt.Println("----------------------------")
-	fmt.Println(userID)
 	addr, err := m.GetRechargeAddressOfUser(userID)
 	if err != nil {
 		return "", err
@@ -50,6 +49,26 @@ func (m *Basis) GetUserWithdrawalRecords(ctx context.Context, limit, offset int6
 
 func (m *Basis) GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error) {
 	userID := handler.GetID(ctx)
+	k, s := m.getAccessKeys()
+	instanceInfos, err := m.LoadMyInstancesInfo(userID, limit, offset)
+	if err != nil {
+		log.Errorf("LoadMyInstancesInfo err: %s", err.Error())
+		return nil, xerrors.New(err.Error())
+	}
+	for _, instanceInfo := range instanceInfos.List {
+		var instanceIds []string
+		instanceIds = append(instanceIds, instanceInfo.InstanceId)
+		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.Location, k, s, instanceIds)
+		if err != nil {
+			log.Errorf("DescribeInstanceStatus err: %s", err.Error())
+		}
+		instanceInfo.State = *rsp.Body.InstanceStatuses.InstanceStatus[0].Status
+	}
 
-	return m.LoadMyInstancesInfo(userID, limit, offset)
+	return instanceInfos, nil
+}
+func (m *Basis) GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error) {
+	userID := handler.GetID(ctx)
+
+	return m.LoadInstanceDetailsInfo(userID, instanceID)
 }

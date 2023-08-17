@@ -2,8 +2,6 @@ package orders
 
 import (
 	"context"
-	"fmt"
-	"math/rand"
 	"sync"
 	"time"
 
@@ -214,7 +212,6 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	}
 
 	log.Debugln("securityGroupID:", securityGroupID, " , DryRun:", vpsInfo.DryRun)
-
 	result, err := aliyun.CreateInstance(k, s, vpsInfo, vpsInfo.DryRun)
 	if err != nil {
 		log.Errorf("CreateInstance err: %s", err.Error())
@@ -232,26 +229,26 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	if err != nil {
 		log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
 	}
-	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
-	keyPairName := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
-	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairName)
-	if err != nil {
-		log.Errorf("CreateKeyPair err: %s", err.Error())
-	} else {
-		result.PrivateKey = keyInfo.PrivateKeyBody
-	}
-	var instanceIds []string
-	instanceIds = append(instanceIds, result.InstanceID)
-	_, err = aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
-	if err != nil {
-		log.Errorf("AttachKeyPair err: %s", err.Error())
-	}
-	go func() {
-		time.Sleep(1 * time.Minute)
-
-		err := aliyun.StartInstance(regionID, k, s, result.InstanceID)
-		log.Infoln("StartInstance err:", err)
-	}()
+	//randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
+	//keyPairName := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
+	//keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairName)
+	//if err != nil {
+	//	log.Errorf("CreateKeyPair err: %s", err.Error())
+	//} else {
+	//	result.PrivateKey = keyInfo.PrivateKeyBody
+	//}
+	//var instanceIds []string
+	//instanceIds = append(instanceIds, result.InstanceID)
+	//_, err = aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
+	//if err != nil {
+	//	log.Errorf("AttachKeyPair err: %s", err.Error())
+	//}
+	//go func() {
+	//	time.Sleep(1 * time.Minute)
+	//
+	//	err := aliyun.StartInstance(regionID, k, s, result.InstanceID)
+	//	log.Infoln("StartInstance err:", err)
+	//}()
 	info := &types.MyInstance{
 		OrderID:            vpsInfo.OrderID,
 		UserID:             vpsInfo.UserID,
@@ -260,12 +257,10 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 		InternetChargeType: vpsInfo.InternetChargeType,
 		Location:           vpsInfo.RegionId,
 	}
-
 	saveErr := m.SaveMyInstancesInfo(info)
 	if err != nil {
 		log.Errorf("SaveMyInstancesInfo:%v", saveErr)
 	}
-	fmt.Println("-------SaveMyInstancesInfo----------")
 	return result, nil
 }
 
