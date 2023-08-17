@@ -33,15 +33,10 @@ import (
 
 var log = logging.Logger("mall")
 
-<<<<<<< HEAD:node/impl/basis/basis.go
 var USDRate float32
 
-// Basis represents a base service in a cloud computing system.
-type Basis struct {
-=======
 // Mall represents a base service in a cloud computing system.
 type Mall struct {
->>>>>>> 7fc80f3 (rename mall):node/impl/mall/mall.go
 	fx.In
 	*common.CommonAPI
 	TransactionMgr *transaction.Manager
@@ -242,8 +237,7 @@ func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceId string) 
 	return nil
 }
 
-<<<<<<< HEAD:node/impl/basis/basis.go
-func (m *Basis) DescribeInstances(ctx context.Context, regionID, instanceId string) error {
+func (m *Mall) DescribeInstances(ctx context.Context, regionID, instanceId string) error {
 	k, s := m.getAccessKeys()
 	var instanceIds []string
 	instanceIds = append(instanceIds, instanceId)
@@ -257,10 +251,7 @@ func (m *Basis) DescribeInstances(ctx context.Context, regionID, instanceId stri
 	return nil
 }
 
-func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
-=======
 func (m *Mall) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
->>>>>>> 7fc80f3 (rename mall):node/impl/mall/mall.go
 	k, s := m.getAccessKeys()
 	priceUnit := vpsInfo.PeriodUnit
 	period := vpsInfo.Period

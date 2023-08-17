@@ -161,7 +161,7 @@ var describeInstancesCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
