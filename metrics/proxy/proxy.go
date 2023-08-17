@@ -16,8 +16,8 @@ func MetricedTransactionAPI(a api.Transaction) api.Transaction {
 	return &out
 }
 
-func MetricedBasisAPI(a api.Basis) api.Basis {
-	var out api.BasisStruct
+func MetricedMallAPI(a api.Mall) api.Mall {
+	var out api.MallStruct
 	proxy(a, &out)
 	return &out
 }

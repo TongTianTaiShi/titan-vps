@@ -1,7 +1,8 @@
-package basis
+package mall
 
 import (
 	"context"
+
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"golang.org/x/xerrors"
 
@@ -9,13 +10,13 @@ import (
 	"github.com/LMF709268224/titan-vps/node/handler"
 )
 
-func (m *Basis) GetBalance(ctx context.Context) (string, error) {
+func (m *Mall) GetBalance(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
 
 	return m.LoadUserBalance(userID)
 }
 
-func (m *Basis) GetRechargeAddress(ctx context.Context) (string, error) {
+func (m *Mall) GetRechargeAddress(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
 	addr, err := m.GetRechargeAddressOfUser(userID)
 	if err != nil {
@@ -29,25 +30,25 @@ func (m *Basis) GetRechargeAddress(ctx context.Context) (string, error) {
 	return addr, nil
 }
 
-func (m *Basis) Withdraw(ctx context.Context, withdrawAddr, value string) error {
+func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 	userID := handler.GetID(ctx)
 
 	return m.WithdrawManager.CreateWithdrawOrder(userID, withdrawAddr, value)
 }
 
-func (m *Basis) GetUserRechargeRecords(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) {
+func (m *Mall) GetUserRechargeRecords(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) {
 	userID := handler.GetID(ctx)
 
 	return m.LoadRechargeRecordsByUser(userID, limit, offset)
 }
 
-func (m *Basis) GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
+func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
 	userID := handler.GetID(ctx)
 
 	return m.LoadWithdrawRecordsByUser(userID, limit, offset)
 }
 
-func (m *Basis) GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error) {
+func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error) {
 	userID := handler.GetID(ctx)
 	k, s := m.getAccessKeys()
 	instanceInfos, err := m.LoadMyInstancesInfo(userID, limit, offset)
@@ -67,7 +68,8 @@ func (m *Basis) GetUserInstanceRecords(ctx context.Context, limit, offset int64)
 
 	return instanceInfos, nil
 }
-func (m *Basis) GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error) {
+
+func (m *Mall) GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error) {
 	userID := handler.GetID(ctx)
 
 	return m.LoadInstanceDetailsInfo(userID, instanceID)

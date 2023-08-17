@@ -35,12 +35,12 @@ const (
 	NodeUnknown NodeType = iota
 
 	NodeTransaction
-	NodeBasis
+	NodeMall
 )
 
 var (
 	TransactionAPIVersion0 = newVer(1, 0, 0)
-	BasisAPIVersion0       = newVer(1, 0, 0)
+	MallAPIVersion0        = newVer(1, 0, 0)
 )
 
 //nolint:varcheck,deadcode
@@ -58,8 +58,8 @@ func VersionForType(nodeType types.NodeType) (Version, error) {
 	switch nodeType {
 	case types.NodeTransaction:
 		return TransactionAPIVersion0, nil
-	case types.NodeBasis:
-		return BasisAPIVersion0, nil
+	case types.NodeMall:
+		return MallAPIVersion0, nil
 
 	default:
 		return Version(0), xerrors.Errorf("unknown node type %d", nodeType)

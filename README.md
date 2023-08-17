@@ -1,5 +1,5 @@
 #### 不用代理:
-docker build -t vps-basis:latest -f ./Dockerfile .
+docker build -t vps-mall:latest -f ./Dockerfile .
 
 #### 使用代理:
 配置docker使用proxy
@@ -9,7 +9,7 @@ vi /etc/systemd/system/docker.service.d/http-proxy.conf
 Environment="HTTP_PROXY=http://192.168.0.132:1081/"
 Environment="HTTPS_PROXY=http://192.168.0.132:1081/"
 
-docker build --build-arg HTTP_PROXY=http://192.168.0.132:1081 --build-arg HTTPS_PROXY=http://192.168.0.132:1081 -t vps-basis:latest -f ./Dockerfile .
+docker build --build-arg HTTP_PROXY=http://192.168.0.132:1081 --build-arg HTTPS_PROXY=http://192.168.0.132:1081 -t vps-mall:latest -f ./Dockerfile .
 
 ### RUN:
-docker run -d --name vps-basis -p 5577:5577 vps-basis:latest
+docker run -d --name vps-mall -p 5577:5577 vps-mall:latest

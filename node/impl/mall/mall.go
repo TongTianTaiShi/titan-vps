@@ -1,4 +1,4 @@
-package basis
+package mall
 
 import (
 	"context"
@@ -31,12 +31,17 @@ import (
 	"golang.org/x/xerrors"
 )
 
-var log = logging.Logger("basis")
+var log = logging.Logger("mall")
 
+<<<<<<< HEAD:node/impl/basis/basis.go
 var USDRate float32
 
 // Basis represents a base service in a cloud computing system.
 type Basis struct {
+=======
+// Mall represents a base service in a cloud computing system.
+type Mall struct {
+>>>>>>> 7fc80f3 (rename mall):node/impl/mall/mall.go
 	fx.In
 	*common.CommonAPI
 	TransactionMgr *transaction.Manager
@@ -45,12 +50,12 @@ type Basis struct {
 	Notify *pubsub.PubSub
 	*db.SQLDB
 	OrderMgr *orders.Manager
-	dtypes.GetBasisConfigFunc
+	dtypes.GetMallConfigFunc
 	UserMgr *user.Manager
 }
 
-func (m *Basis) getAccessKeys() (string, string) {
-	cfg, err := m.GetBasisConfigFunc()
+func (m *Mall) getAccessKeys() (string, string) {
+	cfg, err := m.GetMallConfigFunc()
 	if err != nil {
 		log.Errorf("get config err:%s", err.Error())
 		return "", ""
@@ -59,7 +64,7 @@ func (m *Basis) getAccessKeys() (string, string) {
 	return cfg.AliyunAccessKeyID, cfg.AliyunAccessKeySecret
 }
 
-func (m *Basis) DescribeRegions(ctx context.Context) ([]string, error) {
+func (m *Mall) DescribeRegions(ctx context.Context) ([]string, error) {
 	rsp, err := aliyun.DescribeRegions(m.getAccessKeys())
 	if err != nil {
 		log.Errorf("DescribeRegions err: %s", err.Error())
@@ -76,7 +81,7 @@ func (m *Basis) DescribeRegions(ctx context.Context) ([]string, error) {
 	return rpsData, nil
 }
 
-func (m *Basis) DescribeRecommendInstanceType(ctx context.Context, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
+func (m *Mall) DescribeRecommendInstanceType(ctx context.Context, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
 	k, s := m.getAccessKeys()
 	rsp, err := aliyun.DescribeRecommendInstanceType(k, s, instanceTypeReq)
 	if err != nil {
@@ -98,7 +103,7 @@ func (m *Basis) DescribeRecommendInstanceType(ctx context.Context, instanceTypeR
 	return rspDataList, nil
 }
 
-func (m *Basis) DescribeInstanceType(ctx context.Context, instanceType *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
+func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
 	k, s := m.getAccessKeys()
 	rsp, err := aliyun.DescribeInstanceTypes(k, s, instanceType)
 	if err != nil {
@@ -147,7 +152,7 @@ func (m *Basis) DescribeInstanceType(ctx context.Context, instanceType *types.De
 	return rspDataList, nil
 }
 
-func (m *Basis) DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error) {
+func (m *Mall) DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error) {
 	k, s := m.getAccessKeys()
 
 	rsp, err := aliyun.DescribeImages(regionID, k, s, instanceType)
@@ -171,7 +176,7 @@ func (m *Basis) DescribeImages(ctx context.Context, regionID, instanceType strin
 	return rspDataList, nil
 }
 
-func (m *Basis) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
+func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	k, s := m.getAccessKeys()
 
 	price, err := aliyun.DescribePrice(k, s, priceReq)
@@ -190,7 +195,7 @@ func (m *Basis) DescribePrice(ctx context.Context, priceReq *types.DescribePrice
 	return price, nil
 }
 
-func (m *Basis) CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error) {
+func (m *Mall) CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error) {
 	k, s := m.getAccessKeys()
 	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
 	keyPairNameNew := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
@@ -215,7 +220,7 @@ func (m *Basis) CreateKeyPair(ctx context.Context, regionID, instanceID string) 
 	return keyInfo, nil
 }
 
-func (m *Basis) AttachKeyPair(ctx context.Context, regionID, keyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error) {
+func (m *Mall) AttachKeyPair(ctx context.Context, regionID, keyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error) {
 	k, s := m.getAccessKeys()
 	AttachResult, err := aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
 	if err != nil {
@@ -226,7 +231,7 @@ func (m *Basis) AttachKeyPair(ctx context.Context, regionID, keyPairName string,
 	return AttachResult, nil
 }
 
-func (m *Basis) RebootInstance(ctx context.Context, regionID, instanceId string) error {
+func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceId string) error {
 	k, s := m.getAccessKeys()
 	err := aliyun.RebootInstance(regionID, k, s, instanceId)
 	if err != nil {
@@ -237,6 +242,7 @@ func (m *Basis) RebootInstance(ctx context.Context, regionID, instanceId string)
 	return nil
 }
 
+<<<<<<< HEAD:node/impl/basis/basis.go
 func (m *Basis) DescribeInstances(ctx context.Context, regionID, instanceId string) error {
 	k, s := m.getAccessKeys()
 	var instanceIds []string
@@ -252,6 +258,9 @@ func (m *Basis) DescribeInstances(ctx context.Context, regionID, instanceId stri
 }
 
 func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
+=======
+func (m *Mall) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
+>>>>>>> 7fc80f3 (rename mall):node/impl/mall/mall.go
 	k, s := m.getAccessKeys()
 	priceUnit := vpsInfo.PeriodUnit
 	period := vpsInfo.Period
@@ -315,8 +324,8 @@ func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanc
 	return result, nil
 }
 
-func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
-	cfg, err := m.GetBasisConfigFunc()
+func (m *Mall) MintToken(ctx context.Context, address string) (string, error) {
+	cfg, err := m.GetMallConfigFunc()
 	if err != nil {
 		log.Errorf("get config err:%s", err.Error())
 		return "", err
@@ -329,11 +338,11 @@ func (m *Basis) MintToken(ctx context.Context, address string) (string, error) {
 	return client.Mint(cfg.PrivateKeyStr, address, valueStr)
 }
 
-func (m *Basis) GetSignCode(ctx context.Context, userID string) (string, error) {
+func (m *Mall) GetSignCode(ctx context.Context, userID string) (string, error) {
 	return m.UserMgr.SetSignCode(userID)
 }
 
-func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
+func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
 	userID := user.UserId
 	code, err := m.UserMgr.GetSignCode(userID)
 	if err != nil {
@@ -366,7 +375,7 @@ func (m *Basis) Login(ctx context.Context, user *types.UserReq) (*types.UserResp
 	return rsp, nil
 }
 
-func (m *Basis) initUser(userID string) error {
+func (m *Mall) initUser(userID string) error {
 	exist, err := m.UserExists(userID)
 	if err != nil {
 		return err
@@ -379,14 +388,14 @@ func (m *Basis) initUser(userID string) error {
 	return m.SaveUserInfo(&types.UserInfo{UserID: userID, Balance: "0"})
 }
 
-func (m *Basis) Logout(ctx context.Context, user *types.UserReq) error {
+func (m *Mall) Logout(ctx context.Context, user *types.UserReq) error {
 	userID := handler.GetID(ctx)
 	log.Warnf("user id : %s", userID)
 	// delete(m.UserMgr.User, user.UserId)
 	return nil
 }
 
-var _ api.Basis = &Basis{}
+var _ api.Mall = &Mall{}
 
 func verifyEthMessage(code string, signedMessage string) (string, error) {
 	// Hash the unsigned message using EIP-191

@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -31,48 +32,6 @@ type AdminAPIStruct struct {
 type AdminAPIStub struct {
 }
 
-type BasisStruct struct {
-	CommonStruct
-
-	OrderAPIStruct
-
-	UserAPIStruct
-
-	AdminAPIStruct
-
-	Internal struct {
-		AttachKeyPair func(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) `perm:"default"`
-
-		CreateInstance func(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) `perm:"default"`
-
-		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"default"`
-
-		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]*types.DescribeImageResponse, error) `perm:"default"`
-
-		DescribeInstanceType func(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) `perm:"default"`
-
-		DescribeInstances func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
-
-		DescribePrice func(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) `perm:"default"`
-
-		DescribeRecommendInstanceType func(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) `perm:"default"`
-
-		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
-
-		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
-	}
-}
-
-type BasisStub struct {
-	CommonStub
-
-	OrderAPIStub
-
-	UserAPIStub
-
-	AdminAPIStub
-}
-
 type CommonStruct struct {
 	Internal struct {
 		AuthNew func(p0 context.Context, p1 *types.JWTPayload) (string, error) `perm:"admin"`
@@ -98,6 +57,46 @@ type CommonStruct struct {
 }
 
 type CommonStub struct {
+}
+
+type MallStruct struct {
+	CommonStruct
+
+	OrderAPIStruct
+
+	UserAPIStruct
+
+	AdminAPIStruct
+
+	Internal struct {
+		AttachKeyPair func(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) `perm:"default"`
+
+		CreateInstance func(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) `perm:"default"`
+
+		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"default"`
+
+		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]*types.DescribeImageResponse, error) `perm:"default"`
+
+		DescribeInstanceType func(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) `perm:"default"`
+
+		DescribePrice func(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) `perm:"default"`
+
+		DescribeRecommendInstanceType func(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) `perm:"default"`
+
+		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
+
+		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
+	}
+}
+
+type MallStub struct {
+	CommonStub
+
+	OrderAPIStub
+
+	UserAPIStub
+
+	AdminAPIStub
 }
 
 type OrderAPIStruct struct {
@@ -222,116 +221,6 @@ func (s *AdminAPIStub) UpdateWithdrawalRecord(p0 context.Context, p1 string, p2 
 	return ErrNotSupported
 }
 
-func (s *BasisStruct) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) {
-	if s.Internal.AttachKeyPair == nil {
-		return *new([]*types.AttachKeyPairResponse), ErrNotSupported
-	}
-	return s.Internal.AttachKeyPair(p0, p1, p2, p3)
-}
-
-func (s *BasisStub) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) {
-	return *new([]*types.AttachKeyPairResponse), ErrNotSupported
-}
-
-func (s *BasisStruct) CreateInstance(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
-	if s.Internal.CreateInstance == nil {
-		return nil, ErrNotSupported
-	}
-	return s.Internal.CreateInstance(p0, p1)
-}
-
-func (s *BasisStub) CreateInstance(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
-	return nil, ErrNotSupported
-}
-
-func (s *BasisStruct) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) {
-	if s.Internal.CreateKeyPair == nil {
-		return nil, ErrNotSupported
-	}
-	return s.Internal.CreateKeyPair(p0, p1, p2)
-}
-
-func (s *BasisStub) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) {
-	return nil, ErrNotSupported
-}
-
-func (s *BasisStruct) DescribeImages(p0 context.Context, p1 string, p2 string) ([]*types.DescribeImageResponse, error) {
-	if s.Internal.DescribeImages == nil {
-		return *new([]*types.DescribeImageResponse), ErrNotSupported
-	}
-	return s.Internal.DescribeImages(p0, p1, p2)
-}
-
-func (s *BasisStub) DescribeImages(p0 context.Context, p1 string, p2 string) ([]*types.DescribeImageResponse, error) {
-	return *new([]*types.DescribeImageResponse), ErrNotSupported
-}
-
-func (s *BasisStruct) DescribeInstanceType(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
-	if s.Internal.DescribeInstanceType == nil {
-		return nil, ErrNotSupported
-	}
-	return s.Internal.DescribeInstanceType(p0, p1)
-}
-
-func (s *BasisStub) DescribeInstanceType(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
-	return nil, ErrNotSupported
-}
-
-func (s *BasisStruct) DescribeInstances(p0 context.Context, p1 string, p2 string) error {
-	if s.Internal.DescribeInstances == nil {
-		return ErrNotSupported
-	}
-	return s.Internal.DescribeInstances(p0, p1, p2)
-}
-
-func (s *BasisStub) DescribeInstances(p0 context.Context, p1 string, p2 string) error {
-	return ErrNotSupported
-}
-
-func (s *BasisStruct) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
-	if s.Internal.DescribePrice == nil {
-		return nil, ErrNotSupported
-	}
-	return s.Internal.DescribePrice(p0, p1)
-}
-
-func (s *BasisStub) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
-	return nil, ErrNotSupported
-}
-
-func (s *BasisStruct) DescribeRecommendInstanceType(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
-	if s.Internal.DescribeRecommendInstanceType == nil {
-		return *new([]*types.DescribeRecommendInstanceResponse), ErrNotSupported
-	}
-	return s.Internal.DescribeRecommendInstanceType(p0, p1)
-}
-
-func (s *BasisStub) DescribeRecommendInstanceType(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
-	return *new([]*types.DescribeRecommendInstanceResponse), ErrNotSupported
-}
-
-func (s *BasisStruct) DescribeRegions(p0 context.Context) ([]string, error) {
-	if s.Internal.DescribeRegions == nil {
-		return *new([]string), ErrNotSupported
-	}
-	return s.Internal.DescribeRegions(p0)
-}
-
-func (s *BasisStub) DescribeRegions(p0 context.Context) ([]string, error) {
-	return *new([]string), ErrNotSupported
-}
-
-func (s *BasisStruct) RebootInstance(p0 context.Context, p1 string, p2 string) error {
-	if s.Internal.RebootInstance == nil {
-		return ErrNotSupported
-	}
-	return s.Internal.RebootInstance(p0, p1, p2)
-}
-
-func (s *BasisStub) RebootInstance(p0 context.Context, p1 string, p2 string) error {
-	return ErrNotSupported
-}
-
 func (s *CommonStruct) AuthNew(p0 context.Context, p1 *types.JWTPayload) (string, error) {
 	if s.Internal.AuthNew == nil {
 		return "", ErrNotSupported
@@ -440,6 +329,105 @@ func (s *CommonStruct) Version(p0 context.Context) (APIVersion, error) {
 
 func (s *CommonStub) Version(p0 context.Context) (APIVersion, error) {
 	return *new(APIVersion), ErrNotSupported
+}
+
+func (s *MallStruct) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) {
+	if s.Internal.AttachKeyPair == nil {
+		return *new([]*types.AttachKeyPairResponse), ErrNotSupported
+	}
+	return s.Internal.AttachKeyPair(p0, p1, p2, p3)
+}
+
+func (s *MallStub) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) {
+	return *new([]*types.AttachKeyPairResponse), ErrNotSupported
+}
+
+func (s *MallStruct) CreateInstance(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
+	if s.Internal.CreateInstance == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.CreateInstance(p0, p1)
+}
+
+func (s *MallStub) CreateInstance(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *MallStruct) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) {
+	if s.Internal.CreateKeyPair == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.CreateKeyPair(p0, p1, p2)
+}
+
+func (s *MallStub) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *MallStruct) DescribeImages(p0 context.Context, p1 string, p2 string) ([]*types.DescribeImageResponse, error) {
+	if s.Internal.DescribeImages == nil {
+		return *new([]*types.DescribeImageResponse), ErrNotSupported
+	}
+	return s.Internal.DescribeImages(p0, p1, p2)
+}
+
+func (s *MallStub) DescribeImages(p0 context.Context, p1 string, p2 string) ([]*types.DescribeImageResponse, error) {
+	return *new([]*types.DescribeImageResponse), ErrNotSupported
+}
+
+func (s *MallStruct) DescribeInstanceType(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
+	if s.Internal.DescribeInstanceType == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.DescribeInstanceType(p0, p1)
+}
+
+func (s *MallStub) DescribeInstanceType(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *MallStruct) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
+	if s.Internal.DescribePrice == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.DescribePrice(p0, p1)
+}
+
+func (s *MallStub) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *MallStruct) DescribeRecommendInstanceType(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
+	if s.Internal.DescribeRecommendInstanceType == nil {
+		return *new([]*types.DescribeRecommendInstanceResponse), ErrNotSupported
+	}
+	return s.Internal.DescribeRecommendInstanceType(p0, p1)
+}
+
+func (s *MallStub) DescribeRecommendInstanceType(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
+	return *new([]*types.DescribeRecommendInstanceResponse), ErrNotSupported
+}
+
+func (s *MallStruct) DescribeRegions(p0 context.Context) ([]string, error) {
+	if s.Internal.DescribeRegions == nil {
+		return *new([]string), ErrNotSupported
+	}
+	return s.Internal.DescribeRegions(p0)
+}
+
+func (s *MallStub) DescribeRegions(p0 context.Context) ([]string, error) {
+	return *new([]string), ErrNotSupported
+}
+
+func (s *MallStruct) RebootInstance(p0 context.Context, p1 string, p2 string) error {
+	if s.Internal.RebootInstance == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.RebootInstance(p0, p1, p2)
+}
+
+func (s *MallStub) RebootInstance(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
 }
 
 func (s *OrderAPIStruct) CancelOrder(p0 context.Context, p1 string) error {
@@ -619,8 +607,8 @@ func (s *UserAPIStub) Withdraw(p0 context.Context, p1 string, p2 string) error {
 }
 
 var _ AdminAPI = new(AdminAPIStruct)
-var _ Basis = new(BasisStruct)
 var _ Common = new(CommonStruct)
+var _ Mall = new(MallStruct)
 var _ OrderAPI = new(OrderAPIStruct)
 var _ Transaction = new(TransactionStruct)
 var _ UserAPI = new(UserAPIStruct)

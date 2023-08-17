@@ -1,4 +1,4 @@
-package basis
+package mall
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func (m *Basis) GetAdminSignCode(ctx context.Context, userID string) (string, error) {
+func (m *Mall) GetAdminSignCode(ctx context.Context, userID string) (string, error) {
 	exist, err := m.AdminExists(userID)
 	if err != nil {
 		return "", err
@@ -24,7 +24,7 @@ func (m *Basis) GetAdminSignCode(ctx context.Context, userID string) (string, er
 	return m.UserMgr.SetSignCode(userID)
 }
 
-func (m *Basis) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
+func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
 	userID := user.UserId
 
 	exist, err := m.AdminExists(userID)
@@ -62,11 +62,11 @@ func (m *Basis) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.Use
 	return rsp, nil
 }
 
-func (m *Basis) GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
+func (m *Mall) GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
 	return m.LoadWithdrawRecords(limit, offset)
 }
 
-func (m *Basis) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error {
+func (m *Mall) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error {
 	userID := handler.GetID(ctx)
 
 	info, err := m.LoadWithdrawRecord(orderID)
@@ -80,6 +80,6 @@ func (m *Basis) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHas
 	return m.UpdateWithdrawRecord(info, types.WithdrawDone)
 }
 
-func (m *Basis) AddAdminUser(ctx context.Context, userID, nickName string) error {
+func (m *Mall) AddAdminUser(ctx context.Context, userID, nickName string) error {
 	return m.SaveAdminInfo(userID, nickName)
 }

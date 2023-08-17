@@ -39,12 +39,12 @@ type Manager struct {
 	ongoingOrders map[string]*types.OrderRecord
 	orderLock     *sync.Mutex
 
-	cfg  config.BasisCfg
+	cfg  config.MallCfg
 	tMgr *transaction.Manager
 }
 
 // NewManager returns a new manager instance
-func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, fm *transaction.Manager) (*Manager, error) {
+func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, fm *transaction.Manager) (*Manager, error) {
 	cfg, err := getCfg()
 	if err != nil {
 		return nil, err

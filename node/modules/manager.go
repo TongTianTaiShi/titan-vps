@@ -47,11 +47,11 @@ func NewGetTransactionConfigFunc(r repo.LockedRepo) func() (config.TransactionCf
 	}
 }
 
-// NewSetBasisConfigFunc creates a function to set the basis config
-func NewSetBasisConfigFunc(r repo.LockedRepo) func(cfg config.BasisCfg) error {
-	return func(cfg config.BasisCfg) (err error) {
+// NewSetMallConfigFunc creates a function to set the mall config
+func NewSetMallConfigFunc(r repo.LockedRepo) func(cfg config.MallCfg) error {
+	return func(cfg config.MallCfg) (err error) {
 		return r.SetConfig(func(raw interface{}) {
-			_, ok := raw.(*config.BasisCfg)
+			_, ok := raw.(*config.MallCfg)
 			if !ok {
 				return
 			}
@@ -59,15 +59,15 @@ func NewSetBasisConfigFunc(r repo.LockedRepo) func(cfg config.BasisCfg) error {
 	}
 }
 
-// NewGetBasisConfigFunc creates a function to get the basis config
-func NewGetBasisConfigFunc(r repo.LockedRepo) func() (config.BasisCfg, error) {
-	return func() (out config.BasisCfg, err error) {
+// NewGetMallConfigFunc creates a function to get the mall config
+func NewGetMallConfigFunc(r repo.LockedRepo) func() (config.MallCfg, error) {
+	return func() (out config.MallCfg, err error) {
 		raw, err := r.Config()
 		if err != nil {
 			return
 		}
 
-		scfg, ok := raw.(*config.BasisCfg)
+		scfg, ok := raw.(*config.MallCfg)
 		if !ok {
 			return
 		}
@@ -83,7 +83,7 @@ func NewPubSub() *pubsub.PubSub {
 }
 
 // NewDB returns an *sqlx.DB instance
-func NewDB(cfg *config.BasisCfg) (*db.SQLDB, error) {
+func NewDB(cfg *config.MallCfg) (*db.SQLDB, error) {
 	return db.NewSQLDB(cfg.DatabaseAddress)
 }
 
@@ -96,7 +96,7 @@ type StorageManagerParams struct {
 	MetadataDS dtypes.MetadataDS
 	*db.SQLDB
 	*pubsub.PubSub
-	dtypes.GetBasisConfigFunc
+	dtypes.GetMallConfigFunc
 	*transaction.Manager
 }
 
@@ -113,7 +113,7 @@ func NewStorageManager(params StorageManagerParams) (*orders.Manager, error) {
 		ds   = params.MetadataDS
 		sdb  = params.SQLDB
 		pb   = params.PubSub
-		gc   = params.GetBasisConfigFunc
+		gc   = params.GetMallConfigFunc
 		fm   = params.Manager
 	)
 

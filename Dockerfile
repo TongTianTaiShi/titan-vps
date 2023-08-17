@@ -1,6 +1,6 @@
 FROM golang:1.19
 
-WORKDIR /basis
+WORKDIR /mall
 
 COPY go.mod go.sum ./
 
@@ -11,14 +11,14 @@ COPY . .
 # when compiling with dynamic link function，don't rely on GLIBC
 ENV CGO_ENABLED 0
 
-RUN go build -o basis ./cmd/basis
+RUN go build -o mall ./cmd/mall
 
 FROM alpine:3.17.0
 
-WORKDIR /basis
-COPY --from=0 /basis/basis ./
+WORKDIR /mall
+COPY --from=0 /mall/mall ./
 
 # host address and port the edge api will listen on
 EXPOSE 5577
 
-ENTRYPOINT ["./basis","run"]
+ENTRYPOINT ["./mall","run"]

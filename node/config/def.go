@@ -25,9 +25,9 @@ func init() {
 	}
 }
 
-// DefaultBasisCfg returns the default basis config
-func DefaultBasisCfg() *BasisCfg {
-	return &BasisCfg{
+// DefaultMallCfg returns the default mall config
+func DefaultMallCfg() *MallCfg {
+	return &MallCfg{
 		Common: Common{
 			API: API{
 				ListenAddress: "0.0.0.0:5577",

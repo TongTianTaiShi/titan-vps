@@ -8,8 +8,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// BasisCMDs Basis cmd
-var BasisCMDs = []*cli.Command{
+// MallCMDs Mall cmd
+var MallCMDs = []*cli.Command{
 	WithCategory("order", orderCmds),
 	WithCategory("user", userCmds),
 	WithCategory("vps", vpsCmds),
@@ -68,7 +68,7 @@ var describeRegionsCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -95,7 +95,7 @@ var describeImageCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -128,7 +128,7 @@ var createKeyPairCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -182,7 +182,7 @@ var describePriceCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -230,7 +230,7 @@ var describeInstanceTypeCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -256,7 +256,7 @@ var createOrderCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -293,7 +293,7 @@ var cancelOrderCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -312,7 +312,7 @@ var getBalanceCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		bApi, closer, err := GetBasisAPI(cctx)
+		bApi, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -340,7 +340,7 @@ var getRechargeAddrCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -375,7 +375,7 @@ var withdrawCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -407,7 +407,7 @@ var updateWithdrawalCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -438,7 +438,7 @@ var createAdminCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -458,7 +458,7 @@ var getWithdrawalCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetBasisAPI(cctx)
+		api, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}

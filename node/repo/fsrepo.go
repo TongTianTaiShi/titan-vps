@@ -43,7 +43,7 @@ func NewRepoTypeFromString(t string) RepoType {
 	case "Transaction":
 		return Transaction
 	case "Base":
-		return Basis
+		return Mall
 	default:
 		panic("unknown RepoType")
 	}
@@ -92,28 +92,28 @@ func (transaction) APIInfoEnvVars() (primary string, fallbacks []string, depreca
 	return "TRANSACTION_API_INFO", nil, nil
 }
 
-type basis struct{}
+type mall struct{}
 
-var Basis basis
+var Mall mall
 
-func (basis) Type() string {
-	return "Basis"
+func (mall) Type() string {
+	return "Mall"
 }
 
-func (basis) Config() interface{} {
-	return config.DefaultBasisCfg()
+func (mall) Config() interface{} {
+	return config.DefaultMallCfg()
 }
 
-func (basis) APIFlags() []string {
-	return []string{"basis-api-url"}
+func (mall) APIFlags() []string {
+	return []string{"mall-api-url"}
 }
 
-func (basis) RepoFlags() []string {
-	return []string{"basis-repo"}
+func (mall) RepoFlags() []string {
+	return []string{"mall-repo"}
 }
 
-func (basis) APIInfoEnvVars() (primary string, fallbacks []string, deprecated []string) {
-	return "BASIS_API_INFO", nil, nil
+func (mall) APIInfoEnvVars() (primary string, fallbacks []string, deprecated []string) {
+	return "MALL_API_INFO", nil, nil
 }
 
 var log = logging.Logger("repo")

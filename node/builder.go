@@ -104,7 +104,7 @@ func Repo(r repo.Repo) Option {
 			}),
 
 			ApplyIf(IsType(repo.Transaction), ConfigTransaction(c)),
-			ApplyIf(IsType(repo.Basis), ConfigBasis(c)),
+			ApplyIf(IsType(repo.Mall), ConfigMall(c)),
 		)(settings)
 	}
 }

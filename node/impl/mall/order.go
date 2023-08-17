@@ -1,11 +1,12 @@
-package basis
+package mall
 
 import (
 	"context"
-	"github.com/LMF709268224/titan-vps/node/utils"
-	"github.com/google/uuid"
 	"strconv"
 	"strings"
+
+	"github.com/LMF709268224/titan-vps/node/utils"
+	"github.com/google/uuid"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
@@ -14,7 +15,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
+func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
 	userID := handler.GetID(ctx)
 	priceReq := &types.DescribePriceReq{
 		RegionId:                req.RegionId,
@@ -76,7 +77,7 @@ func (m *Basis) CreateOrder(ctx context.Context, req types.CreateOrderReq) (stri
 	return info.To, nil
 }
 
-func (m *Basis) GetOrderWaitingPayment(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
+func (m *Mall) GetOrderWaitingPayment(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
 	info, err := m.LoadOrderRecordByUserUndone(userID, limit, offset)
@@ -87,7 +88,7 @@ func (m *Basis) GetOrderWaitingPayment(ctx context.Context, limit, offset int64)
 	return info, nil
 }
 
-func (m *Basis) GetOrderInfo(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
+func (m *Mall) GetOrderInfo(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
 	info, err := m.LoadOrderRecordByUserAll(userID, limit, offset)
@@ -98,7 +99,7 @@ func (m *Basis) GetOrderInfo(ctx context.Context, limit, offset int64) (*types.O
 	return info, nil
 }
 
-func (m *Basis) PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) {
+func (m *Mall) PaymentCompleted(ctx context.Context, req types.PaymentCompletedReq) (string, error) {
 	record, err := m.LoadOrderRecord(req.OrderID)
 	if err != nil {
 		return "", err
@@ -108,7 +109,7 @@ func (m *Basis) PaymentCompleted(ctx context.Context, req types.PaymentCompleted
 		return "", xerrors.Errorf("Invalid order status %d", record.State)
 	}
 
-	cfg, err := m.GetBasisConfigFunc()
+	cfg, err := m.GetMallConfigFunc()
 	if err != nil {
 		return "", err
 	}
@@ -149,6 +150,6 @@ func (m *Basis) PaymentCompleted(ctx context.Context, req types.PaymentCompleted
 	return "", nil
 }
 
-func (m *Basis) CancelOrder(ctx context.Context, orderID string) error {
+func (m *Mall) CancelOrder(ctx context.Context, orderID string) error {
 	return m.OrderMgr.CancelOrder(orderID)
 }

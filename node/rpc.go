@@ -81,8 +81,8 @@ func TransactionHandler(a api.Transaction, permissioned bool, opts ...jsonrpc.Se
 	return m, nil
 }
 
-// BasisHandler returns handler, to be mounted as-is on the server.
-func BasisHandler(a api.Basis, permissioned bool, opts ...jsonrpc.ServerOption) (http.Handler, error) {
+// MallHandler returns handler, to be mounted as-is on the server.
+func MallHandler(a api.Mall, permissioned bool, opts ...jsonrpc.ServerOption) (http.Handler, error) {
 	m := mux.NewRouter()
 
 	serveRPC := func(path string, hnd interface{}) {
@@ -97,9 +97,9 @@ func BasisHandler(a api.Basis, permissioned bool, opts ...jsonrpc.ServerOption) 
 		m.Handle(path, hand)
 	}
 
-	wapi := proxy.MetricedBasisAPI(a)
+	wapi := proxy.MetricedMallAPI(a)
 	if permissioned {
-		wapi = api.PermissionedBasisAPI(wapi)
+		wapi = api.PermissionedMallAPI(wapi)
 	}
 
 	serveRPC("/rpc/v0", wapi)

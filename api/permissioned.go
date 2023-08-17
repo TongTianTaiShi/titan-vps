@@ -27,8 +27,8 @@ func PermissionedTransactionAPI(a Transaction) Transaction {
 	return &out
 }
 
-func PermissionedBasisAPI(a Basis) Basis {
-	var out BasisStruct
+func PermissionedMallAPI(a Mall) Mall {
+	var out MallStruct
 	permissionedProxies(a, &out)
 	return &out
 }

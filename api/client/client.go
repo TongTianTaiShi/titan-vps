@@ -48,14 +48,14 @@ func getPushURL(addr string) (string, error) {
 	return pushURL.String(), nil
 }
 
-// NewBasis creates a new http jsonrpc client for basis
-func NewBasis(ctx context.Context, addr string, requestHeader http.Header, opts ...jsonrpc.Option) (api.Basis, jsonrpc.ClientCloser, error) {
+// NewMall creates a new http jsonrpc client for mall
+func NewMall(ctx context.Context, addr string, requestHeader http.Header, opts ...jsonrpc.Option) (api.Mall, jsonrpc.ClientCloser, error) {
 	pushURL, err := getPushURL(addr)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	var res api.BasisStruct
+	var res api.MallStruct
 	closer, err := jsonrpc.NewMergeClient(ctx, addr, "titan",
 		api.GetInternalStructs(&res), requestHeader,
 		append([]jsonrpc.Option{

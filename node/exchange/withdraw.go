@@ -17,14 +17,14 @@ import (
 // WithdrawManager manager withdraw order
 type WithdrawManager struct {
 	*db.SQLDB
-	cfg    config.BasisCfg
+	cfg    config.MallCfg
 	notify *pubsub.PubSub
 
-	tMgr          *transaction.Manager
+	tMgr *transaction.Manager
 }
 
 // NewWithdrawManager returns a new manager instance
-func NewWithdrawManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, fm *transaction.Manager) (*WithdrawManager, error) {
+func NewWithdrawManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, fm *transaction.Manager) (*WithdrawManager, error) {
 	cfg, err := getCfg()
 	if err != nil {
 		return nil, err

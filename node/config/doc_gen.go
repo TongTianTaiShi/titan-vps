@@ -45,7 +45,7 @@ var Doc = map[string][]DocField{
 			Comment: `database address`,
 		},
 	},
-	"BasisCfg": []DocField{
+	"MallCfg": []DocField{
 		{
 			Name: "Timeout",
 			Type: "string",

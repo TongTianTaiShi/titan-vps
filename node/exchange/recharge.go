@@ -17,14 +17,14 @@ var log = logging.Logger("exchange")
 // RechargeManager manager recharge order
 type RechargeManager struct {
 	*db.SQLDB
-	cfg    config.BasisCfg
+	cfg    config.MallCfg
 	notify *pubsub.PubSub
 
 	tMgr *transaction.Manager
 }
 
 // NewRechargeManager returns a new manager instance
-func NewRechargeManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, fm *transaction.Manager) (*RechargeManager, error) {
+func NewRechargeManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, fm *transaction.Manager) (*RechargeManager, error) {
 	cfg, err := getCfg()
 	if err != nil {
 		return nil, err

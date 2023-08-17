@@ -30,10 +30,10 @@ type SetTransactionConfigFunc func(cfg config.TransactionCfg) error
 // get the sealing config.
 type GetTransactionConfigFunc func() (config.TransactionCfg, error)
 
-// SetBasisConfigFunc is a function which is used to
-// sets the basis config.
-type SetBasisConfigFunc func(cfg config.BasisCfg) error
+// SetMallConfigFunc is a function which is used to
+// sets the mall config.
+type SetMallConfigFunc func(cfg config.MallCfg) error
 
-// GetBasisConfigFunc is a function which is used to
+// GetMallConfigFunc is a function which is used to
 // get the sealing config.
-type GetBasisConfigFunc func() (config.BasisCfg, error)
+type GetMallConfigFunc func() (config.MallCfg, error)

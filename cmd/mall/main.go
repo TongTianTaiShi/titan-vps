@@ -26,14 +26,14 @@ var (
 )
 
 const (
-	// FlagBasisRepo Flag
-	FlagBasisRepo = "basis-repo"
+	// FlagMallRepo Flag
+	FlagMallRepo = "mall-repo"
 )
 
 var AdvanceBlockCmd *cli.Command
 
 func main() {
-	types.RunningNodeType = types.NodeBasis
+	types.RunningNodeType = types.NodeMall
 
 	liblog.SetupLogLevels()
 
@@ -42,7 +42,7 @@ func main() {
 		runCmd,
 	}
 
-	local = append(local, lcli.BasisCMDs...)
+	local = append(local, lcli.MallCMDs...)
 
 	if AdvanceBlockCmd != nil {
 		local = append(local, AdvanceBlockCmd)
@@ -51,8 +51,8 @@ func main() {
 	interactiveDef := isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
 
 	app := &cli.App{
-		Name:                 "basis",
-		Usage:                "Titan Edge Cloud Computing basis Service",
+		Name:                 "mall",
+		Usage:                "Titan Edge Cloud Computing mall Service",
 		Version:              build.UserVersion(),
 		EnableBashCompletion: true,
 		Flags: []cli.Flag{
@@ -63,10 +63,10 @@ func main() {
 				DefaultText: "depends on output being a TTY",
 			},
 			&cli.StringFlag{
-				Name:    FlagBasisRepo,
-				EnvVars: []string{"TITAN_BASIS_PATH"},
+				Name:    FlagMallRepo,
+				EnvVars: []string{"TITAN_MALL_PATH"},
 				Hidden:  true,
-				Value:   "~/.vpsbasis",
+				Value:   "~/.vpsmall",
 			},
 			&cli.BoolFlag{
 				Name:  "interactive",
@@ -90,17 +90,17 @@ func main() {
 	}
 
 	app.Setup()
-	app.Metadata["repoType"] = repo.Basis
+	app.Metadata["repoType"] = repo.Mall
 
 	lcli.RunApp(app)
 }
 
 var initCmd = &cli.Command{
 	Name:  "init",
-	Usage: "Initialize a basis repo",
+	Usage: "Initialize a mall repo",
 	Action: func(cctx *cli.Context) error {
-		log.Info("Initializing basis service")
-		repoPath := cctx.String(FlagBasisRepo)
+		log.Info("Initializing mall service")
+		repoPath := cctx.String(FlagMallRepo)
 		r, err := repo.NewFS(repoPath)
 		if err != nil {
 			return err
@@ -111,10 +111,10 @@ var initCmd = &cli.Command{
 			return err
 		}
 		if ok {
-			return xerrors.Errorf("repo at '%s' is already initialized", cctx.String(FlagBasisRepo))
+			return xerrors.Errorf("repo at '%s' is already initialized", cctx.String(FlagMallRepo))
 		}
 
-		if err := r.Init(repo.Basis); err != nil {
+		if err := r.Init(repo.Mall); err != nil {
 			return err
 		}
 
@@ -124,7 +124,7 @@ var initCmd = &cli.Command{
 
 var runCmd = &cli.Command{
 	Name:  "run",
-	Usage: "Start basis service",
+	Usage: "Start mall service",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "http-server-timeout",
@@ -136,9 +136,9 @@ var runCmd = &cli.Command{
 		return nil
 	},
 	Action: func(cctx *cli.Context) error {
-		log.Info("Starting basis node")
+		log.Info("Starting mall node")
 
-		repoPath := cctx.String(FlagBasisRepo)
+		repoPath := cctx.String(FlagMallRepo)
 		r, err := repo.NewFS(repoPath)
 		if err != nil {
 			return err
@@ -149,12 +149,12 @@ var runCmd = &cli.Command{
 			return err
 		}
 		if !ok {
-			if err := r.Init(repo.Basis); err != nil {
+			if err := r.Init(repo.Mall); err != nil {
 				return err
 			}
 		}
 
-		lr, err := r.Lock(repo.Basis)
+		lr, err := r.Lock(repo.Mall)
 		if err != nil {
 			return err
 		}
@@ -164,7 +164,7 @@ var runCmd = &cli.Command{
 			return err
 		}
 
-		bCfg := cfg.(*config.BasisCfg)
+		bCfg := cfg.(*config.MallCfg)
 
 		err = lr.Close()
 		if err != nil {
@@ -173,9 +173,9 @@ var runCmd = &cli.Command{
 
 		shutdownChan := make(chan struct{})
 
-		var bAPI api.Basis
+		var bAPI api.Mall
 		stop, err := node.New(cctx.Context,
-			node.Basis(&bAPI),
+			node.Mall(&bAPI),
 			node.Base(),
 			node.Repo(r),
 		)
@@ -189,19 +189,19 @@ var runCmd = &cli.Command{
 			serverOptions = append(serverOptions, jsonrpc.WithMaxRequestSize(int64(maxRequestSize)))
 		}
 
-		// Instantiate the basis handler.
-		h, err := node.BasisHandler(bAPI, true, serverOptions...)
+		// Instantiate the mall handler.
+		h, err := node.MallHandler(bAPI, true, serverOptions...)
 		if err != nil {
 			return xerrors.Errorf("failed to instantiate rpc handler: %s", err.Error())
 		}
 
 		// Serve the RPC.
-		rpcStopper, err := node.ServeRPC(h, "basis", bCfg.API.ListenAddress)
+		rpcStopper, err := node.ServeRPC(h, "mall", bCfg.API.ListenAddress)
 		if err != nil {
 			return xerrors.Errorf("failed to start json-rpc endpoint: %s", err.Error())
 		}
 
-		log.Info("titan basis listen with:", bCfg.API.ListenAddress)
+		log.Info("titan mall listen with:", bCfg.API.ListenAddress)
 
 		// Monitor for shutdown.
 		finishCh := node.MonitorShutdown(shutdownChan,

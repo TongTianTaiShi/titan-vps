@@ -1,11 +1,12 @@
 package web
 
 import (
+	"time"
+
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	logging "github.com/ipfs/go-log/v2"
-	"time"
 )
 
 var log = logging.Logger("web")
@@ -19,7 +20,7 @@ var AliYunAccessKeyID string
 
 var AliYunAccessKeySecret string
 
-func NewServer(cfg *config.BasisCfg) (*Server, error) {
+func NewServer(cfg *config.MallCfg) (*Server, error) {
 	gin.SetMode(cfg.RouteCfg.Mode)
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{

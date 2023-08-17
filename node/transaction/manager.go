@@ -18,14 +18,14 @@ type Manager struct {
 	notify *pubsub.PubSub
 	*db.SQLDB
 
-	cfg config.BasisCfg
+	cfg config.MallCfg
 
 	tronAddrs    map[string]string
 	tronAddrLock *sync.Mutex
 }
 
 // NewManager creates a new instance of the node manager
-func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetBasisConfigFunc, db *db.SQLDB) (*Manager, error) {
+func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, db *db.SQLDB) (*Manager, error) {
 	cfg, err := getCfg()
 	if err != nil {
 		return nil, err

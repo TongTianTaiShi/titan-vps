@@ -42,7 +42,7 @@ var (
 
 var (
 	GetTransactionAPI = cliutil.GetTransactionAPI
-	GetBasisAPI       = cliutil.GetBasisAPI
+	GetMallAPI        = cliutil.GetMallAPI
 )
 
 var CommonCommands = []*cli.Command{

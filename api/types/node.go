@@ -7,15 +7,15 @@ const (
 	NodeUnknown NodeType = iota
 
 	NodeTransaction
-	NodeBasis
+	NodeMall
 )
 
 func (n NodeType) String() string {
 	switch n {
 	case NodeTransaction:
 		return "transaction"
-	case NodeBasis:
-		return "basis"
+	case NodeMall:
+		return "mall"
 	}
 
 	return ""

@@ -24,8 +24,8 @@ type TransactionCfg struct {
 	DatabaseAddress string
 }
 
-// BasisCfg base config
-type BasisCfg struct {
+// MallCfg base config
+type MallCfg struct {
 	Common
 	// used when 'ListenAddress' is unspecified. must be a valid duration recognized by golang's time.ParseDuration function
 	Timeout string

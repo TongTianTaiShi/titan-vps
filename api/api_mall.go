@@ -6,7 +6,7 @@ import (
 	"github.com/LMF709268224/titan-vps/api/types"
 )
 
-type Basis interface {
+type Mall interface {
 	Common
 	OrderAPI
 	UserAPI
