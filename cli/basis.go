@@ -33,6 +33,7 @@ var vpsCmds = &cli.Command{
 		describeInstanceTypeCmd,
 		describeImageCmd,
 		describePriceCmd,
+		createKeyPairCmd,
 	},
 }
 
@@ -100,6 +101,39 @@ var describeImageCmd = &cli.Command{
 		defer closer()
 
 		list, err := api.DescribeImages(ctx, "cn-hangzhou", "")
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(list)
+		return nil
+	},
+}
+
+var createKeyPairCmd = &cli.Command{
+	Name:  "ckp",
+	Usage: "describe regions",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "instanceID",
+			Usage: "region id",
+			Value: "",
+		},
+	},
+	Before: func(cctx *cli.Context) error {
+		return nil
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetBasisAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+		oid := cctx.String("instanceID")
+		list, err := api.CreateKeyPair(ctx, "cn-hangzhou", oid)
 		if err != nil {
 			return err
 		}

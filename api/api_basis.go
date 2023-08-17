@@ -20,7 +20,7 @@ type Basis interface {
 	CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error)                                                    //perm:default
 	CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error)                                                           //perm:default
 	AttachKeyPair(ctx context.Context, regionID, keyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)                                  //perm:default
-	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                                                                                //perm:default
+	RebootInstance(ctx context.Context, regionID, instanceID string) error                                                                                          //perm:default
 }
 
 // AdminAPI is an interface for admin
@@ -46,7 +46,7 @@ type OrderAPI interface {
 type UserAPI interface {
 	// user
 	GetBalance(ctx context.Context) (string, error)                                                     //perm:user
-	RebootInstance(ctx context.Context, regionID, instanceID string) (string, error)                    //perm:user
+	RebootInstance(ctx context.Context, regionID, instanceID string) error                              //perm:user
 	GetSignCode(ctx context.Context, userID string) (string, error)                                     //perm:default
 	Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error)                        //perm:default
 	Logout(ctx context.Context, user *types.UserReq) error                                              //perm:user

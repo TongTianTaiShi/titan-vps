@@ -57,7 +57,7 @@ type BasisStruct struct {
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
 
-		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"default"`
+		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
 	}
 }
 
@@ -145,7 +145,7 @@ type UserAPIStruct struct {
 
 		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"user"`
 
-		RebootInstance func(p0 context.Context, p1 string, p2 string) (string, error) `perm:"user"`
+		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"user"`
 
 		Withdraw func(p0 context.Context, p1 string, p2 string) error `perm:"user"`
 	}
@@ -308,15 +308,15 @@ func (s *BasisStub) DescribeRegions(p0 context.Context) ([]string, error) {
 	return *new([]string), ErrNotSupported
 }
 
-func (s *BasisStruct) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
+func (s *BasisStruct) RebootInstance(p0 context.Context, p1 string, p2 string) error {
 	if s.Internal.RebootInstance == nil {
-		return "", ErrNotSupported
+		return ErrNotSupported
 	}
 	return s.Internal.RebootInstance(p0, p1, p2)
 }
 
-func (s *BasisStub) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
-	return "", ErrNotSupported
+func (s *BasisStub) RebootInstance(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
 }
 
 func (s *CommonStruct) AuthNew(p0 context.Context, p1 *types.JWTPayload) (string, error) {
@@ -583,15 +583,15 @@ func (s *UserAPIStub) Logout(p0 context.Context, p1 *types.UserReq) error {
 	return ErrNotSupported
 }
 
-func (s *UserAPIStruct) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
+func (s *UserAPIStruct) RebootInstance(p0 context.Context, p1 string, p2 string) error {
 	if s.Internal.RebootInstance == nil {
-		return "", ErrNotSupported
+		return ErrNotSupported
 	}
 	return s.Internal.RebootInstance(p0, p1, p2)
 }
 
-func (s *UserAPIStub) RebootInstance(p0 context.Context, p1 string, p2 string) (string, error) {
-	return "", ErrNotSupported
+func (s *UserAPIStub) RebootInstance(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
 }
 
 func (s *UserAPIStruct) Withdraw(p0 context.Context, p1 string, p2 string) error {

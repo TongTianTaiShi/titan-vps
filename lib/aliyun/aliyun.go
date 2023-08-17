@@ -893,12 +893,10 @@ func AttachKeyPair(regionID, keyID, keySecret, KeyPairName string, instanceIds [
 }
 
 // RebootInstance  Reboot Instance
-func RebootInstance(regionID, keyID, keySecret, instanceId string) (*ecs20140526.RebootInstanceResponse, *tea.SDKError) {
-	var result *ecs20140526.RebootInstanceResponse
-
+func RebootInstance(regionID, keyID, keySecret, instanceId string) *tea.SDKError {
 	client, err := newClient(regionID, keyID, keySecret)
 	if err != nil {
-		return result, err
+		return err
 	}
 
 	rebootInstanceRequest := &ecs20140526.RebootInstanceRequest{
@@ -911,7 +909,7 @@ func RebootInstance(regionID, keyID, keySecret, instanceId string) (*ecs20140526
 				_e = r
 			}
 		}()
-		result, _e = client.RebootInstanceWithOptions(rebootInstanceRequest, runtime)
+		_, _e = client.RebootInstanceWithOptions(rebootInstanceRequest, runtime)
 		if _e != nil {
 			return _e
 		}
@@ -926,9 +924,9 @@ func RebootInstance(regionID, keyID, keySecret, instanceId string) (*ecs20140526
 		} else {
 			errors.Message = tea.String(tryErr.Error())
 		}
-		return result, errors
+		return errors
 	}
-	return result, nil
+	return nil
 }
 
 func GetExchangeRate(price float32) float32 {

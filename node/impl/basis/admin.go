@@ -2,6 +2,7 @@ package basis
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/types"
@@ -76,7 +77,8 @@ func (m *Basis) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHas
 
 	info.WithdrawHash = withdrawHash
 	info.Executor = userID
-
+	fmt.Println(userID)
+	fmt.Println(info.State)
 	return m.UpdateWithdrawRecord(info, types.WithdrawDone)
 }
 

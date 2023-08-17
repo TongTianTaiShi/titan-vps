@@ -39,10 +39,6 @@ func GetRemoteAddr(ctx context.Context) string {
 
 // GetID returns the ID of the client
 func GetID(ctx context.Context) string {
-	if !api.HasPerm(ctx, api.RoleDefault, api.RoleUser) {
-		return ""
-	}
-
 	v, ok := ctx.Value(ID{}).(string)
 	if !ok {
 		return ""

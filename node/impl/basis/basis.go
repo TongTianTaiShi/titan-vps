@@ -198,10 +198,12 @@ func (m *Basis) CreateKeyPair(ctx context.Context, regionID, instanceID string) 
 	}
 	go func() {
 		time.Sleep(1 * time.Minute)
-
-		err := aliyun.StartInstance(regionID, k, s, instanceID)
-		log.Infoln("StartInstance err:", err)
+		err = aliyun.RebootInstance(regionID, k, s, instanceID)
+		if err != nil {
+			log.Infoln("RebootInstance err:", err)
+		}
 	}()
+	fmt.Println(keyInfo.PrivateKeyBody)
 	return keyInfo, nil
 }
 
@@ -216,15 +218,15 @@ func (m *Basis) AttachKeyPair(ctx context.Context, regionID, keyPairName string,
 	return AttachResult, nil
 }
 
-func (m *Basis) RebootInstance(ctx context.Context, regionID, instanceId string) (string, error) {
+func (m *Basis) RebootInstance(ctx context.Context, regionID, instanceId string) error {
 	k, s := m.getAccessKeys()
-	RebootResult, err := aliyun.RebootInstance(regionID, k, s, instanceId)
+	err := aliyun.RebootInstance(regionID, k, s, instanceId)
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
-		return "", xerrors.New(*err.Data)
+		return xerrors.New(*err.Data)
 	}
 
-	return RebootResult.Body.String(), nil
+	return nil
 }
 
 func (m *Basis) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
