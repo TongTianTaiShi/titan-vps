@@ -53,6 +53,7 @@ const (
 
 	// Default limits for loading table entries.
 	loadOrderRecordsDefaultLimit = 100
+	loadAddressesDefaultLimit    = 100
 )
 
 // initTables initializes data tables.

@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -18,9 +19,11 @@ type AdminAPIStruct struct {
 
 		GetAdminSignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
+		GetRechargeAddresses func(p0 context.Context, p1 int64, p2 int64) (*types.GetRechargeAddressResponse, error) `perm:"admin"`
+
 		GetWithdrawalRecords func(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) `perm:"default"`
 
-		LoginAdmin func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"default"`
+		LoginAdmin func(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) `perm:"default"`
 
 		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"admin"`
 
@@ -145,7 +148,7 @@ type UserAPIStruct struct {
 
 		GetUserWithdrawalRecords func(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) `perm:"user"`
 
-		Login func(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) `perm:"default"`
+		Login func(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) `perm:"default"`
 
 		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"user"`
 
@@ -180,6 +183,17 @@ func (s *AdminAPIStub) GetAdminSignCode(p0 context.Context, p1 string) (string, 
 	return "", ErrNotSupported
 }
 
+func (s *AdminAPIStruct) GetRechargeAddresses(p0 context.Context, p1 int64, p2 int64) (*types.GetRechargeAddressResponse, error) {
+	if s.Internal.GetRechargeAddresses == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetRechargeAddresses(p0, p1, p2)
+}
+
+func (s *AdminAPIStub) GetRechargeAddresses(p0 context.Context, p1 int64, p2 int64) (*types.GetRechargeAddressResponse, error) {
+	return nil, ErrNotSupported
+}
+
 func (s *AdminAPIStruct) GetWithdrawalRecords(p0 context.Context, p1 int64, p2 int64) (*types.WithdrawResponse, error) {
 	if s.Internal.GetWithdrawalRecords == nil {
 		return nil, ErrNotSupported
@@ -191,14 +205,14 @@ func (s *AdminAPIStub) GetWithdrawalRecords(p0 context.Context, p1 int64, p2 int
 	return nil, ErrNotSupported
 }
 
-func (s *AdminAPIStruct) LoginAdmin(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {
+func (s *AdminAPIStruct) LoginAdmin(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) {
 	if s.Internal.LoginAdmin == nil {
 		return nil, ErrNotSupported
 	}
 	return s.Internal.LoginAdmin(p0, p1)
 }
 
-func (s *AdminAPIStub) LoginAdmin(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {
+func (s *AdminAPIStub) LoginAdmin(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) {
 	return nil, ErrNotSupported
 }
 
@@ -587,14 +601,14 @@ func (s *UserAPIStub) GetUserWithdrawalRecords(p0 context.Context, p1 int64, p2 
 	return nil, ErrNotSupported
 }
 
-func (s *UserAPIStruct) Login(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {
+func (s *UserAPIStruct) Login(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) {
 	if s.Internal.Login == nil {
 		return nil, ErrNotSupported
 	}
 	return s.Internal.Login(p0, p1)
 }
 
-func (s *UserAPIStub) Login(p0 context.Context, p1 *types.UserReq) (*types.UserResponse, error) {
+func (s *UserAPIStub) Login(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) {
 	return nil, ErrNotSupported
 }
 

@@ -229,7 +229,7 @@ func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceR
 	if USDRateInfo.USDRate == 0 {
 		USDRateInfo.USDRate = 7.2673
 	}
-	//UsdRate := aliyun.GetExchangeRate()
+	// UsdRate := aliyun.GetExchangeRate()
 	UsdRate := float32(7.2673)
 	if UsdRate > 0 {
 		price.USDPrice = price.USDPrice / UsdRate
@@ -382,7 +382,7 @@ func (m *Mall) GetSignCode(ctx context.Context, userID string) (string, error) {
 	return m.UserMgr.SetSignCode(userID)
 }
 
-func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
+func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error) {
 	userID := user.UserId
 	code, err := m.UserMgr.GetSignCode(userID)
 	if err != nil {
@@ -399,7 +399,7 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.UserRespo
 		LoginType: int64(user.Type),
 		Allow:     []auth.Permission{api.RoleUser},
 	}
-	rsp := &types.UserResponse{}
+	rsp := &types.LoginResponse{}
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
 		return rsp, err
@@ -423,6 +423,19 @@ func (m *Mall) initUser(userID string) error {
 
 	if exist {
 		return nil
+	}
+
+	// init recharge address
+	addr, err := m.LoadRechargeAddressOfUser(userID)
+	if err != nil {
+		return err
+	}
+
+	if addr == "" {
+		_, err = m.TransactionMgr.AllocateTronAddress(userID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return m.SaveUserInfo(&types.UserInfo{UserID: userID, Balance: "0"})

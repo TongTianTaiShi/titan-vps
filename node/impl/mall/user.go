@@ -18,16 +18,7 @@ func (m *Mall) GetBalance(ctx context.Context) (string, error) {
 
 func (m *Mall) GetRechargeAddress(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
-	addr, err := m.GetRechargeAddressOfUser(userID)
-	if err != nil {
-		return "", err
-	}
-
-	if addr == "" {
-		return m.TransactionMgr.AllocateTronAddress(userID)
-	}
-
-	return addr, nil
+	return m.LoadRechargeAddressOfUser(userID)
 }
 
 func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {

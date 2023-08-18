@@ -23,6 +23,7 @@ var adminCmds = &cli.Command{
 		createAdminCmd,
 		updateWithdrawalCmd,
 		getWithdrawalCmd,
+		getAddressesCmd,
 	},
 }
 
@@ -524,6 +525,32 @@ var getWithdrawalCmd = &cli.Command{
 
 		for _, r := range info.List {
 			fmt.Println(r.OrderID)
+		}
+
+		return nil
+	},
+}
+
+var getAddressesCmd = &cli.Command{
+	Name:  "list-address",
+	Usage: "list address",
+	Flags: []cli.Flag{},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+		defer closer()
+
+		info, err := api.GetRechargeAddresses(ctx, 100, 0)
+		if err != nil {
+			return err
+		}
+
+		for _, r := range info.List {
+			fmt.Println(r)
 		}
 
 		return nil

@@ -28,8 +28,8 @@ func (n *SQLDB) UpdateRechargeAddressOfUser(addr, userID string) error {
 	return err
 }
 
-// GetUserOfRechargeAddress get user address
-func (n *SQLDB) GetUserOfRechargeAddress(addr string) (string, error) {
+// LoadUserOfRechargeAddress get user address
+func (n *SQLDB) LoadUserOfRechargeAddress(addr string) (string, error) {
 	var info string
 	query := fmt.Sprintf("SELECT user_id FROM %s WHERE addr=?", rechargeAddressTable)
 	err := n.db.Get(&info, query, addr)
@@ -40,8 +40,8 @@ func (n *SQLDB) GetUserOfRechargeAddress(addr string) (string, error) {
 	return info, nil
 }
 
-// GetRechargeAddressOfUser get user recharge address
-func (n *SQLDB) GetRechargeAddressOfUser(userID string) (string, error) {
+// LoadRechargeAddressOfUser get user recharge address
+func (n *SQLDB) LoadRechargeAddressOfUser(userID string) (string, error) {
 	var info string
 	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_id=?", rechargeAddressTable)
 	err := n.db.Get(&info, query, userID)
@@ -52,20 +52,20 @@ func (n *SQLDB) GetRechargeAddressOfUser(userID string) (string, error) {
 	return info, nil
 }
 
-// GetRechargeAddresses get user recharge address
-func (n *SQLDB) GetRechargeAddresses() ([]string, error) {
-	var infos []string
-	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_id=''", rechargeAddressTable)
-	err := n.db.Select(&infos, query)
+// LoadUnusedRechargeAddress get an unused address
+func (n *SQLDB) LoadUnusedRechargeAddress() (string, error) {
+	var addr string
+	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_id='' limit 1 ", rechargeAddressTable)
+	err := n.db.Select(&addr, query)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return infos, nil
+	return addr, nil
 }
 
-// GetAllRechargeAddresses get user recharge address
-func (n *SQLDB) GetAllRechargeAddresses() ([]types.RechargeAddress, error) {
+// LoadUsedRechargeAddresses get user recharge address
+func (n *SQLDB) LoadUsedRechargeAddresses() ([]types.RechargeAddress, error) {
 	var infos []types.RechargeAddress
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id !='' ", rechargeAddressTable)
 	err := n.db.Select(&infos, query)
@@ -74,4 +74,31 @@ func (n *SQLDB) GetAllRechargeAddresses() ([]types.RechargeAddress, error) {
 	}
 
 	return infos, nil
+}
+
+func (n *SQLDB) LoadRechargeAddresses(limit, offset int64) (*types.GetRechargeAddressResponse, error) {
+	out := new(types.GetRechargeAddressResponse)
+
+	var infos []*types.RechargeAddress
+	query := fmt.Sprintf("SELECT * FROM %s order by user_id desc LIMIT ? OFFSET ?", rechargeAddressTable)
+	if limit > loadAddressesDefaultLimit {
+		limit = loadAddressesDefaultLimit
+	}
+
+	err := n.db.Select(&infos, query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s ", rechargeAddressTable)
+	var count int
+	err = n.db.Get(&count, countQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	out.Total = count
+	out.List = infos
+
+	return out, nil
 }

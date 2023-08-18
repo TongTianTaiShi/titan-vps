@@ -24,7 +24,7 @@ func (m *Mall) GetAdminSignCode(ctx context.Context, userID string) (string, err
 	return m.UserMgr.SetSignCode(userID)
 }
 
-func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.UserResponse, error) {
+func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error) {
 	userID := user.UserId
 
 	exist, err := m.AdminExists(userID)
@@ -51,7 +51,7 @@ func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.User
 		LoginType: int64(user.Type),
 		Allow:     []auth.Permission{api.RoleAdmin},
 	}
-	rsp := &types.UserResponse{}
+	rsp := &types.LoginResponse{}
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
 		return rsp, err
@@ -60,6 +60,10 @@ func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.User
 	rsp.Token = string(tk)
 
 	return rsp, nil
+}
+
+func (m *Mall) GetRechargeAddresses(ctx context.Context, limit, offset int64) (*types.GetRechargeAddressResponse, error) {
+	return m.LoadRechargeAddresses(limit, offset)
 }
 
 func (m *Mall) GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {

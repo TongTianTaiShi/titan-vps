@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/ipfs/go-cid"
 	"golang.org/x/xerrors"
@@ -57,12 +58,16 @@ func (m *rawMessage) UnmarshalJSON(data []byte) error {
 type params []interface{}
 
 func requestLotus(out interface{}, req request, addr string) error {
+	client := http.Client{
+		Timeout: 3 * time.Second,
+	}
+
 	jsonData, err := json.Marshal(req)
 	if err != nil {
 		return err
 	}
 
-	resp, err := http.Post(addr, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := client.Post(addr, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}

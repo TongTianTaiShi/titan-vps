@@ -6,7 +6,7 @@ func (m *Manager) initTronAddress(as []string) {
 		log.Errorf("SaveRechargeAddress err:%s", err.Error())
 	}
 
-	list, err := m.GetAllRechargeAddresses()
+	list, err := m.LoadUsedRechargeAddresses()
 	if err != nil {
 		log.Errorf("GetAllRechargeAddresses err:%s", err.Error())
 	}

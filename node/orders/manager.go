@@ -7,6 +7,7 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
+	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
@@ -299,13 +300,12 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 }
 
 func (m *Manager) getHeight() int64 {
-	//var msg filecoinbridge.TipSet
-	//err := filecoinbridge.ChainHead(&msg, m.cfg.LotusHTTPSAddr)
-	//if err != nil {
-	//	log.Errorf("ChainHead err:%s", err.Error())
-	//	return 0
-	//}
+	var msg filecoinbridge.TipSet
+	err := filecoinbridge.ChainHead(&msg, m.cfg.LotusHTTPSAddr)
+	if err != nil {
+		log.Errorf("ChainHead err:%s", err.Error())
+		return 0
+	}
 
-	//return msg.Height
-	return 0
+	return msg.Height
 }

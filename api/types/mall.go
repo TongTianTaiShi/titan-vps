@@ -317,14 +317,14 @@ type UserReq struct {
 	Type      LoginType
 }
 
-type UserResponse struct {
+type LoginResponse struct {
 	UserId   string
 	SignCode string
 	Token    string
 }
 
 type UserInfoTmp struct {
-	UserLogin UserResponse
+	UserLogin LoginResponse
 	OrderInfo OrderRecord
 }
 
@@ -419,4 +419,9 @@ type InstanceDetails struct {
 	IpAddress          string    `db:"ip_address"`
 	SystemDiskCategory string    `db:"system_disk_category"`
 	CreatedTime        time.Time `db:"created_time"`
+}
+
+type GetRechargeAddressResponse struct {
+	Total int
+	List  []*RechargeAddress
 }

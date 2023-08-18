@@ -49,16 +49,15 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, db *db.SQLDB
 
 // AllocateTronAddress get a fvm address
 func (m *Manager) AllocateTronAddress(userID string) (string, error) {
-	list, err := m.GetRechargeAddresses()
+	addr, err := m.LoadUnusedRechargeAddress()
 	if err != nil {
 		return "", err
 	}
 
-	if len(list) == 0 {
+	if addr == "" {
 		return "", xerrors.New("not found address")
 	}
 
-	addr := list[0]
 	err = m.UpdateRechargeAddressOfUser(addr, userID)
 	if err != nil {
 		return "", err
