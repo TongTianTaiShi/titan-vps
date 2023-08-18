@@ -239,8 +239,10 @@ const (
 	WithdrawDone
 )
 
-type MyInstanceKeyState int64
-type MyInstanceState int64
+type (
+	MyInstanceKeyState int64
+	MyInstanceState    int64
+)
 
 const (
 	KeyNoSet MyInstanceKeyState = iota
@@ -291,7 +293,7 @@ type WithdrawResponse struct {
 type WithdrawRecord struct {
 	OrderID       string        `db:"order_id"`
 	From          string        `db:"from_addr"`
-	User          string        `db:"user_id"`
+	UserID        string        `db:"user_id"`
 	To            string        `db:"to_addr"`
 	Value         string        `db:"value"`
 	State         WithdrawState `db:"state"`

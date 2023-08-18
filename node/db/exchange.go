@@ -82,14 +82,35 @@ func (n *SQLDB) LoadRechargeRecords(state types.RechargeState) ([]*types.Recharg
 	return infos, nil
 }
 
-// SaveWithdrawInfo save withdraw information
-func (n *SQLDB) SaveWithdrawInfo(rInfo *types.WithdrawRecord) error {
+// SaveWithdrawInfoAndUserBalance save withdraw information
+func (n *SQLDB) SaveWithdrawInfoAndUserBalance(rInfo *types.WithdrawRecord, balance, oldBalance string) error {
+	tx, err := n.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = tx.Rollback()
+		if err != nil && err != sql.ErrTxDone {
+			log.Errorf("SaveWithdrawInfoAndUserBalance Rollback err:%s", err.Error())
+		}
+	}()
+
 	query := fmt.Sprintf(
 		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, withdraw_addr, withdraw_hash,  user_id) 
 		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :withdraw_addr, :withdraw_hash, :user_id)`, withdrawRecordTable)
-	_, err := n.db.NamedExec(query, rInfo)
+	_, err = tx.NamedExec(query, rInfo)
+	if err != nil {
+		return err
+	}
 
-	return err
+	query = fmt.Sprintf(`UPDATE %s SET balance=? WHERE user_id=? AND balance=?`, userTable)
+	_, err = tx.Exec(query, balance, rInfo.UserID, oldBalance)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 // LoadWithdrawRecord load withdraw record information

@@ -53,22 +53,17 @@ func (m *WithdrawManager) CreateWithdrawOrder(userID, withdrawAddr, value string
 		return xerrors.New("Insufficient balance")
 	}
 
-	err = m.UpdateUserBalance(userID, newValue, original)
-	if err != nil {
-		return err
-	}
-
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
 
 	info := &types.WithdrawRecord{
 		OrderID:       orderID,
-		User:          userID,
+		UserID:        userID,
 		WithdrawAddr:  withdrawAddr,
 		Value:         value,
 		CreatedHeight: getFilecoinHeight(m.cfg.LotusHTTPSAddr),
 		State:         types.WithdrawCreate,
 	}
 
-	return m.SaveWithdrawInfo(info)
+	return m.SaveWithdrawInfoAndUserBalance(info, newValue, original)
 }

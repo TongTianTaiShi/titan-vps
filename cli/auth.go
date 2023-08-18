@@ -31,6 +31,10 @@ var AuthCreateAdminToken = &cli.Command{
 			Name:  "perm",
 			Usage: "permission to assign to the token, one of: web, admin",
 		},
+		&cli.StringFlag{
+			Name:  "id",
+			Usage: "id for user",
+		},
 	},
 
 	Action: func(cctx *cli.Context) error {
@@ -47,7 +51,8 @@ var AuthCreateAdminToken = &cli.Command{
 		}
 
 		perm := cctx.String("perm")
-		token, err := napi.AuthNew(ctx, &types.JWTPayload{Allow: []auth.Permission{auth.Permission(perm)}, ID: uuid.NewString()})
+		id := cctx.String("id")
+		token, err := napi.AuthNew(ctx, &types.JWTPayload{Allow: []auth.Permission{auth.Permission(perm)}, ID: id})
 		if err != nil {
 			return err
 		}
