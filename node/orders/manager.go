@@ -206,14 +206,14 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 		securityGroupID, err = aliyun.CreateSecurityGroup(regionID, k, s)
 		if err != nil {
 			log.Errorf("CreateSecurityGroup err: %s", err.Error())
-			return nil, xerrors.New(*err.Data)
+			return nil, xerrors.New(err.Error())
 		}
 	}
 	log.Debugln("securityGroupID:", securityGroupID, " , DryRun:", vpsInfo.DryRun)
 	result, err := aliyun.CreateInstance(k, s, vpsInfo, vpsInfo.DryRun)
 	if err != nil {
 		log.Errorf("CreateInstance err: %s", err.Error())
-		return nil, xerrors.New(*err.Data)
+		return nil, xerrors.New(err.Error())
 	}
 	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceID)
 	if err != nil {

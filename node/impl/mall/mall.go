@@ -66,7 +66,7 @@ func (m *Mall) DescribeRegions(ctx context.Context) ([]string, error) {
 	rsp, err := aliyun.DescribeRegions(m.getAccessKeys())
 	if err != nil {
 		log.Errorf("DescribeRegions err: %s", err.Error())
-		return nil, xerrors.New(*err.Data)
+		return nil, xerrors.New(err.Error())
 	}
 
 	var rpsData []string
@@ -84,7 +84,7 @@ func (m *Mall) DescribeRecommendInstanceType(ctx context.Context, instanceTypeRe
 	rsp, err := aliyun.DescribeRecommendInstanceType(k, s, instanceTypeReq)
 	if err != nil {
 		log.Errorf("DescribeRecommendInstanceType err: %s", err.Error())
-		return nil, xerrors.New(*err.Data)
+		return nil, xerrors.New(err.Error())
 	}
 
 	var rspDataList []*types.DescribeRecommendInstanceResponse
@@ -106,12 +106,12 @@ func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.Des
 	rsp, err := aliyun.DescribeInstanceTypes(k, s, instanceType)
 	if err != nil {
 		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
-		return nil, xerrors.New(*err.Data)
+		return nil, xerrors.New(err.Error())
 	}
 	AvailableResource, err := aliyun.DescribeAvailableResource(k, s, instanceType)
 	if err != nil {
-		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
-		return nil, xerrors.New(*err.Data)
+		log.Errorf("DescribeAvailableResource err: %s", err.Error())
+		return nil, xerrors.New(err.Error())
 	}
 	instanceTypes := make(map[string]int)
 	for _, data := range AvailableResource.Body.AvailableZones.AvailableZone {
@@ -156,7 +156,7 @@ func (m *Mall) DescribeImages(ctx context.Context, regionID, instanceType string
 	rsp, err := aliyun.DescribeImages(regionID, k, s, instanceType)
 	if err != nil {
 		log.Errorf("DescribeImages err: %s", err.Error())
-		return nil, xerrors.New(*err.Data)
+		return nil, xerrors.New(err.Error())
 	}
 	var rspDataList []*types.DescribeImageResponse
 	for _, data := range rsp.Body.Images.Image {
@@ -180,7 +180,7 @@ func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceR
 	price, err := aliyun.DescribePrice(k, s, priceReq)
 	if err != nil {
 		log.Errorf("DescribePrice err:%v", err.Error())
-		return nil, xerrors.New(*err.Data)
+		return nil, xerrors.New(err.Error())
 	}
 	if USDRateInfo.USDRate == 0 {
 		USDRateInfo.USDRate = 7.2673
@@ -204,7 +204,7 @@ func (m *Mall) CreateKeyPair(ctx context.Context, regionID, instanceID string) (
 	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairNameNew)
 	if err != nil {
 		log.Errorf("CreateKeyPair err: %s", err.Error())
-		return nil, xerrors.New(*err.Data)
+		return nil, xerrors.New(err.Error())
 	}
 	var instanceIds []string
 	instanceIds = append(instanceIds, instanceID)
@@ -227,7 +227,7 @@ func (m *Mall) AttachKeyPair(ctx context.Context, regionID, keyPairName string, 
 	AttachResult, err := aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
-		return nil, xerrors.New(*err.Data)
+		return nil, xerrors.New(err.Error())
 	}
 
 	return AttachResult, nil
@@ -238,7 +238,7 @@ func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceId string) 
 	err := aliyun.RebootInstance(regionID, k, s, instanceId)
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
-		return xerrors.New(*err.Data)
+		return xerrors.New(err.Error())
 	}
 
 	return nil
@@ -251,7 +251,7 @@ func (m *Mall) DescribeInstances(ctx context.Context, regionID, instanceId strin
 	_, err := aliyun.DescribeInstances(regionID, k, s, instanceIds)
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
-		return xerrors.New(*err.Data)
+		return xerrors.New(err.Error())
 	}
 	return nil
 }
@@ -275,7 +275,7 @@ func (m *Mall) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstance
 		securityGroupID, err = aliyun.CreateSecurityGroup(regionID, k, s)
 		if err != nil {
 			log.Errorf("CreateSecurityGroup err: %s", err.Error())
-			return nil, xerrors.New(*err.Data)
+			return nil, xerrors.New(err.Error())
 		}
 	}
 
@@ -283,7 +283,7 @@ func (m *Mall) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstance
 	result, err := aliyun.CreateInstance(k, s, vpsInfo, false)
 	if err != nil {
 		log.Errorf("CreateInstance err: %s", err.Error())
-		return nil, xerrors.New(*err.Data)
+		return nil, xerrors.New(err.Error())
 	}
 
 	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceID)
