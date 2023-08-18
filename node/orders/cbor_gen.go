@@ -26,7 +26,7 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 
 	cw := cbg.NewCborWriter(w)
 
-	if _, err := cw.Write([]byte{174}); err != nil {
+	if _, err := cw.Write([]byte{175}); err != nil {
 		return err
 	}
 
@@ -293,6 +293,29 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		if err := cw.WriteMajorTypeHeader(cbg.MajNegativeInt, uint64(-t.DoneHeight-1)); err != nil {
 			return err
 		}
+	}
+
+	// t.TradePrice (string) (string)
+	if len("TradePrice") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"TradePrice\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("TradePrice"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string("TradePrice")); err != nil {
+		return err
+	}
+
+	if len(t.TradePrice) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.TradePrice was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.TradePrice))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.TradePrice)); err != nil {
+		return err
 	}
 
 	// t.PaymentInfo (orders.PaymentInfo) (struct)
@@ -573,6 +596,17 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 				}
 
 				t.DoneHeight = int64(extraI)
+			}
+			// t.TradePrice (string) (string)
+		case "TradePrice":
+
+			{
+				sval, err := cbg.ReadString(cr)
+				if err != nil {
+					return err
+				}
+
+				t.TradePrice = string(sval)
 			}
 			// t.PaymentInfo (orders.PaymentInfo) (struct)
 		case "PaymentInfo":

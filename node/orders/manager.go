@@ -2,13 +2,11 @@ package orders
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
-	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
@@ -250,50 +248,64 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 			log.Infoln("StartInstance err:", err)
 		}
 	}()
-	info := &types.MyInstance{
-		OrderID:            vpsInfo.OrderID,
-		UserID:             vpsInfo.UserID,
-		InstanceId:         result.InstanceID,
-		Price:              vpsInfo.TradePrice,
-		InternetChargeType: vpsInfo.InternetChargeType,
-		Location:           vpsInfo.RegionId,
-	}
-	saveErr := m.SaveMyInstancesInfo(info)
-	if err != nil {
-		log.Errorf("SaveMyInstancesInfo:%v", saveErr)
-	}
 	var instanceIds []string
 	instanceIds = append(instanceIds, result.InstanceID)
 	instanceInfo, err := aliyun.DescribeInstances(regionID, k, s, instanceIds)
 	if err != nil {
-		log.Errorf("AttachKeyPair err: %s", err.Error())
+		log.Errorf("DescribeInstances err: %s", err.Error())
 	}
-	// todo
-	fmt.Println(instanceInfo.Body.Instances.Instance[0])
-	fmt.Println(instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0])
-	ip := instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0]
-	securityGroupId := instanceInfo.Body.Instances.Instance[0].SecurityGroupIds.SecurityGroupId[0]
-	instanceDetailsInfo := &types.CreateInstanceReq{
-		IpAddress:       *ip,
-		InstanceId:      result.InstanceID,
-		SecurityGroupId: *securityGroupId,
-		OrderID:         vpsInfo.OrderID,
-		UserID:          vpsInfo.UserID,
-	}
-	errU := m.UpdateVpsInstance(instanceDetailsInfo)
-	if errU != nil {
-		log.Errorf("UpdateVpsInstance:%v", errU)
+	if len(instanceInfo.Body.Instances.Instance) > 0 {
+		ip := instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0]
+		securityGroupId := ""
+		if len(instanceInfo.Body.Instances.Instance) > 0 {
+			securityGroupId = *instanceInfo.Body.Instances.Instance[0].SecurityGroupIds.SecurityGroupId[0]
+		}
+		OSType := instanceInfo.Body.Instances.Instance[0].OSType
+		InstanceName := instanceInfo.Body.Instances.Instance[0].InstanceName
+		BandwidthOut := instanceInfo.Body.Instances.Instance[0].InternetMaxBandwidthOut
+		Cores := instanceInfo.Body.Instances.Instance[0].Cpu
+		Memory := instanceInfo.Body.Instances.Instance[0].Memory
+		instanceDetailsInfo := &types.CreateInstanceReq{
+			IpAddress:       *ip,
+			InstanceId:      result.InstanceID,
+			SecurityGroupId: securityGroupId,
+			OrderID:         vpsInfo.OrderID,
+			UserID:          vpsInfo.UserID,
+			OSType:          *OSType,
+			Cores:           *Cores,
+			Memory:          float32(*Memory),
+		}
+		errU := m.UpdateVpsInstance(instanceDetailsInfo)
+		if errU != nil {
+			log.Errorf("UpdateVpsInstance:%v", errU)
+		}
+		info := &types.MyInstance{
+			OrderID:            vpsInfo.OrderID,
+			UserID:             vpsInfo.UserID,
+			InstanceId:         result.InstanceID,
+			Price:              vpsInfo.TradePrice,
+			InternetChargeType: vpsInfo.InternetChargeType,
+			Location:           vpsInfo.RegionId,
+			InstanceSystem:     *OSType,
+			InstanceName:       *InstanceName,
+			BandwidthOut:       *BandwidthOut,
+		}
+		saveErr := m.SaveMyInstancesInfo(info)
+		if err != nil {
+			log.Errorf("SaveMyInstancesInfo:%v", saveErr)
+		}
 	}
 	return result, nil
 }
 
 func (m *Manager) getHeight() int64 {
-	var msg filecoinbridge.TipSet
-	err := filecoinbridge.ChainHead(&msg, m.cfg.LotusHTTPSAddr)
-	if err != nil {
-		log.Errorf("ChainHead err:%s", err.Error())
-		return 0
-	}
+	//var msg filecoinbridge.TipSet
+	//err := filecoinbridge.ChainHead(&msg, m.cfg.LotusHTTPSAddr)
+	//if err != nil {
+	//	log.Errorf("ChainHead err:%s", err.Error())
+	//	return 0
+	//}
 
-	return msg.Height
+	//return msg.Height
+	return 0
 }

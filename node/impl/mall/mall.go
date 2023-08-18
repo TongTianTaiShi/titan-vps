@@ -33,7 +33,10 @@ import (
 
 var log = logging.Logger("mall")
 
-var USDRate float32
+var USDRateInfo struct {
+	USDRate float32
+	ET      time.Time
+}
 
 // Mall represents a base service in a cloud computing system.
 type Mall struct {
@@ -179,12 +182,16 @@ func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceR
 		log.Errorf("DescribePrice err:%v", err.Error())
 		return nil, xerrors.New(*err.Data)
 	}
-	UsdRate := aliyun.GetExchangeRate()
+	if USDRateInfo.USDRate == 0 {
+		USDRateInfo.USDRate = 7.2673
+	}
+	//UsdRate := aliyun.GetExchangeRate()
+	UsdRate := float32(7.2673)
 	if UsdRate > 0 {
 		price.USDPrice = price.USDPrice / UsdRate
-		USDRate = UsdRate
+		USDRateInfo.USDRate = UsdRate
 	} else {
-		price.USDPrice = price.USDPrice / USDRate
+		price.USDPrice = price.USDPrice / USDRateInfo.USDRate
 	}
 
 	return price, nil
@@ -241,13 +248,11 @@ func (m *Mall) DescribeInstances(ctx context.Context, regionID, instanceId strin
 	k, s := m.getAccessKeys()
 	var instanceIds []string
 	instanceIds = append(instanceIds, instanceId)
-	instanceInfo, err := aliyun.DescribeInstances(regionID, k, s, instanceIds)
+	_, err := aliyun.DescribeInstances(regionID, k, s, instanceIds)
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
 		return xerrors.New(*err.Data)
 	}
-	fmt.Println(instanceInfo.Body.Instances.Instance[0])
-	fmt.Println(instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0])
 	return nil
 }
 

@@ -16,7 +16,7 @@ var cOrderRecordTable = `
 		done_height        INT          DEFAULT 0,
 		vps_id             BIGINT(20)   NOT NULL,
 		msg                VARCHAR(2048) DEFAULT "",
-	    trade_price  		Float   NOT NULL DEFAULT 0,
+	    trade_price  	   VARCHAR(128)  DEFAULT "",
 		PRIMARY KEY (order_id),
 		KEY idx_user (user_id)
 	) ENGINE=InnoDB COMMENT='order record';`

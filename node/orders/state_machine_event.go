@@ -54,6 +54,7 @@ func (evt CreateOrder) applyGlobal(state *OrderInfo) bool {
 	state.DoneState = evt.DoneState
 	state.DoneHeight = evt.DoneHeight
 	state.VpsID = evt.VpsID
+	state.TradePrice = evt.TradePrice
 
 	return true
 }

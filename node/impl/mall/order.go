@@ -49,12 +49,13 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	if err != nil {
 		log.Errorf("SaveVpsInstance:%v", err)
 	}
+	TradePriceString := strconv.FormatFloat(float64(req.TradePrice), 'f', -1, 64)
 	info := &types.OrderRecord{
 		VpsID:      id,
 		OrderID:    orderID,
 		UserID:     userID,
 		Value:      "10000000000",
-		TradePrice: req.TradePrice,
+		TradePrice: TradePriceString,
 	}
 	oldBalance, err := m.LoadUserBalance(userID)
 	if err != nil {

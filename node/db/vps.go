@@ -65,9 +65,9 @@ func (n *SQLDB) SaveVpsInstance(rInfo *types.CreateOrderReq) (int64, error) {
 }
 
 func (n *SQLDB) UpdateVpsInstance(info *types.CreateInstanceReq) error {
-	query := fmt.Sprintf(`UPDATE %s SET ip_address=?, instance_id=?, user_id=?,
+	query := fmt.Sprintf(`UPDATE %s SET ip_address=?, instance_id=?, user_id=?,os_type=?,cores=?,memory=?,
 	    security_group_id=? WHERE order_id=?`, instancesDetailsTable)
-	_, err := n.db.Exec(query, info.IpAddress, info.InstanceId, info.UserID, info.SecurityGroupId, info.OrderID)
+	_, err := n.db.Exec(query, info.IpAddress, info.InstanceId, info.UserID, info.OSType, info.Cores, info.Memory, info.SecurityGroupId, info.OrderID)
 
 	return err
 }

@@ -43,17 +43,17 @@ type User struct {
 }
 
 type DescribePriceReq struct {
-	RegionId                string
-	InstanceType            string
-	PriceUnit               string
-	ImageID                 string
-	InternetChargeType      string
-	SystemDiskCategory      string
-	SystemDiskSize          int32
-	Period                  int32
-	Amount                  int32
-	InternetMaxBandwidthOut int32
-	DataDisk                []*DescribePriceRequestDataDisk
+	RegionId                     string
+	InstanceType                 string
+	PriceUnit                    string
+	ImageID                      string
+	InternetChargeType           string
+	SystemDiskCategory           string
+	SystemDiskSize               int32
+	Period                       int32
+	Amount                       int32
+	InternetMaxBandwidthOut      int32
+	DescribePriceRequestDataDisk []*DescribePriceRequestDataDisk
 }
 
 type DescribePriceRequestDataDisk struct {
@@ -182,7 +182,7 @@ type OrderRecord struct {
 	To            string     `db:"to_addr"`
 	Value         string     `db:"value"`
 	State         OrderState `db:"state"`
-	TradePrice    float32    `db:"trade_price"`
+	TradePrice    string     `db:"trade_price"`
 	DoneState     int64      `db:"done_state"`
 	CreatedHeight int64      `db:"created_height"`
 	CreatedTime   time.Time  `db:"created_time"`
@@ -348,10 +348,10 @@ type TronTransferWatch struct {
 
 type ExchangeRateRsp struct {
 	Code int32               `json:"code"`
-	Data ExchangeRateDataRsp `json:"data"`
+	Data ExchangeRateDataRsp `json:"result"`
 }
 type ExchangeRateDataRsp struct {
-	Rate float32 `json:"rate"`
+	Rate string `json:"money"`
 }
 
 type RechargeAddress struct {
@@ -376,6 +376,7 @@ type MyInstance struct {
 	Price              float32            `db:"price"`
 	State              string             `db:"state"`
 	InternetChargeType string             `db:"internet_charge_type"`
+	BandwidthOut       int32              `db:"bandwidth_out"`
 	CreatedTime        time.Time          `db:"created_time"`
 }
 

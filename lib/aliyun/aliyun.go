@@ -6,6 +6,7 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
@@ -61,13 +62,24 @@ func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceRe
 		//Password:                tea.String(password),
 		InternetMaxBandwidthOut: tea.Int32(1),
 		InternetMaxBandwidthIn:  tea.Int32(1),
-		// TODO
 		SystemDisk: &ecs20140526.CreateInstanceRequestSystemDisk{
 			Size:     tea.Int32(instanceReq.SystemDiskSize),
 			Category: tea.String(instanceReq.SystemDiskCategory),
 		},
+		DataDisk: []*ecs20140526.CreateInstanceRequestDataDisk{},
 	}
-
+	if len(instanceReq.DataDisk) > 0 {
+		for _, v := range instanceReq.DataDisk {
+			size := v.Size
+			size32 := int32(*size)
+			DataDiskInfo := &ecs20140526.CreateInstanceRequestDataDisk{
+				Category:         v.Category,
+				PerformanceLevel: tea.String("PL0"),
+				Size:             tea.Int32(size32),
+			}
+			createInstanceRequest.DataDisk = append(createInstanceRequest.DataDisk, DataDiskInfo)
+		}
+	}
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {
 		defer func() {
@@ -361,17 +373,16 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 		},
 		DataDisk: []*ecs20140526.DescribePriceRequestDataDisk{},
 	}
-	if len(priceReq.DataDisk) > 0 {
-		for _, v := range priceReq.DataDisk {
+	if len(priceReq.DescribePriceRequestDataDisk) > 0 {
+		for _, v := range priceReq.DescribePriceRequestDataDisk {
 			DataDiskInfo := &ecs20140526.DescribePriceRequestDataDisk{
 				Category:         v.Category,
-				PerformanceLevel: v.PerformanceLevel,
+				PerformanceLevel: tea.String("PL0"),
 				Size:             v.Size,
 			}
 			describePriceRequest.DataDisk = append(describePriceRequest.DataDisk, DataDiskInfo)
 		}
 	}
-
 	runtime := &util.RuntimeOptions{ConnectTimeout: tea.Int(int(5 * time.Second))}
 
 	tryErr := func() (_e error) {
@@ -933,7 +944,8 @@ func RebootInstance(regionID, keyID, keySecret, instanceId string) *tea.SDKError
 func GetExchangeRate() float32 {
 	client := &http.Client{}
 	// todo
-	resp, err := client.Get("https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD")
+	//resp, err := client.Get("https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD")
+	resp, err := client.Get("https://apis.tianapi.com/fxrate/index?key=af490d21502b58010c7feef4db2cd14a&fromcoin=USD&tocoin=CNY&money=1")
 	if err != nil {
 		return 0
 	}
@@ -944,5 +956,6 @@ func GetExchangeRate() float32 {
 	if err != nil {
 		return 0
 	}
-	return ExchangeRateRsp.Data.Rate
+	distFloat, _ := strconv.ParseFloat(ExchangeRateRsp.Data.Rate, 32)
+	return float32(distFloat)
 }
