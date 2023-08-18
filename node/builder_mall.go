@@ -60,6 +60,5 @@ func ConfigMall(c interface{}) Option {
 		Override(new(*exchange.WithdrawManager), exchange.NewWithdrawManager),
 		Override(new(*orders.Manager), modules.NewStorageManager),
 		Override(new(*user.Manager), user.NewManager),
-		Override(InitDataTables, db.InitTables),
 	)
 }

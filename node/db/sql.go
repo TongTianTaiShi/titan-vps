@@ -33,6 +33,7 @@ func NewSQLDB(path string) (*SQLDB, error) {
 	}
 
 	s := &SQLDB{client}
+	s.initTables()
 
 	return s, nil
 }
@@ -54,10 +55,10 @@ const (
 	loadOrderRecordsDefaultLimit = 100
 )
 
-// InitTables initializes data tables.
-func InitTables(d *SQLDB) error {
+// initTables initializes data tables.
+func (n *SQLDB) initTables() error {
 	// init table
-	tx, err := d.db.Beginx()
+	tx, err := n.db.Beginx()
 	if err != nil {
 		return err
 	}

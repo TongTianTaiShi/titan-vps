@@ -1,19 +1,52 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 )
 
-// SaveRechargeInfo save recharge information
-func (n *SQLDB) SaveRechargeInfo(rInfo *types.RechargeRecord) error {
+// SaveRechargeRecordAndUserBalance save recharge information
+func (n *SQLDB) SaveRechargeRecordAndUserBalance(rInfo *types.RechargeRecord, balance, oldBalance string) error {
+	tx, err := n.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = tx.Rollback()
+		if err != nil && err != sql.ErrTxDone {
+			log.Errorf("SaveRechargeRecordAndUserBalance Rollback err:%s", err.Error())
+		}
+	}()
+
 	query := fmt.Sprintf(
 		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state,  user_id) 
 		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :user_id)`, rechargeRecordTable)
-	_, err := n.db.NamedExec(query, rInfo)
+	_, err = tx.NamedExec(query, rInfo)
+	if err != nil {
+		return err
+	}
 
-	return err
+	query = fmt.Sprintf(`UPDATE %s SET balance=? WHERE user_id=? AND balance=?`, userTable)
+	_, err = tx.Exec(query, balance, rInfo.UserID, oldBalance)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// RechargeRecordExists checks if an order exists
+func (n *SQLDB) RechargeRecordExists(orderID string) (bool, error) {
+	var total int64
+	countSQL := fmt.Sprintf(`SELECT count(order_id) FROM %s WHERE order_id=? `, rechargeRecordTable)
+	if err := n.db.Get(&total, countSQL, orderID); err != nil {
+		return false, err
+	}
+
+	return total > 0, nil
 }
 
 // UpdateRechargeRecord update recharge record information

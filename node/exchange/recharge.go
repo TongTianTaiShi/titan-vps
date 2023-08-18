@@ -17,8 +17,8 @@ var log = logging.Logger("exchange")
 // RechargeManager manager recharge order
 type RechargeManager struct {
 	*db.SQLDB
-	cfg    config.MallCfg
-	notify *pubsub.PubSub
+	cfg          config.MallCfg
+	notification *pubsub.PubSub
 
 	tMgr *transaction.Manager
 }
@@ -31,9 +31,9 @@ func NewRechargeManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallC
 	}
 
 	m := &RechargeManager{
-		SQLDB:  sdb,
-		notify: pb,
-		cfg:    cfg,
+		SQLDB:        sdb,
+		notification: pb,
+		cfg:          cfg,
 
 		tMgr: fm,
 	}
@@ -44,8 +44,8 @@ func NewRechargeManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallC
 }
 
 func (m *RechargeManager) subscribeEvents() {
-	subTransfer := m.notify.Sub(types.EventTronTransferWatch.String())
-	defer m.notify.Unsub(subTransfer)
+	subTransfer := m.notification.Sub(types.EventTronTransferWatch.String())
+	defer m.notification.Unsub(subTransfer)
 
 	for {
 		select {
@@ -62,7 +62,23 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 		return
 	}
 
+	exist, err := m.RechargeRecordExists(tr.TxHash)
+	if err != nil {
+		log.Errorf("RechargeRecordExists:%v", err)
+		return
+	}
+
+	if exist {
+		return
+	}
+
 	userID := tr.UserID
+	original, err := m.LoadUserBalance(userID)
+	if err != nil {
+		log.Errorf("%s LoadUserToken err:%s", userID, err.Error())
+		return
+	}
+
 	height := getFilecoinHeight(m.cfg.LotusHTTPSAddr)
 
 	info := &types.RechargeRecord{
@@ -72,34 +88,14 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 		DoneHeight:    height,
 		Value:         tr.Value,
 		From:          tr.From,
-		State:         types.RechargeCreate,
-	}
-
-	err := m.SaveRechargeInfo(info)
-	if err != nil {
-		log.Errorf("SaveRechargeInfo:%v", err)
-		return
-	}
-
-	state := types.RechargeRefund
-
-	original, err := m.LoadUserBalance(userID)
-	if err != nil {
-		log.Errorf("%s LoadUserToken state:%d, err:%s", info.OrderID, state, err.Error())
-		return
+		State:         types.RechargeDone,
+		To:            tr.To,
 	}
 
 	value := utils.BigIntAdd(original, tr.Value)
-	err = m.UpdateUserBalance(userID, value, original)
-	if err != nil {
-		log.Errorf("%s UpdateUserToken state:%d, err:%s", info.OrderID, state, err.Error())
-		return
-	}
 
-	state = types.RechargeDone
-
-	err = m.UpdateRechargeRecord(info, state)
+	err = m.SaveRechargeRecordAndUserBalance(info, value, original)
 	if err != nil {
-		log.Errorf("%s UpdateRechargeRecord state:%d, err:%s", info.OrderID, state, err.Error())
+		log.Errorf("%s SaveRechargeRecordAndUserBalance err:%s", info.OrderID, err.Error())
 	}
 }

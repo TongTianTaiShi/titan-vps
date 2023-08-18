@@ -17,8 +17,8 @@ import (
 // WithdrawManager manager withdraw order
 type WithdrawManager struct {
 	*db.SQLDB
-	cfg    config.MallCfg
-	notify *pubsub.PubSub
+	cfg          config.MallCfg
+	notification *pubsub.PubSub
 
 	tMgr *transaction.Manager
 }
@@ -31,9 +31,9 @@ func NewWithdrawManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallC
 	}
 
 	m := &WithdrawManager{
-		SQLDB:  sdb,
-		notify: pb,
-		cfg:    cfg,
+		SQLDB:        sdb,
+		notification: pb,
+		cfg:          cfg,
 
 		tMgr: fm,
 	}

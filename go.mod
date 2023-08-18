@@ -5,6 +5,7 @@ go 1.19
 require (
 	contrib.go.opencensus.io/exporter/prometheus v0.4.1
 	github.com/BurntSushi/toml v1.3.2
+	github.com/alibabacloud-go/bssopenapi-20171214/v3 v3.0.4
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.2
 	github.com/alibabacloud-go/ecs-20140526/v3 v3.0.8
 	github.com/alibabacloud-go/tea v1.2.1

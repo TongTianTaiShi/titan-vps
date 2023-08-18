@@ -15,7 +15,7 @@ var log = logging.Logger("transaction")
 
 // Manager is the node manager responsible for managing the online nodes
 type Manager struct {
-	notify *pubsub.PubSub
+	notification *pubsub.PubSub
 	*db.SQLDB
 
 	cfg config.MallCfg
@@ -32,9 +32,9 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, db *db.SQLDB
 	}
 
 	manager := &Manager{
-		notify: pb,
-		cfg:    cfg,
-		SQLDB:  db,
+		notification: pb,
+		cfg:          cfg,
+		SQLDB:        db,
 
 		tronAddrs:    make(map[string]string),
 		tronAddrLock: &sync.Mutex{},

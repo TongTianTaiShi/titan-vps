@@ -34,7 +34,7 @@ type Manager struct {
 	orderStateMachines *statemachine.StateGroup
 	*db.SQLDB
 
-	notify *pubsub.PubSub
+	notification *pubsub.PubSub
 
 	ongoingOrders map[string]*types.OrderRecord
 	orderLock     *sync.Mutex
@@ -52,7 +52,7 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg 
 
 	m := &Manager{
 		SQLDB:         sdb,
-		notify:        pb,
+		notification:  pb,
 		ongoingOrders: make(map[string]*types.OrderRecord),
 		orderLock:     &sync.Mutex{},
 		cfg:           cfg,
@@ -120,8 +120,8 @@ func (m *Manager) getOrderIDByToAddress(to string) (string, bool) {
 }
 
 func (m *Manager) subscribeEvents() {
-	subTransfer := m.notify.Sub(types.EventFvmTransferWatch.String())
-	defer m.notify.Unsub(subTransfer)
+	subTransfer := m.notification.Sub(types.EventFvmTransferWatch.String())
+	defer m.notification.Unsub(subTransfer)
 
 	for {
 		select {
@@ -268,7 +268,7 @@ func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
 	}
-	//todo
+	// todo
 	fmt.Println(instanceInfo.Body.Instances.Instance[0])
 	fmt.Println(instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0])
 	ip := instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0]

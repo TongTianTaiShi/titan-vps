@@ -43,7 +43,7 @@ func (m *Manager) watchFvmTransactions() error {
 		case tr := <-sink:
 			log.Debugf("from:%s,to:%s,value:%d, RawTxHash:%s,RawBlockNumber:%d, Removed:%v \n", tr.From.String(), tr.To.Hex(), tr.Value, tr.Raw.TxHash.String(), tr.Raw.BlockNumber, tr.Raw.Removed)
 			if !tr.Raw.Removed {
-				m.notify.Pub(&types.FvmTransferWatch{
+				m.notification.Pub(&types.FvmTransferWatch{
 					TxHash: tr.Raw.TxHash.Hex(),
 					From:   tr.From.Hex(),
 					To:     tr.To.Hex(),
