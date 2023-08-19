@@ -4,24 +4,24 @@ import (
 	"context"
 
 	"github.com/LMF709268224/titan-vps/api"
+	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/handler"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/gbrlsnchs/jwt/v3"
-	"golang.org/x/xerrors"
 )
 
 func (m *Mall) GetAdminSignCode(ctx context.Context, userID string) (string, error) {
 	exist, err := m.AdminExists(userID)
 	if err != nil {
-		return "", err
+		return "", &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	if !exist {
-		return "", xerrors.New("you are not an administrator")
+		return "", &api.ErrWeb{Code: terrors.NotAdministrator.Int(), Message: terrors.NotAdministrator.String()}
 	}
 
-	return m.UserMgr.SetSignCode(userID)
+	return m.UserMgr.GenerateSignCode(userID), nil
 }
 
 func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error) {
@@ -29,21 +29,21 @@ func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.Logi
 
 	exist, err := m.AdminExists(userID)
 	if err != nil {
-		return nil, err
+		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	if !exist {
-		return nil, xerrors.New("you are not an administrator")
+		return nil, &api.ErrWeb{Code: terrors.NotAdministrator.Int(), Message: terrors.NotAdministrator.String()}
 	}
 
 	code, err := m.UserMgr.GetSignCode(userID)
 	if err != nil {
-		return nil, err
+		return nil, &api.ErrWeb{Code: terrors.NotFoundSignCode.Int(), Message: terrors.NotFoundSignCode.String()}
 	}
 	signature := user.Signature
 	address, err := verifyEthMessage(code, signature)
 	if err != nil {
-		return nil, err
+		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 
 	p := types.JWTPayload{
@@ -54,7 +54,7 @@ func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.Logi
 	rsp := &types.LoginResponse{}
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
-		return rsp, err
+		return rsp, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 	rsp.UserId = address
 	rsp.Token = string(tk)
@@ -63,11 +63,21 @@ func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.Logi
 }
 
 func (m *Mall) GetRechargeAddresses(ctx context.Context, limit, offset int64) (*types.GetRechargeAddressResponse, error) {
-	return m.LoadRechargeAddresses(limit, offset)
+	info, err := m.LoadRechargeAddresses(limit, offset)
+	if err != nil {
+		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return info, nil
 }
 
 func (m *Mall) GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
-	return m.LoadWithdrawRecords(limit, offset)
+	info, err := m.LoadWithdrawRecords(limit, offset)
+	if err != nil {
+		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return info, nil
 }
 
 func (m *Mall) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error {
@@ -75,15 +85,25 @@ func (m *Mall) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash
 
 	info, err := m.LoadWithdrawRecord(orderID)
 	if err != nil {
-		return err
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	info.WithdrawHash = withdrawHash
 	info.Executor = userID
 
-	return m.UpdateWithdrawRecord(info, types.WithdrawDone)
+	err = m.UpdateWithdrawRecord(info, types.WithdrawDone)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return nil
 }
 
 func (m *Mall) AddAdminUser(ctx context.Context, userID, nickName string) error {
-	return m.SaveAdminInfo(userID, nickName)
+	err := m.SaveAdminInfo(userID, nickName)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return nil
 }

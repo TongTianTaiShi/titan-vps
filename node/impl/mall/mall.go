@@ -16,6 +16,7 @@ import (
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/gbrlsnchs/jwt/v3"
 
+	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
@@ -186,7 +187,7 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 		log.Errorf("DescribeImages err: %s", err.Error())
 		return nil, xerrors.New(err.Error())
 	}
-	var Category = map[string]int{
+	Category := map[string]int{
 		"cloud":            1,
 		"cloud_essd":       1,
 		"cloud_ssd":        1,
@@ -379,19 +380,19 @@ func (m *Mall) MintToken(ctx context.Context, address string) (string, error) {
 }
 
 func (m *Mall) GetSignCode(ctx context.Context, userID string) (string, error) {
-	return m.UserMgr.SetSignCode(userID)
+	return m.UserMgr.GenerateSignCode(userID), nil
 }
 
 func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error) {
 	userID := user.UserId
 	code, err := m.UserMgr.GetSignCode(userID)
 	if err != nil {
-		return nil, err
+		return nil, &api.ErrWeb{Code: terrors.NotFoundSignCode.Int(), Message: terrors.NotFoundSignCode.String()}
 	}
 	signature := user.Signature
 	address, err := verifyEthMessage(code, signature)
 	if err != nil {
-		return nil, err
+		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 
 	p := types.JWTPayload{
@@ -402,14 +403,14 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 	rsp := &types.LoginResponse{}
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
-		return rsp, err
+		return rsp, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 	rsp.UserId = address
 	rsp.Token = string(tk)
 
 	err = m.initUser(address)
 	if err != nil {
-		return nil, xerrors.Errorf("initUser err:%s", err.Error())
+		return nil, err
 	}
 
 	return rsp, nil
@@ -418,7 +419,7 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 func (m *Mall) initUser(userID string) error {
 	exist, err := m.UserExists(userID)
 	if err != nil {
-		return err
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	if exist {
@@ -428,7 +429,7 @@ func (m *Mall) initUser(userID string) error {
 	// init recharge address
 	addr, err := m.LoadRechargeAddressOfUser(userID)
 	if err != nil {
-		return err
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	if addr == "" {
@@ -438,7 +439,12 @@ func (m *Mall) initUser(userID string) error {
 		}
 	}
 
-	return m.SaveUserInfo(&types.UserInfo{UserID: userID, Balance: "0"})
+	err = m.SaveUserInfo(&types.UserInfo{UserID: userID, Balance: "0"})
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return nil
 }
 
 func (m *Mall) Logout(ctx context.Context, user *types.UserReq) error {
@@ -462,11 +468,12 @@ func verifyEthMessage(code string, signedMessage string) (string, error) {
 	}
 	// Recover a public key from the signed message
 	sigPublicKeyECDSA, err := crypto.SigToPub(hash.Bytes(), decodedMessage)
-	if sigPublicKeyECDSA == nil {
-		return "", xerrors.New("Could not get a public get from the message signature")
-	}
 	if err != nil {
 		return "", err
+	}
+
+	if sigPublicKeyECDSA == nil {
+		return "", xerrors.New("Could not get a public get from the message signature")
 	}
 
 	return crypto.PubkeyToAddress(*sigPublicKeyECDSA).String(), nil

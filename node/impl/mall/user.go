@@ -3,24 +3,40 @@ package mall
 import (
 	"context"
 
+	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"golang.org/x/xerrors"
 
+	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/handler"
 )
 
+// GetBalance Get user balance
 func (m *Mall) GetBalance(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
 
-	return m.LoadUserBalance(userID)
+	balance, err := m.LoadUserBalance(userID)
+	if err != nil {
+		return balance, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return balance, nil
 }
 
+// GetRechargeAddress  Get user recharge address
 func (m *Mall) GetRechargeAddress(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
-	return m.LoadRechargeAddressOfUser(userID)
+
+	address, err := m.LoadRechargeAddressOfUser(userID)
+	if err != nil {
+		return address, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return address, nil
 }
 
+// Withdraw user Withdraw
 func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 	userID := handler.GetID(ctx)
 
@@ -30,13 +46,23 @@ func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 func (m *Mall) GetUserRechargeRecords(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) {
 	userID := handler.GetID(ctx)
 
-	return m.LoadRechargeRecordsByUser(userID, limit, offset)
+	info, err := m.LoadRechargeRecordsByUser(userID, limit, offset)
+	if err != nil {
+		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return info, nil
 }
 
 func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
 	userID := handler.GetID(ctx)
 
-	return m.LoadWithdrawRecordsByUser(userID, limit, offset)
+	info, err := m.LoadWithdrawRecordsByUser(userID, limit, offset)
+	if err != nil {
+		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return info, nil
 }
 
 func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error) {

@@ -2,10 +2,11 @@ package user
 
 import (
 	"fmt"
-	"github.com/LMF709268224/titan-vps/api/types"
-	"golang.org/x/xerrors"
 	"math/rand"
 	"time"
+
+	"github.com/LMF709268224/titan-vps/api/types"
+	"golang.org/x/xerrors"
 )
 
 // Manager is the node manager responsible for managing the online nodes
@@ -21,7 +22,8 @@ func NewManager() (*Manager, error) {
 	}
 	return manager, nil
 }
-func (m *Manager) SetSignCode(key string) (string, error) {
+
+func (m *Manager) GenerateSignCode(key string) string {
 	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
 	Code := "Vps(" + fmt.Sprintf("%06d", randNew.Intn(1000000)) + ")"
 	v, ok := m.User[key]
@@ -32,7 +34,7 @@ func (m *Manager) SetSignCode(key string) (string, error) {
 		m.User[key].UserLogin.SignCode = Code
 		m.User[key].UserLogin.UserId = key
 	}
-	return Code, nil
+	return Code
 }
 
 func (m *Manager) GetSignCode(key string) (string, error) {

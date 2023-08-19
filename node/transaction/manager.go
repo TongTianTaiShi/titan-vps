@@ -3,12 +3,13 @@ package transaction
 import (
 	"sync"
 
+	"github.com/LMF709268224/titan-vps/api"
+	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
-	"golang.org/x/xerrors"
 )
 
 var log = logging.Logger("transaction")
@@ -51,16 +52,16 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, db *db.SQLDB
 func (m *Manager) AllocateTronAddress(userID string) (string, error) {
 	addr, err := m.LoadUnusedRechargeAddress()
 	if err != nil {
-		return "", err
+		return "", &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	if addr == "" {
-		return "", xerrors.New("not found address")
+		return "", &api.ErrWeb{Code: terrors.NotFoundAddress.Int(), Message: terrors.NotFoundAddress.String()}
 	}
 
 	err = m.UpdateRechargeAddressOfUser(addr, userID)
 	if err != nil {
-		return "", err
+		return "", &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	m.addTronAddr(addr, userID)
