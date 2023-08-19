@@ -47,6 +47,7 @@ var orderCmds = &cli.Command{
 	Subcommands: []*cli.Command{
 		createOrderCmd,
 		cancelOrderCmd,
+		paymentCompletedCmd,
 	},
 }
 
@@ -318,12 +319,19 @@ var createOrderCmd = &cli.Command{
 		defer closer()
 
 		address, err := api.CreateOrder(ctx, types.CreateOrderReq{
-			// RegionId:     "cn-qingdao",
-			// ImageId:      "aliyun_2_1903_x64_20G_alibase_20230704.vhd",
-			// PeriodUnit:   "week",
-			// Period:       1,
-			// InstanceType: "ecs.t5-lc1m1.small",
-			// DryRun:       true,
+			CreateInstanceReq: types.CreateInstanceReq{
+				RegionId:                "cn-qingdao",
+				ImageId:                 "aliyun_2_1903_x64_20G_alibase_20230731.vhd",
+				PeriodUnit:              "Week",
+				Period:                  1,
+				InstanceType:            "ecs.n4.small",
+				InternetChargeType:      "PayByTraffic",
+				DryRun:                  true,
+				InternetMaxBandwidthOut: 1,
+				SystemDiskCategory:      "cloud_efficiency",
+				SystemDiskSize:          40,
+			},
+			Amount: 1,
 		})
 		if err != nil {
 			return err
@@ -356,6 +364,31 @@ var cancelOrderCmd = &cli.Command{
 		orderID := cctx.String("oid")
 
 		return api.CancelOrder(ctx, orderID)
+	},
+}
+
+var paymentCompletedCmd = &cli.Command{
+	Name:  "payment",
+	Usage: "payment order",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "oid",
+			Usage: "order id",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+		defer closer()
+
+		orderID := cctx.String("oid")
+
+		return api.PaymentCompleted(ctx, orderID)
 	},
 }
 

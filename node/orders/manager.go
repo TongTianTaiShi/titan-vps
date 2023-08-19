@@ -152,6 +152,10 @@ func (m *Manager) Terminate(ctx context.Context) error {
 
 // CancelOrder cancel vps order
 func (m *Manager) CancelOrder(orderID string) error {
+	if exist, _ := m.orderStateMachines.Has(OrderHash(orderID)); !exist {
+		return xerrors.Errorf("the order not exist %s", orderID)
+	}
+
 	height := m.getHeight()
 
 	return m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{Height: height})
@@ -159,6 +163,10 @@ func (m *Manager) CancelOrder(orderID string) error {
 
 // PaymentCompleted cancel vps order
 func (m *Manager) PaymentCompleted(orderID string) error {
+	if exist, _ := m.orderStateMachines.Has(OrderHash(orderID)); !exist {
+		return xerrors.Errorf("the order not exist %s", orderID)
+	}
+
 	return m.orderStateMachines.Send(OrderHash(orderID), PaymentResult{})
 }
 
@@ -166,6 +174,11 @@ func (m *Manager) PaymentCompleted(orderID string) error {
 func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 	m.stateMachineWait.Wait()
 	req.CreatedHeight = m.getHeight()
+
+	err := m.addOrder(req)
+	if err != nil {
+		return err
+	}
 
 	// create order task
 	return m.orderStateMachines.Send(OrderHash(req.OrderID), CreateOrder{orderInfoFrom(req)})
@@ -175,20 +188,20 @@ func (m *Manager) addOrder(req *types.OrderRecord) error {
 	m.orderLock.Lock()
 	defer m.orderLock.Unlock()
 
-	if _, exist := m.ongoingOrders[req.UserID]; exist {
-		return xerrors.New("user have order")
-	}
+	// if _, exist := m.ongoingOrders[req.OrderID]; exist {
+	// 	return xerrors.New("user have order")
+	// }
 
-	m.ongoingOrders[req.UserID] = req
+	m.ongoingOrders[req.OrderID] = req
 
 	return nil
 }
 
-func (m *Manager) removeOrder(userID string) {
+func (m *Manager) removeOrder(orderID string) {
 	m.orderLock.Lock()
 	defer m.orderLock.Unlock()
 
-	delete(m.ongoingOrders, userID)
+	delete(m.ongoingOrders, orderID)
 }
 
 func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {

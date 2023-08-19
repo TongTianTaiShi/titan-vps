@@ -47,7 +47,7 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 		return nil
 	}
 
-	newValue, ok := utils.BigIntReduce(original, info.Value)
+	newValue, ok := utils.BigIntReduce(original, info.TradePrice)
 	if !ok {
 		return nil
 	}
@@ -92,7 +92,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle done, %s, goods info:%v", info.OrderID, info.GoodsInfo)
 
-	m.removeOrder(info.User)
+	m.removeOrder(info.OrderID.String())
 
 	return nil
 }
