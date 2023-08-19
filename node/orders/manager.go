@@ -355,8 +355,7 @@ func (m *Manager) CronGetInstanceDefaultInfo() {
 	task := func() {
 		m.UpdateInstanceDefaultInfo(ctx)
 	}
-	//spec := "0 0 1,13 * * ?"
-	spec := "*/60 * * * * ?"
+	spec := "0 0 1,13 * * ?"
 	crontab.AddFunc(spec, task)
 }
 func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
