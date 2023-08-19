@@ -43,6 +43,7 @@ type OrderAPI interface {
 	GetOrderWaitingPayment(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) //perm:user
 	GetOrderInfo(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error)           //perm:user
 	CancelOrder(ctx context.Context, orderID string) error                                               //perm:user
+	PaymentCompleted(ctx context.Context, orderID string) error                                          //perm:user
 }
 
 // UserAPI is an interface for user

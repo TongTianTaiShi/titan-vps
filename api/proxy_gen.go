@@ -114,6 +114,8 @@ type OrderAPIStruct struct {
 		GetOrderInfo func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
 
 		GetOrderWaitingPayment func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
+
+		PaymentCompleted func(p0 context.Context, p1 string) error `perm:"user"`
 	}
 }
 
@@ -511,6 +513,17 @@ func (s *OrderAPIStruct) GetOrderWaitingPayment(p0 context.Context, p1 int64, p2
 
 func (s *OrderAPIStub) GetOrderWaitingPayment(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
 	return nil, ErrNotSupported
+}
+
+func (s *OrderAPIStruct) PaymentCompleted(p0 context.Context, p1 string) error {
+	if s.Internal.PaymentCompleted == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.PaymentCompleted(p0, p1)
+}
+
+func (s *OrderAPIStub) PaymentCompleted(p0 context.Context, p1 string) error {
+	return ErrNotSupported
 }
 
 func (s *TransactionStruct) Hello(p0 context.Context) error {

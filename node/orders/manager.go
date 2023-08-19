@@ -157,6 +157,11 @@ func (m *Manager) CancelOrder(orderID string) error {
 	return m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{Height: height})
 }
 
+// PaymentCompleted cancel vps order
+func (m *Manager) PaymentCompleted(orderID string) error {
+	return m.orderStateMachines.Send(OrderHash(orderID), PaymentResult{})
+}
+
 // CreatedOrder create vps order
 func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 	m.stateMachineWait.Wait()

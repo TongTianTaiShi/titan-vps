@@ -41,39 +41,24 @@ func (m *Manager) handleCreated(ctx statemachine.Context, info OrderInfo) error 
 func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle wait payment, %s , info : %v", info.OrderID, info.PaymentInfo)
 
-	height := m.getHeight()
 	original, err := m.LoadUserBalance(info.User)
 	if err != nil {
-		return ctx.Send(OrderCancel{Height: height})
+		log.Errorf("WaitingPayment LoadUserBalance err:%s", err.Error())
+		return nil
 	}
 
 	newValue, ok := utils.BigIntReduce(original, info.Value)
 	if !ok {
-		return ctx.Send(OrderCancel{Height: height})
+		return nil
 	}
 
 	err = m.UpdateUserBalance(info.User, newValue, original)
 	if err != nil {
-		return ctx.Send(OrderCancel{Height: height})
+		log.Errorf("WaitingPayment UpdateUserBalance err:%s", err.Error())
+		return nil
 	}
 
 	return ctx.Send(PaymentSucceed{})
-
-	// if info.PaymentInfo != nil {
-	// 	if info.To == info.PaymentInfo.To {
-	// 		orderAmount := new(big.Int)
-	// 		orderAmount.SetString(info.Value, 10)
-
-	// 		paymentAmount := new(big.Int)
-	// 		paymentAmount.SetString(info.PaymentInfo.Value, 10)
-
-	// 		if orderAmount.Cmp(paymentAmount) <= 0 {
-	// 			return ctx.Send(PaymentSucceed{PaymentInfo: info.PaymentInfo})
-	// 		}
-	// 	}
-	// }
-
-	// return nil
 }
 
 // handleBuyGoods handles the order to buy goods

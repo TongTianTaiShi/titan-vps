@@ -31,7 +31,6 @@ type PaymentResult struct {
 }
 
 func (evt PaymentResult) apply(state *OrderInfo) {
-	state.PaymentInfo = evt.PaymentInfo
 }
 
 // Ignore Ignorable
