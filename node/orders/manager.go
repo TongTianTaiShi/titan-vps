@@ -428,7 +428,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 				}
 				UsdRate := USDRateInfo.USDRate
 				price.USDPrice = price.USDPrice / UsdRate
-				fmt.Println(UsdRate)
+				fmt.Println(price.USDPrice)
 				var info = &types.DescribeInstanceTypeFromBase{
 					RegionId:               *region.RegionId,
 					InstanceTypeId:         instance.InstanceTypeId,
