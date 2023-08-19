@@ -358,6 +358,8 @@ func (m *Manager) CronGetInstanceDefaultInfo() {
 	//spec := "0 0 1,13 * * ?"
 	spec := "*/60 * * * * ?"
 	crontab.AddFunc(spec, task)
+	crontab.Start()
+	fmt.Println("start")
 }
 func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 	k := m.cfg.AliyunAccessKeyID
@@ -378,6 +380,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 			log.Errorf("DescribeInstanceType err:%v", err.Error())
 			continue
 		}
+		fmt.Println("start--------")
 		for _, instance := range instances.InstanceTypes {
 			time.Sleep(500 * time.Millisecond)
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
