@@ -3,6 +3,8 @@ package exchange
 import (
 	"strings"
 
+	"github.com/LMF709268224/titan-vps/api"
+	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
@@ -11,7 +13,6 @@ import (
 	"github.com/LMF709268224/titan-vps/node/utils"
 	"github.com/filecoin-project/pubsub"
 	"github.com/google/uuid"
-	"golang.org/x/xerrors"
 )
 
 // WithdrawManager manager withdraw order
@@ -45,12 +46,12 @@ func NewWithdrawManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallC
 func (m *WithdrawManager) CreateWithdrawOrder(userID, withdrawAddr, value string) (err error) {
 	original, err := m.LoadUserBalance(userID)
 	if err != nil {
-		return err
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	newValue, ok := utils.BigIntReduce(original, value)
 	if !ok {
-		return xerrors.New("Insufficient balance")
+		return &api.ErrWeb{Code: terrors.InsufficientBalance.Int(), Message: terrors.InsufficientBalance.String()}
 	}
 
 	hash := uuid.NewString()
@@ -65,5 +66,10 @@ func (m *WithdrawManager) CreateWithdrawOrder(userID, withdrawAddr, value string
 		State:         types.WithdrawCreate,
 	}
 
-	return m.SaveWithdrawInfoAndUserBalance(info, newValue, original)
+	err = m.SaveWithdrawInfoAndUserBalance(info, newValue, original)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return nil
 }
