@@ -91,7 +91,11 @@ type MallStruct struct {
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
 
+		GetInstanceDefaultInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) `perm:"default"`
+
 		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
+
+		UpdateInstanceDefaultInfo func(p0 context.Context) error `perm:"default"`
 	}
 }
 
@@ -460,6 +464,17 @@ func (s *MallStub) DescribeRegions(p0 context.Context) ([]string, error) {
 	return *new([]string), ErrNotSupported
 }
 
+func (s *MallStruct) GetInstanceDefaultInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
+	if s.Internal.GetInstanceDefaultInfo == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetInstanceDefaultInfo(p0, p1)
+}
+
+func (s *MallStub) GetInstanceDefaultInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
+	return nil, ErrNotSupported
+}
+
 func (s *MallStruct) RebootInstance(p0 context.Context, p1 string, p2 string) error {
 	if s.Internal.RebootInstance == nil {
 		return ErrNotSupported
@@ -468,6 +483,17 @@ func (s *MallStruct) RebootInstance(p0 context.Context, p1 string, p2 string) er
 }
 
 func (s *MallStub) RebootInstance(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
+}
+
+func (s *MallStruct) UpdateInstanceDefaultInfo(p0 context.Context) error {
+	if s.Internal.UpdateInstanceDefaultInfo == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.UpdateInstanceDefaultInfo(p0)
+}
+
+func (s *MallStub) UpdateInstanceDefaultInfo(p0 context.Context) error {
 	return ErrNotSupported
 }
 
