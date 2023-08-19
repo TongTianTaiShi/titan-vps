@@ -178,6 +178,33 @@ type DescribeInstanceType struct {
 	NextToken              string
 }
 
+type InstanceTypeFromBaseReq struct {
+	RegionId            string
+	MemorySize          float32
+	CpuArchitecture     string
+	InstanceCategory    string
+	CpuCoreCount        int32
+	Limit, Page, Offset int64
+}
+
+type InstanceTypeResponse struct {
+	List  []*DescribeInstanceTypeFromBase
+	Total int
+}
+
+type DescribeInstanceTypeFromBase struct {
+	RegionId               string  `db:"region_id"`
+	InstanceTypeId         string  `db:"instance_type_id"`
+	MemorySize             float32 `db:"memory_size"`
+	CpuArchitecture        string  `db:"cpu_architecture"`
+	InstanceCategory       string  `db:"instance_category"`
+	CpuCoreCount           int32   `db:"cpu_core_count"`
+	AvailableZone          int     `db:"available_zone"`
+	InstanceTypeFamily     string  `db:"instance_type_family"`
+	PhysicalProcessorModel string  `db:"physical_processor_model"`
+	Price                  float32 `db:"price"`
+}
+
 type CreateKeyPairResponse struct {
 	KeyPairID      string
 	KeyPairName    string
@@ -397,6 +424,12 @@ type MyInstance struct {
 	InternetChargeType string             `db:"internet_charge_type"`
 	BandwidthOut       int32              `db:"bandwidth_out"`
 	CreatedTime        time.Time          `db:"created_time"`
+}
+
+type InstanceDefault struct {
+	InstanceType string  `db:"instance_type"`
+	RegionId     string  `db:"region_id"`
+	Price        float32 `db:"price"`
 }
 
 type InstanceDetails struct {

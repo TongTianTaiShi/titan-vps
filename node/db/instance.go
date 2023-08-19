@@ -15,6 +15,27 @@ func (n *SQLDB) SaveMyInstancesInfo(rInfo *types.MyInstance) error {
 	return err
 }
 
+// SaveInstancesInfo save order information
+func (n *SQLDB) SaveInstancesInfo(rInfo *types.DescribeInstanceTypeFromBase) error {
+	query := fmt.Sprintf(
+		`INSERT INTO %s (instance_type_id, region_id, memory_size,cpu_architecture,instance_category,cpu_core_count,available_zone,instance_type_family,physical_processor_model,price) 
+		        VALUES (:instance_type_id, :region_id, :memory_size,:cpu_architecture,:instance_category,:cpu_core_count,:available_zone,:instance_type_family,:physical_processor_model,:price)
+				ON DUPLICATE KEY UPDATE price=:price`, instanceDefaultTable)
+	_, err := n.db.NamedExec(query, rInfo)
+
+	return err
+}
+
+// SaveInstancesDefaultInfo  save instance information
+func (n *SQLDB) SaveInstancesDefaultInfo(rInfo *types.DescribeInstanceTypeFromBase) error {
+	query := fmt.Sprintf(
+		`INSERT INTO %s (instance_type_id,region_id,price,memory_size) 
+		        VALUES (:instance_type, :region_id, :price)`, instanceDefaultTable)
+	_, err := n.db.NamedExec(query, rInfo)
+
+	return err
+}
+
 // LoadMyInstancesInfo   load  my server information
 func (n *SQLDB) LoadMyInstancesInfo(userID string, limit, offset int64) (*types.MyInstanceResponse, error) {
 	out := new(types.MyInstanceResponse)
@@ -50,4 +71,42 @@ func (n *SQLDB) LoadInstanceDetailsInfo(userID, instanceId string) (*types.Insta
 	}
 
 	return &info, nil
+}
+func (n *SQLDB) LoadInstanceDefaultInfo(req *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
+	out := new(types.InstanceTypeResponse)
+	var info []*types.DescribeInstanceTypeFromBase
+	var query string
+	var args []interface{}
+	query = "region_id=?"
+	args = append(args, req.RegionId)
+	if req.InstanceCategory != "" {
+		query += " and instance_category=?"
+		args = append(args, req.InstanceCategory)
+	}
+	if req.MemorySize != 0 {
+		query += " and memory_size=?"
+		args = append(args, req.MemorySize)
+	}
+	if req.CpuCoreCount != 0 {
+		query += " and cpu_core_count=?"
+		args = append(args, req.CpuCoreCount)
+	}
+	if req.CpuArchitecture != "" {
+		query += " and cpu_architecture=?"
+		args = append(args, req.CpuArchitecture)
+	}
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE region_id=?", instanceDefaultTable)
+	var count int
+	err := n.db.Get(&count, countQuery, req.RegionId)
+	if err != nil {
+		return nil, err
+	}
+	querySql := fmt.Sprintf("SELECT * FROM %s WHERE %s LIMIT %d OFFSET %d ", instanceDefaultTable, query, req.Limit, req.Offset)
+	err = n.db.Select(&info, querySql, args...)
+	if err != nil {
+		return nil, err
+	}
+	out.Total = count
+	out.List = info
+	return out, nil
 }

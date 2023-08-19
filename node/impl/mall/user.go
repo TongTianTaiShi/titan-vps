@@ -95,3 +95,7 @@ func (m *Mall) GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*
 
 	return info, nil
 }
+func (m *Mall) GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
+	req.Offset = req.Limit * (req.Page - 1)
+	return m.LoadInstanceDefaultInfo(req)
+}

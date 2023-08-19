@@ -13,6 +13,7 @@ type Mall interface {
 	AdminAPI
 
 	DescribeRegions(ctx context.Context) ([]string, error)                                                                                                          //perm:default
+	DescribePriceTest(ctx context.Context) error                                                                                                                    //perm:default
 	DescribeInstanceType(ctx context.Context, instanceTypeReq *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error)                          //perm:default
 	DescribeRecommendInstanceType(ctx context.Context, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) //perm:default
 	DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error)                                                      //perm:default
@@ -23,6 +24,7 @@ type Mall interface {
 	AttachKeyPair(ctx context.Context, regionID, keyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)                                  //perm:default
 	RebootInstance(ctx context.Context, regionID, instanceID string) error                                                                                          //perm:default
 	DescribeInstances(ctx context.Context, regionID, instanceId string) error                                                                                       //perm:default
+	GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error)                                            //perm:default
 }
 
 // AdminAPI is an interface for admin

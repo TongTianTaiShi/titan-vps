@@ -145,3 +145,17 @@ var cAdminTable = `
 		nick_name    VARCHAR(32)  DEFAULT 0,
 		PRIMARY KEY (user_id)
 	) ENGINE=InnoDB COMMENT='admin info';`
+var cInstanceDefaultTable = `
+	CREATE TABLE if not exists %s (
+		region_id      VARCHAR(128) NOT NULL,
+		instance_type_id    VARCHAR(128)  DEFAULT 0,
+		memory_size    float  DEFAULT 0,
+		cpu_architecture    VARCHAR(128)  DEFAULT 0,
+		instance_category    VARCHAR(128)  DEFAULT 0,
+		cpu_core_count    int  DEFAULT 0,
+		available_zone    VARCHAR(128)  DEFAULT 0,
+		instance_type_family    VARCHAR(128)  DEFAULT 0,
+		physical_processor_model    VARCHAR(128)  DEFAULT 0,
+		price    float  DEFAULT 0,
+		UNIQUE KEY (region_id,instance_type_id)
+	) ENGINE=InnoDB COMMENT='instance info';`

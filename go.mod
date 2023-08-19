@@ -5,7 +5,6 @@ go 1.19
 require (
 	contrib.go.opencensus.io/exporter/prometheus v0.4.1
 	github.com/BurntSushi/toml v1.3.2
-	github.com/alibabacloud-go/bssopenapi-20171214/v3 v3.0.4
 	github.com/alibabacloud-go/darabonba-openapi/v2 v2.0.2
 	github.com/alibabacloud-go/ecs-20140526/v3 v3.0.8
 	github.com/alibabacloud-go/tea v1.2.1
@@ -42,6 +41,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.14.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/smirkcat/hdwallet v0.0.0-20220719015320-a6f7e2f52c1a
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/urfave/cli/v2 v2.25.7

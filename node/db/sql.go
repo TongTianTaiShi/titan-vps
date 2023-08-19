@@ -50,6 +50,7 @@ const (
 	userTable              = "user_info"
 	adminTable             = "admin_info"
 	rechargeAddressTable   = "recharge_address"
+	instanceDefaultTable   = "instance_default"
 
 	// Default limits for loading table entries.
 	loadOrderRecordsDefaultLimit = 100
@@ -81,6 +82,7 @@ func (n *SQLDB) initTables() error {
 	tx.MustExec(fmt.Sprintf(cUserTable, userTable))
 	tx.MustExec(fmt.Sprintf(cRechargeAddressTable, rechargeAddressTable))
 	tx.MustExec(fmt.Sprintf(cAdminTable, adminTable))
+	tx.MustExec(fmt.Sprintf(cInstanceDefaultTable, instanceDefaultTable))
 	// tx.MustExec(fmt.Sprintf(cMyServersTable, myServers))
 
 	return tx.Commit()

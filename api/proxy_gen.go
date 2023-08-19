@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -87,9 +86,13 @@ type MallStruct struct {
 
 		DescribePrice func(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) `perm:"default"`
 
+		DescribePriceTest func(p0 context.Context) error `perm:"default"`
+
 		DescribeRecommendInstanceType func(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) `perm:"default"`
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
+
+		GetInstanceDefaultInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) `perm:"default"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
 	}
@@ -438,6 +441,17 @@ func (s *MallStub) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq)
 	return nil, ErrNotSupported
 }
 
+func (s *MallStruct) DescribePriceTest(p0 context.Context) error {
+	if s.Internal.DescribePriceTest == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.DescribePriceTest(p0)
+}
+
+func (s *MallStub) DescribePriceTest(p0 context.Context) error {
+	return ErrNotSupported
+}
+
 func (s *MallStruct) DescribeRecommendInstanceType(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
 	if s.Internal.DescribeRecommendInstanceType == nil {
 		return *new([]*types.DescribeRecommendInstanceResponse), ErrNotSupported
@@ -458,6 +472,17 @@ func (s *MallStruct) DescribeRegions(p0 context.Context) ([]string, error) {
 
 func (s *MallStub) DescribeRegions(p0 context.Context) ([]string, error) {
 	return *new([]string), ErrNotSupported
+}
+
+func (s *MallStruct) GetInstanceDefaultInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
+	if s.Internal.GetInstanceDefaultInfo == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetInstanceDefaultInfo(p0, p1)
+}
+
+func (s *MallStub) GetInstanceDefaultInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
+	return nil, ErrNotSupported
 }
 
 func (s *MallStruct) RebootInstance(p0 context.Context, p1 string, p2 string) error {

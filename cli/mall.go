@@ -37,6 +37,8 @@ var vpsCmds = &cli.Command{
 		describePriceCmd,
 		createKeyPairCmd,
 		getDeskCmd,
+		GetDeskInfoCmd,
+		GetInstanceDefaultCmd,
 		describeInstancesCmd,
 	},
 }
@@ -200,6 +202,89 @@ var getDeskCmd = &cli.Command{
 	},
 }
 
+var GetDeskInfoCmd = &cli.Command{
+	Name:  "tdc",
+	Usage: "get  desk indo",
+	Flags: []cli.Flag{},
+	Before: func(cctx *cli.Context) error {
+		return nil
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+		err = api.DescribePriceTest(ctx)
+		if err != nil {
+			return err
+		}
+		return nil
+	},
+}
+
+var GetInstanceDefaultCmd = &cli.Command{
+	Name:  "gidc",
+	Usage: "get  desk indo",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "c",
+			Usage: "region id",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "m",
+			Usage: "region id",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "p",
+			Usage: "region id",
+			Value: "",
+		},
+	},
+	Before: func(cctx *cli.Context) error {
+		return nil
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+		c := int32(cctx.Int64("c"))
+		p := cctx.Int64("p")
+		m := float32(cctx.Float64("m"))
+		req := &types.InstanceTypeFromBaseReq{
+			RegionId:         "cn-hangzhou",
+			MemorySize:       m,
+			CpuCoreCount:     c,
+			CpuArchitecture:  "",
+			InstanceCategory: "",
+			Page:             p,
+			Limit:            100,
+		}
+		list, err := api.GetInstanceDefaultInfo(ctx, req)
+		if err != nil {
+			return err
+		}
+		for _, data := range list.List {
+			fmt.Println(data.CpuCoreCount)
+			fmt.Println(data.MemorySize)
+			fmt.Println(data.InstanceTypeId)
+			fmt.Println(data.Price)
+		}
+
+		return nil
+	},
+}
+
 var describeInstancesCmd = &cli.Command{
 	Name:  "dicc",
 	Usage: "describe regions",
@@ -298,7 +383,6 @@ var describeInstanceTypeCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
-
 		fmt.Println(list)
 		return nil
 	},

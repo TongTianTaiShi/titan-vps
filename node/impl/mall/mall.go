@@ -227,17 +227,17 @@ func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceR
 		log.Errorf("DescribePrice err:%v", err.Error())
 		return nil, xerrors.New(err.Error())
 	}
+	if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {
+		UsdRate := aliyun.GetExchangeRate()
+		USDRateInfo.USDRate = UsdRate
+		USDRateInfo.ET = time.Now().Add(time.Hour)
+	}
+	// UsdRate := aliyun.GetExchangeRate()
 	if USDRateInfo.USDRate == 0 {
 		USDRateInfo.USDRate = 7.2673
 	}
-	// UsdRate := aliyun.GetExchangeRate()
-	UsdRate := float32(7.2673)
-	if UsdRate > 0 {
-		price.USDPrice = price.USDPrice / UsdRate
-		USDRateInfo.USDRate = UsdRate
-	} else {
-		price.USDPrice = price.USDPrice / USDRateInfo.USDRate
-	}
+	UsdRate := USDRateInfo.USDRate
+	price.USDPrice = price.USDPrice / UsdRate
 
 	return price, nil
 }
@@ -477,4 +477,92 @@ func verifyEthMessage(code string, signedMessage string) (string, error) {
 	}
 
 	return crypto.PubkeyToAddress(*sigPublicKeyECDSA).String(), nil
+}
+
+func (m *Mall) DescribePriceTest(ctx context.Context) error {
+	k, s := m.getAccessKeys()
+	regions, err := aliyun.DescribeRegions(k, s)
+	if err != nil {
+		log.Errorf("DescribePrice err:%v", err.Error())
+		return err
+	}
+	for _, region := range regions.Body.Regions.Region {
+		instanceType := &types.DescribeInstanceTypeReq{
+			RegionId:     *region.RegionId,
+			CpuCoreCount: 0,
+			MemorySize:   0,
+		}
+		instances, err := m.DescribeInstanceType(ctx, instanceType)
+		if err != nil {
+			log.Errorf("DescribePrice err:%v", err.Error())
+			continue
+		}
+		for _, instance := range instances.InstanceTypes {
+			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
+			if err != nil {
+				log.Errorf("DescribePrice err:%v", err.Error())
+				continue
+			}
+			var disk = &types.AvailableResourceReq{
+				InstanceType:        instance.InstanceTypeId,
+				RegionId:            *region.RegionId,
+				DestinationResource: "SystemDisk",
+			}
+
+			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
+			if err != nil {
+				log.Errorf("DescribePrice err:%v", err.Error())
+				continue
+			}
+			for _, disk := range disks {
+				priceReq := &types.DescribePriceReq{
+					RegionId:                *region.RegionId,
+					InstanceType:            instance.InstanceTypeId,
+					PriceUnit:               "Week",
+					ImageID:                 images[0].ImageId,
+					InternetChargeType:      "PayByTraffic",
+					SystemDiskCategory:      disk.Value,
+					SystemDiskSize:          40,
+					Period:                  1,
+					Amount:                  1,
+					InternetMaxBandwidthOut: 10,
+				}
+				price, err := aliyun.DescribePrice(k, s, priceReq)
+				if err != nil {
+					fmt.Println("get price fail")
+					log.Errorf("DescribePrice err:%v", err.Error())
+					continue
+				}
+				if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {
+					UsdRate := aliyun.GetExchangeRate()
+					USDRateInfo.USDRate = UsdRate
+					USDRateInfo.ET = time.Now().Add(time.Hour)
+				}
+				if USDRateInfo.USDRate == 0 {
+					USDRateInfo.USDRate = 7.2673
+				}
+				UsdRate := USDRateInfo.USDRate
+				price.USDPrice = price.USDPrice / UsdRate
+				var info = &types.DescribeInstanceTypeFromBase{
+					RegionId:               *region.RegionId,
+					InstanceTypeId:         instance.InstanceTypeId,
+					MemorySize:             instance.MemorySize,
+					CpuArchitecture:        instance.CpuArchitecture,
+					InstanceCategory:       instance.InstanceCategory,
+					CpuCoreCount:           instance.CpuCoreCount,
+					AvailableZone:          instance.AvailableZone,
+					InstanceTypeFamily:     instance.InstanceTypeFamily,
+					PhysicalProcessorModel: instance.PhysicalProcessorModel,
+					Price:                  price.USDPrice,
+				}
+				saveErr := m.SaveInstancesInfo(info)
+				if err != nil {
+					log.Errorf("SaveMyInstancesInfo:%v", saveErr)
+				}
+			}
+
+		}
+
+	}
+	return err
 }
