@@ -18,6 +18,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+const timeout = 5
+
 // GrpcClient GrpcClient
 type GrpcClient struct {
 	Address string
@@ -50,7 +52,7 @@ func ContextTimeout(sec int) (context.Context, context.CancelFunc) {
 
 // ListWitnesses ListWitnesses
 func (g *GrpcClient) ListWitnesses() (*api.WitnessList, error) {
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	witnessList, err := g.Client.ListWitnesses(ctx,
 		new(api.EmptyMessage))
@@ -63,7 +65,7 @@ func (g *GrpcClient) ListWitnesses() (*api.WitnessList, error) {
 
 // ListNodes ListNodes
 func (g *GrpcClient) ListNodes() (*api.NodeList, error) {
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	nodeList, err := g.Client.ListNodes(ctx,
 		new(api.EmptyMessage))
@@ -75,7 +77,7 @@ func (g *GrpcClient) ListNodes() (*api.NodeList, error) {
 
 // GetNodeInfo GetNodeInfo
 func (g *GrpcClient) GetNodeInfo() (*core.NodeInfo, error) {
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	node, err := g.Client.GetNodeInfo(ctx, new(api.EmptyMessage))
 	if err != nil {
@@ -92,7 +94,7 @@ func (g *GrpcClient) GetAccount(address string) (*core.Account, error) {
 	if err != nil {
 		return nil, err
 	}
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	result, err := g.Client.GetAccount(ctx, account)
 	return result, err
@@ -100,7 +102,7 @@ func (g *GrpcClient) GetAccount(address string) (*core.Account, error) {
 
 // GetNowBlock GetNowBlock
 func (g *GrpcClient) GetNowBlock() (*api.BlockExtention, error) {
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	result, err := g.Client.GetNowBlock2(ctx, new(api.EmptyMessage))
 	return result, err
@@ -110,7 +112,7 @@ func (g *GrpcClient) GetNowBlock() (*api.BlockExtention, error) {
 func (g *GrpcClient) GetAssetIssueByAccount(address string) (*api.AssetIssueList, error) {
 	account := new(core.Account)
 	account.Address, _ = hdwallet.DecodeCheck(address)
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	result, err := g.Client.GetAssetIssueByAccount(ctx, account)
 	if err != nil {
@@ -121,7 +123,7 @@ func (g *GrpcClient) GetAssetIssueByAccount(address string) (*api.AssetIssueList
 
 // GetNextMaintenanceTime GetNextMaintenanceTime
 func (g *GrpcClient) GetNextMaintenanceTime() (*api.NumberMessage, error) {
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	result, err := g.Client.GetNextMaintenanceTime(ctx, new(api.EmptyMessage))
 	if err != nil {
@@ -132,7 +134,7 @@ func (g *GrpcClient) GetNextMaintenanceTime() (*api.NumberMessage, error) {
 
 // TotalTransaction TotalTransaction
 func (g *GrpcClient) TotalTransaction() (*api.NumberMessage, error) {
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	return g.Client.TotalTransaction(ctx, new(api.EmptyMessage))
 }
@@ -142,7 +144,7 @@ func (g *GrpcClient) GetAccountNet(address string) (*api.AccountNetMessage, erro
 	account := new(core.Account)
 
 	account.Address, _ = hdwallet.DecodeCheck(address)
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	return g.Client.GetAccountNet(ctx, account)
 }
@@ -151,7 +153,7 @@ func (g *GrpcClient) GetAccountNet(address string) (*api.AccountNetMessage, erro
 func (g *GrpcClient) GetAssetIssueByName(name string) (*core.AssetIssueContract, error) {
 	assetName := new(api.BytesMessage)
 	assetName.Value = []byte(name)
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	return g.Client.GetAssetIssueByName(ctx, assetName)
 }
@@ -160,7 +162,7 @@ func (g *GrpcClient) GetAssetIssueByName(name string) (*core.AssetIssueContract,
 func (g *GrpcClient) GetBlockByNum(num int64) (*api.BlockExtention, error) {
 	numMessage := new(api.NumberMessage)
 	numMessage.Num = num
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	result, err := g.Client.GetBlockByNum2(ctx, numMessage)
 	return result, err
@@ -176,7 +178,7 @@ func (g *GrpcClient) GetBlockByID(id string) (*core.Block, error) {
 	if err != nil {
 		return nil, fmt.Errorf("get block by id error: %v", err)
 	}
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	result, err := g.Client.GetBlockById(ctx, blockID)
 	if err != nil {
@@ -187,7 +189,7 @@ func (g *GrpcClient) GetBlockByID(id string) (*core.Block, error) {
 
 // GetAssetIssueList GetAssetIssueList
 func (g *GrpcClient) GetAssetIssueList() (*api.AssetIssueList, error) {
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	return g.Client.GetAssetIssueList(ctx, new(api.EmptyMessage))
 }
@@ -197,7 +199,7 @@ func (g *GrpcClient) GetBlockByLimitNext(start, end int64) (*api.BlockListExtent
 	blockLimit := new(api.BlockLimit)
 	blockLimit.StartNum = start
 	blockLimit.EndNum = end
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	return g.Client.GetBlockByLimitNext2(ctx, blockLimit)
 }
@@ -210,7 +212,7 @@ func (g *GrpcClient) GetTransactionByID(id string) (*core.Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	return g.Client.GetTransactionById(ctx, transactionID)
 }
@@ -223,7 +225,7 @@ func (g *GrpcClient) GetTransactionInfoByID(id string) (*core.TransactionInfo, e
 	if err != nil {
 		return nil, err
 	}
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	result, err := g.Client.GetTransactionInfoById(ctx, transactionID)
 	return result, err
@@ -233,7 +235,7 @@ func (g *GrpcClient) GetTransactionInfoByID(id string) (*core.TransactionInfo, e
 func (g *GrpcClient) GetBlockByLatestNum(num int64) (*api.BlockListExtention, error) {
 	numMessage := new(api.NumberMessage)
 	numMessage.Num = num
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	result, err := g.Client.GetBlockByLatestNum2(ctx, numMessage)
 	return result, err
@@ -247,7 +249,7 @@ func (g *GrpcClient) CreateAccount(ownerKey *ecdsa.PrivateKey,
 	accountCreateContract.OwnerAddress = hdwallet.PubkeyToTronAddress(ownerKey.PublicKey).Bytes()
 	accountCreateContract.AccountAddress, _ = hdwallet.DecodeCheck(accountAddress)
 
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	accountCreateTransaction, err := g.Client.CreateAccount(ctx, accountCreateContract)
 	if err != nil {
@@ -272,7 +274,7 @@ func (g *GrpcClient) UpdateAccount(ownerKey *ecdsa.PrivateKey,
 	accountUpdateContract.AccountName = []byte(accountName)
 	accountUpdateContract.OwnerAddress = hdwallet.PubkeyToTronAddress(ownerKey.
 		PublicKey).Bytes()
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	accountUpdateTransaction, err := g.Client.UpdateAccount(ctx, accountUpdateContract)
 	if err != nil {
@@ -295,7 +297,7 @@ func (g *GrpcClient) Transfer(ownerKey *ecdsa.PrivateKey, toAddress string, amou
 		PublicKey).Bytes()
 	transferContract.ToAddress, _ = hdwallet.DecodeCheck(toAddress)
 	transferContract.Amount = amount
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	transferTransactionEx, err := g.Client.CreateTransaction2(ctx, transferContract)
 
@@ -333,7 +335,7 @@ func (g *GrpcClient) TransferAsset(ownerKey *ecdsa.PrivateKey, AssetName, toAddr
 	transferContract.ToAddress, _ = hdwallet.DecodeCheck(toAddress)
 	transferContract.AssetName, _ = hdwallet.DecodeCheck(AssetName)
 	transferContract.Amount = amount
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	transferTransactionEx, err := g.Client.TransferAsset2(ctx, transferContract)
 
@@ -369,7 +371,7 @@ func (g *GrpcClient) TransferContract(ownerKey *ecdsa.PrivateKey, Contract strin
 		PublicKey).Bytes()
 	transferContract.ContractAddress, _ = hdwallet.DecodeCheck(Contract)
 	transferContract.Data = data
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	transferTransactionEx, err := g.Client.TriggerConstantContract(ctx, transferContract)
 	var txid string
@@ -408,7 +410,7 @@ func (g *GrpcClient) GetConstantResultOfContract(ownerKey *ecdsa.PrivateKey, Con
 	transferContract.OwnerAddress = hdwallet.PubkeyToTronAddress(ownerKey.PublicKey).Bytes()
 	transferContract.ContractAddress, _ = hdwallet.DecodeCheck(Contract)
 	transferContract.Data = data
-	ctx, cancel := ContextTimeout(20)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	transferTransactionEx, err := g.Client.TriggerConstantContract(ctx, transferContract)
 	if err != nil {
@@ -429,7 +431,7 @@ func (g *GrpcClient) FreezeBalance(ownerKey *ecdsa.PrivateKey,
 		PublicKey).Bytes()
 	freezeBalanceContract.FrozenBalance = frozenBalance
 	freezeBalanceContract.FrozenDuration = frozenDuration
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	freezeBalanceTransaction, err := g.Client.FreezeBalance(ctx, freezeBalanceContract)
 	if err != nil {
@@ -450,7 +452,7 @@ func (g *GrpcClient) FreezeBalance(ownerKey *ecdsa.PrivateKey,
 func (g *GrpcClient) UnfreezeBalance(ownerKey *ecdsa.PrivateKey) (*api.Return, error) {
 	unfreezeBalanceContract := new(core.UnfreezeBalanceContract)
 	unfreezeBalanceContract.OwnerAddress = hdwallet.PubkeyToTronAddress(ownerKey.PublicKey).Bytes()
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	unfreezeBalanceTransaction, err := g.Client.UnfreezeBalance(ctx, unfreezeBalanceContract)
 	if err != nil {
@@ -536,7 +538,7 @@ func (g *GrpcClient) CreateAssetIssue(ownerKey *ecdsa.PrivateKey,
 		assetIssueContract.FrozenSupply = append(assetIssueContract.
 			FrozenSupply, assetIssueContractFrozenSupply)
 	}
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	assetIssueTransaction, err := g.Client.CreateAssetIssue(ctx, assetIssueContract)
 	if err != nil {
@@ -567,7 +569,7 @@ func (g *GrpcClient) UpdateAssetIssue(ownerKey *ecdsa.PrivateKey,
 	updateAssetContract.Url = []byte(urlStr)
 	updateAssetContract.NewLimit = newLimit
 	updateAssetContract.NewPublicLimit = newPublicLimit
-	ctx, cancel := ContextTimeout(30)
+	ctx, cancel := ContextTimeout(timeout)
 	defer cancel()
 	updateAssetTransaction, err := g.Client.UpdateAsset(ctx, updateAssetContract)
 	if err != nil {
