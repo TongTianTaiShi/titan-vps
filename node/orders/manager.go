@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/LMF709268224/titan-vps/api"
+	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
@@ -153,21 +155,31 @@ func (m *Manager) Terminate(ctx context.Context) error {
 // CancelOrder cancel vps order
 func (m *Manager) CancelOrder(orderID string) error {
 	if exist, _ := m.orderStateMachines.Has(OrderHash(orderID)); !exist {
-		return xerrors.Errorf("the order not exist %s", orderID)
+		return &api.ErrWeb{Code: terrors.NotFoundOrder.Int(), Message: terrors.NotFoundOrder.String()}
 	}
 
 	height := m.getHeight()
 
-	return m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{Height: height})
+	err := m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{Height: height})
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.StateMachinesError.Int(), Message: err.Error()}
+	}
+
+	return nil
 }
 
 // PaymentCompleted cancel vps order
 func (m *Manager) PaymentCompleted(orderID string) error {
 	if exist, _ := m.orderStateMachines.Has(OrderHash(orderID)); !exist {
-		return xerrors.Errorf("the order not exist %s", orderID)
+		return &api.ErrWeb{Code: terrors.NotFoundOrder.Int(), Message: terrors.NotFoundOrder.String()}
 	}
 
-	return m.orderStateMachines.Send(OrderHash(orderID), PaymentResult{})
+	err := m.orderStateMachines.Send(OrderHash(orderID), PaymentResult{})
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.StateMachinesError.Int(), Message: err.Error()}
+	}
+
+	return nil
 }
 
 // CreatedOrder create vps order
@@ -175,16 +187,18 @@ func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 	m.stateMachineWait.Wait()
 	req.CreatedHeight = m.getHeight()
 
-	err := m.addOrder(req)
-	if err != nil {
-		return err
-	}
+	m.addOrder(req)
 
 	// create order task
-	return m.orderStateMachines.Send(OrderHash(req.OrderID), CreateOrder{orderInfoFrom(req)})
+	err := m.orderStateMachines.Send(OrderHash(req.OrderID), CreateOrder{orderInfoFrom(req)})
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.StateMachinesError.Int(), Message: err.Error()}
+	}
+
+	return nil
 }
 
-func (m *Manager) addOrder(req *types.OrderRecord) error {
+func (m *Manager) addOrder(req *types.OrderRecord) {
 	m.orderLock.Lock()
 	defer m.orderLock.Unlock()
 
@@ -194,7 +208,7 @@ func (m *Manager) addOrder(req *types.OrderRecord) error {
 
 	m.ongoingOrders[req.OrderID] = req
 
-	return nil
+	return
 }
 
 func (m *Manager) removeOrder(orderID string) {

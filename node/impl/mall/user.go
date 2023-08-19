@@ -5,7 +5,6 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
-	"golang.org/x/xerrors"
 
 	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
@@ -71,7 +70,7 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 	instanceInfos, err := m.LoadMyInstancesInfo(userID, limit, offset)
 	if err != nil {
 		log.Errorf("LoadMyInstancesInfo err: %s", err.Error())
-		return nil, xerrors.New(err.Error())
+		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 	for _, instanceInfo := range instanceInfos.List {
 		var instanceIds []string
@@ -89,5 +88,10 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 func (m *Mall) GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error) {
 	userID := handler.GetID(ctx)
 
-	return m.LoadInstanceDetailsInfo(userID, instanceID)
+	info, err := m.LoadInstanceDetailsInfo(userID, instanceID)
+	if err != nil {
+		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return info, nil
 }

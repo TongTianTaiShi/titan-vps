@@ -7,6 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/LMF709268224/titan-vps/api"
+	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/handler"
 )
@@ -28,7 +30,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	priceInfo, err := m.DescribePrice(ctx, priceReq)
 	if err != nil {
 		log.Errorf("DescribePrice:%v", err)
-		return "", err
+		return "", &api.ErrWeb{Code: terrors.DescribePriceError.Int(), Message: err.Error()}
 	}
 
 	hash := uuid.NewString()
@@ -70,7 +72,7 @@ func (m *Mall) GetOrderWaitingPayment(ctx context.Context, limit, offset int64) 
 
 	info, err := m.LoadOrderRecordByUserUndone(userID, limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	return info, nil
@@ -81,7 +83,7 @@ func (m *Mall) GetOrderInfo(ctx context.Context, limit, offset int64) (*types.Or
 
 	info, err := m.LoadOrderRecordByUserAll(userID, limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	return info, nil
