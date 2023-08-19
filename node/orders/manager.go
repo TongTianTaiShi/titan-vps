@@ -355,7 +355,8 @@ func (m *Manager) CronGetInstanceDefaultInfo() {
 	task := func() {
 		m.UpdateInstanceDefaultInfo(ctx)
 	}
-	spec := "0 0 1,13 * * ?"
+	//spec := "0 0 1,13 * * ?"
+	spec := "*/60 * * * * ?"
 	crontab.AddFunc(spec, task)
 }
 func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
@@ -374,13 +375,14 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 		}
 		instances, err := m.DescribeInstanceType(ctx, instanceType)
 		if err != nil {
-			log.Errorf("DescribePrice err:%v", err.Error())
+			log.Errorf("DescribeInstanceType err:%v", err.Error())
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
+			time.Sleep(0.1)
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
 			if err != nil {
-				log.Errorf("DescribePrice err:%v", err.Error())
+				log.Errorf("DescribeImages err:%v", err.Error())
 				continue
 			}
 			var disk = &types.AvailableResourceReq{
@@ -391,7 +393,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 
 			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
 			if err != nil {
-				log.Errorf("DescribePrice err:%v", err.Error())
+				log.Errorf("DescribeAvailableResourceForDesk err:%v", err.Error())
 				continue
 			}
 			for _, disk := range disks {
@@ -423,7 +425,6 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 				}
 				UsdRate := USDRateInfo.USDRate
 				price.USDPrice = price.USDPrice / UsdRate
-				fmt.Println(price.USDPrice)
 				var info = &types.DescribeInstanceTypeFromBase{
 					RegionId:               *region.RegionId,
 					InstanceTypeId:         instance.InstanceTypeId,
