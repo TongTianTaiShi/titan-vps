@@ -185,7 +185,7 @@ var getDeskCmd = &cli.Command{
 		instanceId := cctx.String("it")
 		regionID := cctx.String("regionID")
 		sys := cctx.String("sys")
-		var desk = &types.AvailableResourceReq{
+		desk := &types.AvailableResourceReq{
 			InstanceType:        instanceId,
 			RegionId:            regionID,
 			DestinationResource: sys,
@@ -447,7 +447,7 @@ var cancelOrderCmd = &cli.Command{
 
 		orderID := cctx.String("oid")
 
-		return api.CancelOrder(ctx, orderID)
+		return api.CancelUserOrder(ctx, orderID)
 	},
 }
 
@@ -472,7 +472,7 @@ var paymentCompletedCmd = &cli.Command{
 
 		orderID := cctx.String("oid")
 
-		return api.PaymentCompleted(ctx, orderID)
+		return api.PaymentUserOrder(ctx, orderID)
 	},
 }
 
