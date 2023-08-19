@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/LMF709268224/titan-vps/node/utils"
 	"github.com/google/uuid"
 
 	"github.com/LMF709268224/titan-vps/api/types"
@@ -47,26 +46,17 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		log.Errorf("SaveVpsInstance:%v", err)
 	}
 	TradePriceString := strconv.FormatFloat(float64(req.TradePrice), 'f', -1, 64)
+
+	newBalanceString := strconv.FormatFloat(float64(priceInfo.USDPrice)*1000000000000000000, 'f', -1, 64)
+
 	info := &types.OrderRecord{
 		VpsID:      id,
 		OrderID:    orderID,
 		UserID:     userID,
-		Value:      "10000000000",
+		Value:      newBalanceString,
 		TradePrice: TradePriceString,
 	}
-	oldBalance, err := m.LoadUserBalance(userID)
-	if err != nil {
-		log.Errorf("LoadUserBalance:%v", err)
-	}
-	newBalanceString := strconv.FormatFloat(float64(priceInfo.USDPrice)*1000000000000000000, 'f', -1, 64)
-	newBalanceString, ok := utils.BigIntReduce(oldBalance, newBalanceString)
-	if ok {
-		err = m.UpdateUserBalance(userID, newBalanceString, oldBalance)
-		if err != nil {
-			log.Errorf("UpdateUserBalance:%v", err)
-			return "", err
-		}
-	}
+
 	err = m.OrderMgr.CreatedOrder(info)
 	if err != nil {
 		return "", err

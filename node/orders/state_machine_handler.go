@@ -47,7 +47,7 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 		return nil
 	}
 
-	newValue, ok := utils.BigIntReduce(original, info.TradePrice)
+	newValue, ok := utils.BigIntReduce(original, info.Value)
 	if !ok {
 		return nil
 	}
