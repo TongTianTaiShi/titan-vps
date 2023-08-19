@@ -479,7 +479,7 @@ func verifyEthMessage(code string, signedMessage string) (string, error) {
 	return crypto.PubkeyToAddress(*sigPublicKeyECDSA).String(), nil
 }
 
-func (m *Mall) DescribePriceTest(ctx context.Context) error {
+func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 	k, s := m.getAccessKeys()
 	regions, err := aliyun.DescribeRegions(k, s)
 	if err != nil {
@@ -529,7 +529,6 @@ func (m *Mall) DescribePriceTest(ctx context.Context) error {
 				}
 				price, err := aliyun.DescribePrice(k, s, priceReq)
 				if err != nil {
-					fmt.Println("get price fail")
 					log.Errorf("DescribePrice err:%v", err.Error())
 					continue
 				}

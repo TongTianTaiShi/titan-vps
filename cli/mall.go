@@ -218,7 +218,7 @@ var GetDeskInfoCmd = &cli.Command{
 		}
 
 		defer closer()
-		err = api.DescribePriceTest(ctx)
+		err = api.UpdateInstanceDefaultInfo(ctx)
 		if err != nil {
 			return err
 		}

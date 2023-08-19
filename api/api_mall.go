@@ -13,7 +13,7 @@ type Mall interface {
 	AdminAPI
 
 	DescribeRegions(ctx context.Context) ([]string, error)                                                                                                          //perm:default
-	DescribePriceTest(ctx context.Context) error                                                                                                                    //perm:default
+	UpdateInstanceDefaultInfo(ctx context.Context) error                                                                                                            //perm:default
 	DescribeInstanceType(ctx context.Context, instanceTypeReq *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error)                          //perm:default
 	DescribeRecommendInstanceType(ctx context.Context, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) //perm:default
 	DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error)                                                      //perm:default

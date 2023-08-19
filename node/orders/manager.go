@@ -355,11 +355,8 @@ func (m *Manager) CronGetInstanceDefaultInfo() {
 	task := func() {
 		m.UpdateInstanceDefaultInfo(ctx)
 	}
-	spec := "*/60 * * * * ?"
-	//spec := "0 0 1,13 * * ?"
+	spec := "0 0 1,13 * * ?"
 	crontab.AddFunc(spec, task)
-	crontab.Start()
-	fmt.Println("---------Start---------------")
 }
 func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 	k := m.cfg.AliyunAccessKeyID
@@ -417,13 +414,10 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 					continue
 				}
 				if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {
-					fmt.Println("------------------USDRateInfo---------------------")
-					fmt.Println(USDRateInfo)
 					UsdRate := aliyun.GetExchangeRate()
 					USDRateInfo.USDRate = UsdRate
 					USDRateInfo.ET = time.Now().Add(time.Hour)
 				}
-				// UsdRate := aliyun.GetExchangeRate()
 				if USDRateInfo.USDRate == 0 {
 					USDRateInfo.USDRate = 7.2673
 				}

@@ -86,8 +86,6 @@ type MallStruct struct {
 
 		DescribePrice func(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) `perm:"default"`
 
-		DescribePriceTest func(p0 context.Context) error `perm:"default"`
-
 		DescribeRecommendInstanceType func(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) `perm:"default"`
 
 		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
@@ -95,6 +93,8 @@ type MallStruct struct {
 		GetInstanceDefaultInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) `perm:"default"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
+
+		UpdateInstanceDefaultInfo func(p0 context.Context) error `perm:"default"`
 	}
 }
 
@@ -441,17 +441,6 @@ func (s *MallStub) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq)
 	return nil, ErrNotSupported
 }
 
-func (s *MallStruct) DescribePriceTest(p0 context.Context) error {
-	if s.Internal.DescribePriceTest == nil {
-		return ErrNotSupported
-	}
-	return s.Internal.DescribePriceTest(p0)
-}
-
-func (s *MallStub) DescribePriceTest(p0 context.Context) error {
-	return ErrNotSupported
-}
-
 func (s *MallStruct) DescribeRecommendInstanceType(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
 	if s.Internal.DescribeRecommendInstanceType == nil {
 		return *new([]*types.DescribeRecommendInstanceResponse), ErrNotSupported
@@ -493,6 +482,17 @@ func (s *MallStruct) RebootInstance(p0 context.Context, p1 string, p2 string) er
 }
 
 func (s *MallStub) RebootInstance(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
+}
+
+func (s *MallStruct) UpdateInstanceDefaultInfo(p0 context.Context) error {
+	if s.Internal.UpdateInstanceDefaultInfo == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.UpdateInstanceDefaultInfo(p0)
+}
+
+func (s *MallStub) UpdateInstanceDefaultInfo(p0 context.Context) error {
 	return ErrNotSupported
 }
 
