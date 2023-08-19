@@ -92,6 +92,22 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle done, %s, goods info:%v", info.OrderID, info.GoodsInfo)
 
+	if info.DoneState != Success {
+		original, err := m.LoadUserBalance(info.User)
+		if err != nil {
+			log.Errorf("handleDone LoadUserBalance err:%s", err.Error())
+			return nil
+		}
+
+		newValue := utils.BigIntAdd(original, info.Value)
+
+		err = m.UpdateUserBalance(info.User, newValue, original)
+		if err != nil {
+			log.Errorf("handleDone UpdateUserBalance err:%s", err.Error())
+			return nil
+		}
+	}
+
 	m.removeOrder(info.OrderID.String())
 
 	return nil
