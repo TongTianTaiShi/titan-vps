@@ -92,7 +92,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle done, %s, goods info:%v", info.OrderID, info.GoodsInfo)
 
-	if info.DoneState != Success {
+	if info.DoneState == PurchaseFailed {
 		original, err := m.LoadUserBalance(info.User)
 		if err != nil {
 			log.Errorf("handleDone LoadUserBalance err:%s", err.Error())
