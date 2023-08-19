@@ -78,6 +78,7 @@ type DescribeImageResponse struct {
 	OSName       string
 	Architecture string
 }
+
 type CreateOrderReq struct {
 	CreateInstanceReq
 	Amount int32
@@ -131,6 +132,21 @@ type DescribeInstanceTypeReq struct {
 	NextToken        string
 }
 
+type AvailableResourceReq struct {
+	RegionId            string
+	DestinationResource string
+	InstanceChargeType  string
+	InstanceType        string
+	ResourceType        string
+}
+
+type AvailableResourceResponse struct {
+	Min   int32
+	Max   int32
+	Value string
+	Unit  string
+}
+
 type DescribeRecommendInstanceTypeReq struct {
 	RegionId           string
 	Memory             float32
@@ -156,6 +172,7 @@ type DescribeInstanceType struct {
 	CpuArchitecture        string
 	InstanceCategory       string
 	CpuCoreCount           int32
+	AvailableZone          int
 	InstanceTypeFamily     string
 	PhysicalProcessorModel string
 	NextToken              string

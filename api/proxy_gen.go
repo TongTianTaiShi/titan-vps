@@ -74,6 +74,8 @@ type MallStruct struct {
 
 		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"default"`
 
+		DescribeAvailableResourceForDesk func(p0 context.Context, p1 *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) `perm:"default"`
+
 		DescribeImages func(p0 context.Context, p1 string, p2 string) ([]*types.DescribeImageResponse, error) `perm:"default"`
 
 		DescribeInstanceType func(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) `perm:"default"`
@@ -363,6 +365,17 @@ func (s *MallStruct) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*t
 
 func (s *MallStub) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) {
 	return nil, ErrNotSupported
+}
+
+func (s *MallStruct) DescribeAvailableResourceForDesk(p0 context.Context, p1 *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
+	if s.Internal.DescribeAvailableResourceForDesk == nil {
+		return *new([]*types.AvailableResourceResponse), ErrNotSupported
+	}
+	return s.Internal.DescribeAvailableResourceForDesk(p0, p1)
+}
+
+func (s *MallStub) DescribeAvailableResourceForDesk(p0 context.Context, p1 *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
+	return *new([]*types.AvailableResourceResponse), ErrNotSupported
 }
 
 func (s *MallStruct) DescribeImages(p0 context.Context, p1 string, p2 string) ([]*types.DescribeImageResponse, error) {

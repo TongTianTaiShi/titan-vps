@@ -35,6 +35,7 @@ var vpsCmds = &cli.Command{
 		describeImageCmd,
 		describePriceCmd,
 		createKeyPairCmd,
+		getDeskCmd,
 		describeInstancesCmd,
 	},
 }
@@ -141,6 +142,58 @@ var createKeyPairCmd = &cli.Command{
 		}
 
 		fmt.Println(list)
+		return nil
+	},
+}
+
+var getDeskCmd = &cli.Command{
+	Name:  "gdc",
+	Usage: "get  desk indo",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "it",
+			Usage: "region id",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "regionID",
+			Usage: "region id",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "sys",
+			Usage: "region id",
+			Value: "",
+		},
+	},
+	Before: func(cctx *cli.Context) error {
+		return nil
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+		instanceId := cctx.String("it")
+		regionID := cctx.String("regionID")
+		sys := cctx.String("sys")
+		var desk = &types.AvailableResourceReq{
+			InstanceType:        instanceId,
+			RegionId:            regionID,
+			DestinationResource: sys,
+		}
+
+		list, err := api.DescribeAvailableResourceForDesk(ctx, desk)
+		if err != nil {
+			return err
+		}
+		for _, v := range list {
+			fmt.Println(v.Value)
+		}
 		return nil
 	},
 }

@@ -113,7 +113,14 @@ func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.Des
 		log.Errorf("DescribeAvailableResource err: %s", err.Error())
 		return nil, xerrors.New(err.Error())
 	}
+	rspDataList := &types.DescribeInstanceTypeResponse{
+		NextToken: *rsp.Body.NextToken,
+	}
 	instanceTypes := make(map[string]int)
+	AvailableZone := len(AvailableResource.Body.AvailableZones.AvailableZone)
+	if AvailableZone < 0 {
+		return rspDataList, nil
+	}
 	for _, data := range AvailableResource.Body.AvailableZones.AvailableZone {
 		availableTypes := data.AvailableResources.AvailableResource
 		if len(availableTypes) > 0 {
@@ -129,9 +136,6 @@ func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.Des
 			}
 		}
 	}
-	rspDataList := &types.DescribeInstanceTypeResponse{
-		NextToken: *rsp.Body.NextToken,
-	}
 	for _, data := range rsp.Body.InstanceTypes.InstanceType {
 		if _, ok := instanceTypes[*data.InstanceTypeId]; !ok {
 			continue
@@ -143,6 +147,7 @@ func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.Des
 			CpuArchitecture:        *data.CpuArchitecture,
 			InstanceTypeFamily:     *data.InstanceTypeFamily,
 			CpuCoreCount:           *data.CpuCoreCount,
+			AvailableZone:          AvailableZone,
 			PhysicalProcessorModel: *data.PhysicalProcessorModel,
 		}
 		rspDataList.InstanceTypes = append(rspDataList.InstanceTypes, rspData)
@@ -170,6 +175,45 @@ func (m *Mall) DescribeImages(ctx context.Context, regionID, instanceType string
 			Platform:     *data.Platform,
 		}
 		rspDataList = append(rspDataList, rspData)
+	}
+	return rspDataList, nil
+}
+
+func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
+	k, s := m.getAccessKeys()
+	rsp, err := aliyun.DescribeAvailableResourceForDesk(k, s, desk)
+	if err != nil {
+		log.Errorf("DescribeImages err: %s", err.Error())
+		return nil, xerrors.New(err.Error())
+	}
+	var Category = map[string]int{
+		"cloud":            1,
+		"cloud_essd":       1,
+		"cloud_ssd":        1,
+		"cloud_efficiency": 1,
+		"ephemeral_ssd":    1,
+	}
+	var rspDataList []*types.AvailableResourceResponse
+	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
+		AvailableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource
+		if len(AvailableResources) > 0 {
+			systemDesk := AvailableResources[0].SupportedResources.SupportedResource
+			if len(systemDesk) > 0 {
+				for _, data := range systemDesk {
+					if *data.Status == "Available" {
+						if _, ok := Category[*data.Value]; ok {
+							desk := &types.AvailableResourceResponse{
+								Min:   *data.Min,
+								Max:   *data.Max,
+								Value: *data.Value,
+								Unit:  *data.Unit,
+							}
+							rspDataList = append(rspDataList, desk)
+						}
+					}
+				}
+			}
+		}
 	}
 	return rspDataList, nil
 }

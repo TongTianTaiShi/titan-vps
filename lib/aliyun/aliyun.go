@@ -805,6 +805,47 @@ func DescribeAvailableResource(keyID, keySecret string, instanceType *types.Desc
 	return result, nil
 }
 
+func DescribeAvailableResourceForDesk(keyID, keySecret string, desk *types.AvailableResourceReq) (*ecs20140526.DescribeAvailableResourceResponse, *tea.SDKError) {
+	var result *ecs20140526.DescribeAvailableResourceResponse
+
+	client, err := newClient(desk.RegionId, keyID, keySecret)
+	if err != nil {
+		return result, err
+	}
+
+	describeAvailableResourceRequest := &ecs20140526.DescribeAvailableResourceRequest{
+		RegionId:            tea.String(desk.RegionId),
+		DestinationResource: tea.String(desk.DestinationResource),
+		InstanceChargeType:  tea.String("PrePaid"),
+		InstanceType:        tea.String(desk.InstanceType),
+		ResourceType:        tea.String("instance"),
+	}
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		result, _e = client.DescribeAvailableResourceWithOptions(describeAvailableResourceRequest, runtime)
+		if _e != nil {
+			return _e
+		}
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return result, errors
+	}
+	return result, nil
+}
+
 // CreateKeyPair Create key pair
 func CreateKeyPair(regionID, keyID, keySecret, KeyPairName string) (*types.CreateKeyPairResponse, *tea.SDKError) {
 	var out *types.CreateKeyPairResponse
