@@ -87,6 +87,7 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.Location, k, s, instanceIds)
 		if err != nil {
 			log.Errorf("DescribeInstanceStatus err: %s", err.Error())
+			return nil, &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: err.Error()}
 		}
 		instanceInfo.State = *rsp.Body.InstanceStatuses.InstanceStatus[0].Status
 	}

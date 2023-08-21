@@ -109,6 +109,7 @@ type CreateInstanceReq struct {
 	OSType                  string    `db:"os_type"`
 	InternetChargeType      string    `db:"internet_charge_type"`
 	SystemDiskSize          int32     `db:"system_disk_size"`
+	DataDiskString          string    `db:"data_disk"`
 	CreatedTime             time.Time `db:"created_time"`
 	DataDisk                []*DescribePriceRequestDataDisk
 }

@@ -46,6 +46,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	id, err := m.SaveVpsInstance(&req)
 	if err != nil {
 		log.Errorf("SaveVpsInstance:%v", err)
+		return "", err
 	}
 	TradePriceString := strconv.FormatFloat(float64(req.TradePrice), 'f', -1, 64)
 

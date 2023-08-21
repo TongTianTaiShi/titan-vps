@@ -184,7 +184,7 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 	k, s := m.getAccessKeys()
 	rsp, err := aliyun.DescribeAvailableResourceForDesk(k, s, desk)
 	if err != nil {
-		log.Errorf("DescribeImages err: %s", err.Error())
+		log.Errorf("DescribeAvailableResourceForDesk err: %s", err.Error())
 		return nil, xerrors.New(err.Error())
 	}
 	Category := map[string]int{
