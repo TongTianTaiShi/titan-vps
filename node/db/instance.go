@@ -110,3 +110,55 @@ func (n *SQLDB) LoadInstanceDefaultInfo(req *types.InstanceTypeFromBaseReq) (*ty
 	out.List = info
 	return out, nil
 }
+
+func (n *SQLDB) LoadInstanceCpuInfo(req *types.InstanceTypeFromBaseReq) ([]*int32, error) {
+	var info []*int32
+	var query string
+	var args []interface{}
+	query = "region_id=?"
+	args = append(args, req.RegionId)
+	if req.InstanceCategory != "" {
+		query += " and instance_category=?"
+		args = append(args, req.InstanceCategory)
+	}
+	if req.CpuCoreCount != 0 {
+		query += " and cpu_core_count=?"
+		args = append(args, req.CpuCoreCount)
+	}
+	if req.CpuArchitecture != "" {
+		query += " and cpu_architecture=?"
+		args = append(args, req.CpuArchitecture)
+	}
+	querySql := fmt.Sprintf("SELECT distinct cpu_core_count FROM %s WHERE %s order by cpu_core_count asc", instanceDefaultTable, query)
+	err := n.db.Select(&info, querySql, args...)
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
+}
+
+func (n *SQLDB) LoadInstanceMemoryInfo(req *types.InstanceTypeFromBaseReq) ([]*float32, error) {
+	var info []*float32
+	var query string
+	var args []interface{}
+	query = "region_id=?"
+	args = append(args, req.RegionId)
+	if req.InstanceCategory != "" {
+		query += " and instance_category=?"
+		args = append(args, req.InstanceCategory)
+	}
+	if req.CpuCoreCount != 0 {
+		query += " and cpu_core_count=?"
+		args = append(args, req.CpuCoreCount)
+	}
+	if req.CpuArchitecture != "" {
+		query += " and cpu_architecture=?"
+		args = append(args, req.CpuArchitecture)
+	}
+	querySql := fmt.Sprintf("SELECT distinct memory_size FROM %s WHERE %s order by memory_size asc", instanceDefaultTable, query)
+	err := n.db.Select(&info, querySql, args...)
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
+}

@@ -39,6 +39,8 @@ var vpsCmds = &cli.Command{
 		getDeskCmd,
 		GetDeskInfoCmd,
 		GetInstanceDefaultCmd,
+		GetInstanceCpuCmd,
+		GetInstanceMemoryCmd,
 		describeInstancesCmd,
 	},
 }
@@ -280,6 +282,88 @@ var GetInstanceDefaultCmd = &cli.Command{
 			fmt.Println(data.MemorySize)
 			fmt.Println(data.InstanceTypeId)
 			fmt.Println(data.Price)
+		}
+
+		return nil
+	},
+}
+
+var GetInstanceCpuCmd = &cli.Command{
+	Name:  "gicc",
+	Usage: "get  desk indo",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "m",
+			Usage: "region id",
+			Value: "",
+		},
+	},
+	Before: func(cctx *cli.Context) error {
+		return nil
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+		m := float32(cctx.Float64("m"))
+		req := &types.InstanceTypeFromBaseReq{
+			RegionId:         "cn-hangzhou",
+			MemorySize:       m,
+			CpuArchitecture:  "",
+			InstanceCategory: "",
+		}
+		list, err := api.GetInstanceCpuInfo(ctx, req)
+		if err != nil {
+			return err
+		}
+		for _, data := range list {
+			fmt.Println(*data)
+		}
+
+		return nil
+	},
+}
+
+var GetInstanceMemoryCmd = &cli.Command{
+	Name:  "gimc",
+	Usage: "get  desk indo",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "c",
+			Usage: "region id",
+			Value: "",
+		},
+	},
+	Before: func(cctx *cli.Context) error {
+		return nil
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+		c := int32(cctx.Int64("c"))
+		req := &types.InstanceTypeFromBaseReq{
+			RegionId:         "cn-hangzhou",
+			CpuCoreCount:     c,
+			CpuArchitecture:  "",
+			InstanceCategory: "",
+		}
+		list, err := api.GetInstanceMemoryInfo(ctx, req)
+		if err != nil {
+			return err
+		}
+		for _, data := range list {
+			fmt.Println(*data)
 		}
 
 		return nil

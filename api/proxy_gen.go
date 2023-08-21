@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -91,7 +90,11 @@ type MallStruct struct {
 
 		DescribeRegions func(p0 context.Context) (map[string]string, error) `perm:"default"`
 
+		GetInstanceCpuInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) ([]*int32, error) `perm:"default"`
+
 		GetInstanceDefaultInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) `perm:"default"`
+
+		GetInstanceMemoryInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) ([]*float32, error) `perm:"default"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
 
@@ -464,6 +467,17 @@ func (s *MallStub) DescribeRegions(p0 context.Context) (map[string]string, error
 	return *new(map[string]string), ErrNotSupported
 }
 
+func (s *MallStruct) GetInstanceCpuInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) ([]*int32, error) {
+	if s.Internal.GetInstanceCpuInfo == nil {
+		return *new([]*int32), ErrNotSupported
+	}
+	return s.Internal.GetInstanceCpuInfo(p0, p1)
+}
+
+func (s *MallStub) GetInstanceCpuInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) ([]*int32, error) {
+	return *new([]*int32), ErrNotSupported
+}
+
 func (s *MallStruct) GetInstanceDefaultInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
 	if s.Internal.GetInstanceDefaultInfo == nil {
 		return nil, ErrNotSupported
@@ -473,6 +487,17 @@ func (s *MallStruct) GetInstanceDefaultInfo(p0 context.Context, p1 *types.Instan
 
 func (s *MallStub) GetInstanceDefaultInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
 	return nil, ErrNotSupported
+}
+
+func (s *MallStruct) GetInstanceMemoryInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) ([]*float32, error) {
+	if s.Internal.GetInstanceMemoryInfo == nil {
+		return *new([]*float32), ErrNotSupported
+	}
+	return s.Internal.GetInstanceMemoryInfo(p0, p1)
+}
+
+func (s *MallStub) GetInstanceMemoryInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) ([]*float32, error) {
+	return *new([]*float32), ErrNotSupported
 }
 
 func (s *MallStruct) RebootInstance(p0 context.Context, p1 string, p2 string) error {

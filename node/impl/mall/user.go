@@ -109,6 +109,13 @@ func (m *Mall) GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTy
 	req.Offset = req.Limit * (req.Page - 1)
 	return m.LoadInstanceDefaultInfo(req)
 }
+func (m *Mall) GetInstanceCpuInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*int32, error) {
+	return m.LoadInstanceCpuInfo(req)
+}
+
+func (m *Mall) GetInstanceMemoryInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*float32, error) {
+	return m.LoadInstanceMemoryInfo(req)
+}
 
 func (m *Mall) GetSignCode(ctx context.Context, userID string) (string, error) {
 	return m.UserMgr.GenerateSignCode(userID), nil
