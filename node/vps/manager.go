@@ -189,7 +189,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
-			time.Sleep(1500 * time.Millisecond)
+			time.Sleep(1 * time.Second)
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
@@ -225,6 +225,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 					log.Errorf("DescribePrice err:%v", err.Error())
 					continue
 				}
+				fmt.Println(price.USDPrice)
 				if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {
 					UsdRate := aliyun.GetExchangeRate()
 					USDRateInfo.USDRate = UsdRate
