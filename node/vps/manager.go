@@ -11,7 +11,6 @@ import (
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	logging "github.com/ipfs/go-log/v2"
-	"github.com/robfig/cron/v3"
 	"golang.org/x/xerrors"
 )
 
@@ -158,20 +157,42 @@ func (m *Manager) CreateAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 }
 
 func (m *Manager) cronGetInstanceDefaultInfo() {
-	crontab := cron.New(cron.WithSeconds())
-	var ctx context.Context
-	task := func() {
-		m.UpdateInstanceDefaultInfo(ctx)
-	}
-	spec := "0 0 1,13 * * ?"
-	//spec := "* */5 * * * ?"
-	crontab.AddFunc(spec, task)
-	crontab.Start()
+	//crontab := cron.New()
+	//task := func() {
+	//	m.UpdateInstanceDefaultInfo()
+	//}
+	////spec := "0 0 1,13 * * ?"
+	//spec := "* * * * * ?"
+	//crontab.AddFunc(spec, task)
+	//crontab.Start()
+	//time.Sleep(1500 * time.Second)
+	//defer crontab.Stop()
+	//select {}
+	// 获取当前时间
+	now := time.Now()
+
+	// 计算下一次执行任务的时间
+	next := time.Date(now.Year(), now.Month(), now.Day(), now.Hour()+12, now.Minute(), 0, 0, now.Location())
+
+	// 计算下一次执行任务的时间与当前时间的时间差
+	duration := next.Sub(now)
+
+	// 创建定时器
+	timer := time.NewTimer(duration)
+
+	// 执行任务
+	m.UpdateInstanceDefaultInfo()
+	// ...
+	// 等待定时器到期
+	<-timer.C
+	// 递归调用自身，实现每分钟执行一次任务
+	m.cronGetInstanceDefaultInfo()
 }
 
-func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
-	k := m.cfg.AliyunAccessKeyID
-	s := m.cfg.AliyunAccessKeySecret
+func (m *Manager) UpdateInstanceDefaultInfo() {
+	var ctx context.Context
+	k := "LTAI5tAi3qJJ6bQP22xaiFJB"
+	s := "9kltHYkwmvqnuvVt8DzkruQxTRDvKg"
 	regions, err := aliyun.DescribeRegions(k, s)
 	if err != nil {
 		log.Errorf("DescribePrice err:%v", err.Error())
@@ -189,7 +210,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
-			time.Sleep(1 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
 			if err != nil {
 				log.Errorf("DescribeImages err:%v", err.Error())
