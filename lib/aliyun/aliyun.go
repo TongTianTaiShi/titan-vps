@@ -19,8 +19,16 @@ const (
 	defaultRegionID = "cn-hangzhou"
 )
 
+var VpsClient map[string]*ecs20140526.Client
+
 // ClientInit /**
 func newClient(regionID, keyID, keySecret string) (*ecs20140526.Client, *tea.SDKError) {
+	if VpsClient == nil {
+		VpsClient = make(map[string]*ecs20140526.Client)
+	}
+	if v, ok := VpsClient[regionID]; ok {
+		return v, nil
+	}
 	configClient := &openapi.Config{
 		AccessKeyId:     tea.String(keyID),
 		AccessKeySecret: tea.String(keySecret),
@@ -37,7 +45,7 @@ func newClient(regionID, keyID, keySecret string) (*ecs20140526.Client, *tea.SDK
 		}
 		return nil, errors
 	}
-
+	VpsClient[regionID] = client
 	return client, nil
 }
 

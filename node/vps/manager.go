@@ -3,6 +3,7 @@ package vps
 import (
 	"context"
 	"fmt"
+	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
@@ -19,7 +20,8 @@ var log = logging.Logger("vps")
 // Manager manager order
 type Manager struct {
 	*db.SQLDB
-	cfg config.MallCfg
+	cfg       config.MallCfg
+	vpsClient map[string]*ecs20140526.Client
 }
 
 var USDRateInfo struct {
@@ -35,8 +37,9 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 	}
 
 	m := &Manager{
-		SQLDB: sdb,
-		cfg:   cfg,
+		SQLDB:     sdb,
+		cfg:       cfg,
+		vpsClient: make(map[string]*ecs20140526.Client),
 	}
 	go m.cronGetInstanceDefaultInfo()
 
@@ -157,42 +160,24 @@ func (m *Manager) CreateAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 }
 
 func (m *Manager) cronGetInstanceDefaultInfo() {
-	//crontab := cron.New()
-	//task := func() {
-	//	m.UpdateInstanceDefaultInfo()
-	//}
-	////spec := "0 0 1,13 * * ?"
-	//spec := "* * * * * ?"
-	//crontab.AddFunc(spec, task)
-	//crontab.Start()
-	//time.Sleep(1500 * time.Second)
-	//defer crontab.Stop()
-	//select {}
-	// 获取当前时间
+
 	now := time.Now()
 
-	// 计算下一次执行任务的时间
 	next := time.Date(now.Year(), now.Month(), now.Day(), now.Hour()+12, now.Minute(), 0, 0, now.Location())
 
-	// 计算下一次执行任务的时间与当前时间的时间差
 	duration := next.Sub(now)
 
-	// 创建定时器
 	timer := time.NewTimer(duration)
-
-	// 执行任务
-	m.UpdateInstanceDefaultInfo()
-	// ...
-	// 等待定时器到期
 	<-timer.C
-	// 递归调用自身，实现每分钟执行一次任务
+	m.UpdateInstanceDefaultInfo()
+
 	m.cronGetInstanceDefaultInfo()
 }
 
 func (m *Manager) UpdateInstanceDefaultInfo() {
 	var ctx context.Context
-	k := "LTAI5tAi3qJJ6bQP22xaiFJB"
-	s := "9kltHYkwmvqnuvVt8DzkruQxTRDvKg"
+	k := m.cfg.AliyunAccessKeyID
+	s := m.cfg.AliyunAccessKeySecret
 	regions, err := aliyun.DescribeRegions(k, s)
 	if err != nil {
 		log.Errorf("DescribePrice err:%v", err.Error())
