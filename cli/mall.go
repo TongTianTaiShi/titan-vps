@@ -580,8 +580,7 @@ var listCmd = &cli.Command{
 		}
 
 		for _, info := range infos.List {
-			fmt.Printf("info:%v \n", info.CreatedTime)
-			fmt.Printf("info:%v \n", info.Expiration)
+			fmt.Printf("%s Create:%v Expiration:%v \n", info.OrderID, info.CreatedTime, info.Expiration)
 		}
 
 		return nil

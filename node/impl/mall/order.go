@@ -70,7 +70,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
-	info, err := m.LoadOrderRecordByUserUndone(userID, limit, offset)
+	info, err := m.LoadOrderRecordByUserUndone(userID, limit, offset, m.OrderMgr.GetOrderTimeoutMinute())
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
