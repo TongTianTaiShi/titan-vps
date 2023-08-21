@@ -5,6 +5,7 @@ import (
 
 	"github.com/LMF709268224/titan-vps/node/exchange"
 	"github.com/LMF709268224/titan-vps/node/user"
+	"github.com/LMF709268224/titan-vps/node/vps"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/config"
@@ -59,6 +60,7 @@ func ConfigMall(c interface{}) Option {
 		Override(new(*exchange.RechargeManager), exchange.NewRechargeManager),
 		Override(new(*exchange.WithdrawManager), exchange.NewWithdrawManager),
 		Override(new(*orders.Manager), modules.NewStorageManager),
+		Override(new(*vps.Manager), vps.NewManager),
 		Override(new(*user.Manager), user.NewManager),
 	)
 }

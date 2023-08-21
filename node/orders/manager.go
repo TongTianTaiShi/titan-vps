@@ -3,7 +3,6 @@ package orders
 import (
 	"context"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"sync"
 	"time"
 
@@ -16,10 +15,12 @@ import (
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
 	"github.com/LMF709268224/titan-vps/node/transaction"
+	"github.com/LMF709268224/titan-vps/node/vps"
 	"github.com/filecoin-project/go-statemachine"
 	"github.com/filecoin-project/pubsub"
 	"github.com/ipfs/go-datastore"
-	"golang.org/x/xerrors"
+	"github.com/robfig/cron/v3"
+	xerrors "golang.org/x/xerrors"
 
 	logging "github.com/ipfs/go-log/v2"
 )
@@ -30,11 +31,6 @@ const (
 	checkOrderInterval = 10 * time.Second
 	orderTimeoutTime   = 10 * time.Minute
 )
-
-var USDRateInfo struct {
-	USDRate float32
-	ET      time.Time
-}
 
 // Manager manager order
 type Manager struct {
@@ -49,10 +45,11 @@ type Manager struct {
 
 	cfg  config.MallCfg
 	tMgr *transaction.Manager
+	vMgr *vps.Manager
 }
 
 // NewManager returns a new manager instance
-func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, fm *transaction.Manager) (*Manager, error) {
+func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, fm *transaction.Manager, vm *vps.Manager) (*Manager, error) {
 	cfg, err := getCfg()
 	if err != nil {
 		return nil, err
@@ -65,6 +62,7 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg 
 		orderLock:     &sync.Mutex{},
 		cfg:           cfg,
 		tMgr:          fm,
+		vMgr:          vm,
 	}
 
 	// state machine initialization
@@ -82,7 +80,6 @@ func (m *Manager) Start(ctx context.Context) {
 
 	// go m.subscribeEvents()
 	go m.checkOrdersTimeout()
-	go m.CronGetInstanceDefaultInfo()
 }
 
 func (m *Manager) checkOrdersTimeout() {
@@ -236,119 +233,6 @@ func (m *Manager) removeOrder(orderID string) {
 	delete(m.ongoingOrders, orderID)
 }
 
-func (m *Manager) createAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
-	k := m.cfg.AliyunAccessKeyID
-	s := m.cfg.AliyunAccessKeySecret
-
-	priceUnit := vpsInfo.PeriodUnit
-	period := vpsInfo.Period
-	regionID := vpsInfo.RegionId
-	if priceUnit == "Year" {
-		priceUnit = "Month"
-		period = period * 12
-	}
-
-	var securityGroupID string
-
-	group, err := aliyun.DescribeSecurityGroups(regionID, k, s)
-	if err == nil && len(group) > 0 {
-		securityGroupID = group[0]
-	} else {
-		securityGroupID, err = aliyun.CreateSecurityGroup(regionID, k, s)
-		if err != nil {
-			log.Errorf("CreateSecurityGroup err: %s", err.Error())
-			return nil, xerrors.New(err.Error())
-		}
-	}
-	log.Debugln("securityGroupID:", securityGroupID, " , DryRun:", vpsInfo.DryRun)
-	result, err := aliyun.CreateInstance(k, s, vpsInfo, vpsInfo.DryRun)
-	if err != nil {
-		log.Errorf("CreateInstance err: %s", err.Error())
-		return nil, xerrors.New(err.Error())
-	}
-	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceID)
-	if err != nil {
-		log.Errorf("AllocatePublicIpAddress err: %s", err.Error())
-	} else {
-		result.PublicIpAddress = address
-	}
-
-	err = aliyun.AuthorizeSecurityGroup(regionID, k, s, securityGroupID)
-	if err != nil {
-		log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
-	}
-	//randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
-	//keyPairName := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
-	//keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairName)
-	//if err != nil {
-	//	log.Errorf("CreateKeyPair err: %s", err.Error())
-	//} else {
-	//	result.PrivateKey = keyInfo.PrivateKeyBody
-	//}
-	//var instanceIds []string
-	//instanceIds = append(instanceIds, result.InstanceID)
-	//_, err = aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
-	//if err != nil {
-	//	log.Errorf("AttachKeyPair err: %s", err.Error())
-	//}
-	go func() {
-		time.Sleep(1 * time.Minute)
-
-		err = aliyun.StartInstance(regionID, k, s, result.InstanceID)
-		if err != nil {
-			log.Infoln("StartInstance err:", err)
-		}
-	}()
-	var instanceIds []string
-	instanceIds = append(instanceIds, result.InstanceID)
-	instanceInfo, err := aliyun.DescribeInstances(regionID, k, s, instanceIds)
-	if err != nil {
-		log.Errorf("DescribeInstances err: %s", err.Error())
-	}
-	if len(instanceInfo.Body.Instances.Instance) > 0 {
-		ip := instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0]
-		securityGroupId := ""
-		if len(instanceInfo.Body.Instances.Instance) > 0 {
-			securityGroupId = *instanceInfo.Body.Instances.Instance[0].SecurityGroupIds.SecurityGroupId[0]
-		}
-		OSType := instanceInfo.Body.Instances.Instance[0].OSType
-		InstanceName := instanceInfo.Body.Instances.Instance[0].InstanceName
-		BandwidthOut := instanceInfo.Body.Instances.Instance[0].InternetMaxBandwidthOut
-		Cores := instanceInfo.Body.Instances.Instance[0].Cpu
-		Memory := instanceInfo.Body.Instances.Instance[0].Memory
-		instanceDetailsInfo := &types.CreateInstanceReq{
-			IpAddress:       *ip,
-			InstanceId:      result.InstanceID,
-			SecurityGroupId: securityGroupId,
-			OrderID:         vpsInfo.OrderID,
-			UserID:          vpsInfo.UserID,
-			OSType:          *OSType,
-			Cores:           *Cores,
-			Memory:          float32(*Memory),
-		}
-		errU := m.UpdateVpsInstance(instanceDetailsInfo)
-		if errU != nil {
-			log.Errorf("UpdateVpsInstance:%v", errU)
-		}
-		info := &types.MyInstance{
-			OrderID:            vpsInfo.OrderID,
-			UserID:             vpsInfo.UserID,
-			InstanceId:         result.InstanceID,
-			Price:              vpsInfo.TradePrice,
-			InternetChargeType: vpsInfo.InternetChargeType,
-			Location:           vpsInfo.RegionId,
-			InstanceSystem:     *OSType,
-			InstanceName:       *InstanceName,
-			BandwidthOut:       *BandwidthOut,
-		}
-		saveErr := m.SaveMyInstancesInfo(info)
-		if err != nil {
-			log.Errorf("SaveMyInstancesInfo:%v", saveErr)
-		}
-	}
-	return result, nil
-}
-
 func (m *Manager) getHeight() int64 {
 	var msg filecoinbridge.TipSet
 	err := filecoinbridge.ChainHead(&msg, m.cfg.LotusHTTPSAddr)
@@ -359,6 +243,7 @@ func (m *Manager) getHeight() int64 {
 
 	return msg.Height
 }
+
 func (m *Manager) CronGetInstanceDefaultInfo() {
 	crontab := cron.New(cron.WithSeconds())
 	var ctx context.Context
@@ -366,11 +251,12 @@ func (m *Manager) CronGetInstanceDefaultInfo() {
 		m.UpdateInstanceDefaultInfo(ctx)
 	}
 	spec := "0 0 1,13 * * ?"
-	//spec := "*/60 * * * * ?"
+	// spec := "*/60 * * * * ?"
 	crontab.AddFunc(spec, task)
 	crontab.Start()
 	fmt.Println("start")
 }
+
 func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
@@ -397,7 +283,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 				log.Errorf("DescribeImages err:%v", err.Error())
 				continue
 			}
-			var disk = &types.AvailableResourceReq{
+			disk := &types.AvailableResourceReq{
 				InstanceType:        instance.InstanceTypeId,
 				RegionId:            *region.RegionId,
 				DestinationResource: "SystemDisk",
@@ -436,7 +322,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 				}
 				UsdRate := USDRateInfo.USDRate
 				price.USDPrice = price.USDPrice / UsdRate
-				var info = &types.DescribeInstanceTypeFromBase{
+				info := &types.DescribeInstanceTypeFromBase{
 					RegionId:               *region.RegionId,
 					InstanceTypeId:         instance.InstanceTypeId,
 					MemorySize:             instance.MemorySize,
@@ -459,6 +345,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 	}
 	return
 }
+
 func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
@@ -550,7 +437,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, disk *ty
 		log.Errorf("DescribeAvailableResourceForDesk err: %s", err.Error())
 		return nil, xerrors.New(err.Error())
 	}
-	var Category = map[string]int{
+	Category := map[string]int{
 		"cloud":            1,
 		"cloud_essd":       1,
 		"cloud_ssd":        1,

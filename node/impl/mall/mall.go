@@ -11,6 +11,7 @@ import (
 	"github.com/LMF709268224/titan-vps/node/exchange"
 	"github.com/LMF709268224/titan-vps/node/handler"
 	"github.com/LMF709268224/titan-vps/node/user"
+	"github.com/LMF709268224/titan-vps/node/vps"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -51,6 +52,7 @@ type Mall struct {
 	OrderMgr *orders.Manager
 	dtypes.GetMallConfigFunc
 	UserMgr *user.Manager
+	VpsMgr  *vps.Manager
 }
 
 func (m *Mall) getAccessKeys() (string, string) {
@@ -509,7 +511,7 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 				log.Errorf("DescribePrice err:%v", err.Error())
 				continue
 			}
-			var disk = &types.AvailableResourceReq{
+			disk := &types.AvailableResourceReq{
 				InstanceType:        instance.InstanceTypeId,
 				RegionId:            *region.RegionId,
 				DestinationResource: "SystemDisk",
@@ -548,7 +550,7 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 				}
 				UsdRate := USDRateInfo.USDRate
 				price.USDPrice = price.USDPrice / UsdRate
-				var info = &types.DescribeInstanceTypeFromBase{
+				info := &types.DescribeInstanceTypeFromBase{
 					RegionId:               *region.RegionId,
 					InstanceTypeId:         instance.InstanceTypeId,
 					MemorySize:             instance.MemorySize,

@@ -10,6 +10,7 @@ import (
 	"github.com/LMF709268224/titan-vps/node/orders"
 	"github.com/LMF709268224/titan-vps/node/repo"
 	"github.com/LMF709268224/titan-vps/node/transaction"
+	"github.com/LMF709268224/titan-vps/node/vps"
 	"github.com/filecoin-project/pubsub"
 	logging "github.com/ipfs/go-log/v2"
 	"go.uber.org/fx"
@@ -97,7 +98,8 @@ type StorageManagerParams struct {
 	*db.SQLDB
 	*pubsub.PubSub
 	dtypes.GetMallConfigFunc
-	*transaction.Manager
+	TMgr *transaction.Manager
+	VMgr *vps.Manager
 }
 
 // Datastore returns a new metadata datastore
@@ -114,11 +116,12 @@ func NewStorageManager(params StorageManagerParams) (*orders.Manager, error) {
 		sdb  = params.SQLDB
 		pb   = params.PubSub
 		gc   = params.GetMallConfigFunc
-		fm   = params.Manager
+		fm   = params.TMgr
+		vm   = params.VMgr
 	)
 
 	ctx := helpers.LifecycleCtx(mctx, lc)
-	m, err := orders.NewManager(ds, sdb, pb, gc, fm)
+	m, err := orders.NewManager(ds, sdb, pb, gc, fm, vm)
 	if err != nil {
 		return nil, err
 	}
