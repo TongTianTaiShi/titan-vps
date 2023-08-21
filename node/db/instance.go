@@ -95,9 +95,9 @@ func (n *SQLDB) LoadInstanceDefaultInfo(req *types.InstanceTypeFromBaseReq) (*ty
 		query += " and cpu_architecture=?"
 		args = append(args, req.CpuArchitecture)
 	}
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE region_id=?", instanceDefaultTable)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE %s", instanceDefaultTable, query)
 	var count int
-	err := n.db.Get(&count, countQuery, req.RegionId)
+	err := n.db.Get(&count, countQuery, args...)
 	if err != nil {
 		return nil, err
 	}
