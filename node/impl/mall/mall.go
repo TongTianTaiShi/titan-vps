@@ -9,15 +9,11 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/exchange"
-	"github.com/LMF709268224/titan-vps/node/handler"
 	"github.com/LMF709268224/titan-vps/node/user"
 	"github.com/LMF709268224/titan-vps/node/vps"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/filecoin-project/go-jsonrpc/auth"
-	"github.com/gbrlsnchs/jwt/v3"
 
-	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
@@ -65,18 +61,19 @@ func (m *Mall) getAccessKeys() (string, string) {
 	return cfg.AliyunAccessKeyID, cfg.AliyunAccessKeySecret
 }
 
-func (m *Mall) DescribeRegions(ctx context.Context) ([]string, error) {
+func (m *Mall) DescribeRegions(ctx context.Context) (map[string]string, error) {
 	rsp, err := aliyun.DescribeRegions(m.getAccessKeys())
 	if err != nil {
 		log.Errorf("DescribeRegions err: %s", err.Error())
 		return nil, xerrors.New(err.Error())
 	}
 
-	var rpsData []string
+	rpsData := make(map[string]string)
 	// fmt.Printf("Response: %+v\n", response)
 	for _, region := range rsp.Body.Regions.Region {
 		// fmt.Printf("Region ID: %s\n", region.RegionId)
-		rpsData = append(rpsData, *region.RegionId)
+		// rpsData = append(rpsData, *region.RegionId)
+		rpsData[*region.RegionId] = *region.LocalName
 	}
 
 	return rpsData, nil
@@ -387,106 +384,6 @@ func (m *Mall) MintToken(ctx context.Context, address string) (string, error) {
 	return client.Mint(cfg.PrivateKeyStr, address, valueStr)
 }
 
-func (m *Mall) GetSignCode(ctx context.Context, userID string) (string, error) {
-	return m.UserMgr.GenerateSignCode(userID), nil
-}
-
-func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error) {
-	userID := user.UserId
-	code, err := m.UserMgr.GetSignCode(userID)
-	if err != nil {
-		return nil, &api.ErrWeb{Code: terrors.NotFoundSignCode.Int(), Message: terrors.NotFoundSignCode.String()}
-	}
-	signature := user.Signature
-	address, err := verifyEthMessage(code, signature)
-	if err != nil {
-		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
-	}
-
-	p := types.JWTPayload{
-		ID:        address,
-		LoginType: int64(user.Type),
-		Allow:     []auth.Permission{api.RoleUser},
-	}
-	rsp := &types.LoginResponse{}
-	tk, err := jwt.Sign(&p, m.APISecret)
-	if err != nil {
-		return rsp, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
-	}
-	rsp.UserId = address
-	rsp.Token = string(tk)
-
-	err = m.initUser(address)
-	if err != nil {
-		return nil, err
-	}
-
-	return rsp, nil
-}
-
-func (m *Mall) initUser(userID string) error {
-	exist, err := m.UserExists(userID)
-	if err != nil {
-		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
-	}
-
-	if exist {
-		return nil
-	}
-
-	// init recharge address
-	addr, err := m.LoadRechargeAddressOfUser(userID)
-	if err != nil {
-		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
-	}
-
-	if addr == "" {
-		_, err = m.TransactionMgr.AllocateTronAddress(userID)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = m.SaveUserInfo(&types.UserInfo{UserID: userID, Balance: "0"})
-	if err != nil {
-		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
-	}
-
-	return nil
-}
-
-func (m *Mall) Logout(ctx context.Context, user *types.UserReq) error {
-	userID := handler.GetID(ctx)
-	log.Warnf("user id : %s", userID)
-	// delete(m.UserMgr.User, user.UserId)
-	return nil
-}
-
-var _ api.Mall = &Mall{}
-
-func verifyEthMessage(code string, signedMessage string) (string, error) {
-	// Hash the unsigned message using EIP-191
-	hashedMessage := []byte("\x19Ethereum Signed Message:\n" + strconv.Itoa(len(code)) + code)
-	hash := crypto.Keccak256Hash(hashedMessage)
-	// Get the bytes of the signed message
-	decodedMessage := hexutil.MustDecode(signedMessage)
-	// Handles cases where EIP-115 is not implemented (most wallets don't implement it)
-	if decodedMessage[64] == 27 || decodedMessage[64] == 28 {
-		decodedMessage[64] -= 27
-	}
-	// Recover a public key from the signed message
-	sigPublicKeyECDSA, err := crypto.SigToPub(hash.Bytes(), decodedMessage)
-	if err != nil {
-		return "", err
-	}
-
-	if sigPublicKeyECDSA == nil {
-		return "", xerrors.New("Could not get a public get from the message signature")
-	}
-
-	return crypto.PubkeyToAddress(*sigPublicKeyECDSA).String(), nil
-}
-
 func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 	k, s := m.getAccessKeys()
 	regions, err := aliyun.DescribeRegions(k, s)
@@ -573,3 +470,28 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 	}
 	return err
 }
+
+func verifyEthMessage(code string, signedMessage string) (string, error) {
+	// Hash the unsigned message using EIP-191
+	hashedMessage := []byte("\x19Ethereum Signed Message:\n" + strconv.Itoa(len(code)) + code)
+	hash := crypto.Keccak256Hash(hashedMessage)
+	// Get the bytes of the signed message
+	decodedMessage := hexutil.MustDecode(signedMessage)
+	// Handles cases where EIP-115 is not implemented (most wallets don't implement it)
+	if decodedMessage[64] == 27 || decodedMessage[64] == 28 {
+		decodedMessage[64] -= 27
+	}
+	// Recover a public key from the signed message
+	sigPublicKeyECDSA, err := crypto.SigToPub(hash.Bytes(), decodedMessage)
+	if err != nil {
+		return "", err
+	}
+
+	if sigPublicKeyECDSA == nil {
+		return "", xerrors.New("Could not get a public get from the message signature")
+	}
+
+	return crypto.PubkeyToAddress(*sigPublicKeyECDSA).String(), nil
+}
+
+var _ api.Mall = &Mall{}

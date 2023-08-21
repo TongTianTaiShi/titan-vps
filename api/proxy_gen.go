@@ -89,7 +89,7 @@ type MallStruct struct {
 
 		DescribeRecommendInstanceType func(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) `perm:"default"`
 
-		DescribeRegions func(p0 context.Context) ([]string, error) `perm:"default"`
+		DescribeRegions func(p0 context.Context) (map[string]string, error) `perm:"default"`
 
 		GetInstanceDefaultInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) `perm:"default"`
 
@@ -453,15 +453,15 @@ func (s *MallStub) DescribeRecommendInstanceType(p0 context.Context, p1 *types.D
 	return *new([]*types.DescribeRecommendInstanceResponse), ErrNotSupported
 }
 
-func (s *MallStruct) DescribeRegions(p0 context.Context) ([]string, error) {
+func (s *MallStruct) DescribeRegions(p0 context.Context) (map[string]string, error) {
 	if s.Internal.DescribeRegions == nil {
-		return *new([]string), ErrNotSupported
+		return *new(map[string]string), ErrNotSupported
 	}
 	return s.Internal.DescribeRegions(p0)
 }
 
-func (s *MallStub) DescribeRegions(p0 context.Context) ([]string, error) {
-	return *new([]string), ErrNotSupported
+func (s *MallStub) DescribeRegions(p0 context.Context) (map[string]string, error) {
+	return *new(map[string]string), ErrNotSupported
 }
 
 func (s *MallStruct) GetInstanceDefaultInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
