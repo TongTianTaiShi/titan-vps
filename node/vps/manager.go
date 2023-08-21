@@ -210,7 +210,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
-			time.Sleep(200 * time.Millisecond)
+			time.Sleep(50 * time.Millisecond)
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
 			if err != nil {
 				log.Errorf("DescribeImages err:%v", err.Error())
