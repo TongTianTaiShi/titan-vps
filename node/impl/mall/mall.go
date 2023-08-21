@@ -118,6 +118,9 @@ func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.Des
 		NextToken: *rsp.Body.NextToken,
 	}
 	instanceTypes := make(map[string]int)
+	if AvailableResource.Body.AvailableZones == nil {
+		return nil, xerrors.New("parameter error")
+	}
 	AvailableZone := len(AvailableResource.Body.AvailableZones.AvailableZone)
 	if AvailableZone < 0 {
 		return rspDataList, nil
@@ -195,6 +198,9 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 		"ephemeral_ssd":    1,
 	}
 	var rspDataList []*types.AvailableResourceResponse
+	if rsp.Body.AvailableZones == nil {
+		return nil, xerrors.New("parameter error")
+	}
 	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
 		AvailableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource
 		if len(AvailableResources) > 0 {

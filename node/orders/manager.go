@@ -476,6 +476,9 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.
 		NextToken: *rsp.Body.NextToken,
 	}
 	instanceTypes := make(map[string]int)
+	if AvailableResource.Body.AvailableZones == nil {
+		return nil, xerrors.New("parameter error")
+	}
 	AvailableZone := len(AvailableResource.Body.AvailableZones.AvailableZone)
 	if AvailableZone < 0 {
 		return rspDataList, nil
@@ -556,8 +559,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, disk *ty
 	}
 	var rspDataList []*types.AvailableResourceResponse
 	if rsp.Body.AvailableZones == nil {
-		fmt.Println(disk)
-		return nil, xerrors.New("DescribeAvailableResourceForDesk null")
+		return nil, xerrors.New("parameter error")
 	}
 	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
 		AvailableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource
