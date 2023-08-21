@@ -116,7 +116,7 @@ func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.Des
 	rspDataList := &types.DescribeInstanceTypeResponse{
 		NextToken: *rsp.Body.NextToken,
 	}
-	instanceTypes := make(map[string]int)
+	instanceTypes := make(map[string]string)
 	if AvailableResource.Body.AvailableZones == nil {
 		return nil, xerrors.New("parameter error")
 	}
@@ -131,29 +131,27 @@ func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.Des
 				Resources := instanceTypeResource.SupportedResources.SupportedResource
 				if len(Resources) > 0 {
 					for _, Resource := range Resources {
-						if *Resource.Status == "Available" {
-							instanceTypes[*Resource.Value] = 1
-						}
+						instanceTypes[*Resource.Value] = *Resource.Status
 					}
 				}
 			}
 		}
 	}
 	for _, data := range rsp.Body.InstanceTypes.InstanceType {
-		if _, ok := instanceTypes[*data.InstanceTypeId]; !ok {
-			continue
+		if v, ok := instanceTypes[*data.InstanceTypeId]; ok {
+			rspData := &types.DescribeInstanceType{
+				InstanceCategory:       *data.InstanceCategory,
+				InstanceTypeId:         *data.InstanceTypeId,
+				MemorySize:             *data.MemorySize,
+				CpuArchitecture:        *data.CpuArchitecture,
+				InstanceTypeFamily:     *data.InstanceTypeFamily,
+				CpuCoreCount:           *data.CpuCoreCount,
+				AvailableZone:          AvailableZone,
+				PhysicalProcessorModel: *data.PhysicalProcessorModel,
+				Status:                 v,
+			}
+			rspDataList.InstanceTypes = append(rspDataList.InstanceTypes, rspData)
 		}
-		rspData := &types.DescribeInstanceType{
-			InstanceCategory:       *data.InstanceCategory,
-			InstanceTypeId:         *data.InstanceTypeId,
-			MemorySize:             *data.MemorySize,
-			CpuArchitecture:        *data.CpuArchitecture,
-			InstanceTypeFamily:     *data.InstanceTypeFamily,
-			CpuCoreCount:           *data.CpuCoreCount,
-			AvailableZone:          AvailableZone,
-			PhysicalProcessorModel: *data.PhysicalProcessorModel,
-		}
-		rspDataList.InstanceTypes = append(rspDataList.InstanceTypes, rspData)
 	}
 	return rspDataList, nil
 }
@@ -458,6 +456,7 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 					InstanceTypeFamily:     instance.InstanceTypeFamily,
 					PhysicalProcessorModel: instance.PhysicalProcessorModel,
 					Price:                  price.USDPrice,
+					Status:                 instance.Status,
 				}
 				saveErr := m.SaveInstancesInfo(info)
 				if err != nil {

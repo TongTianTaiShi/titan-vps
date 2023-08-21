@@ -176,6 +176,7 @@ type DescribeInstanceType struct {
 	InstanceTypeFamily     string
 	PhysicalProcessorModel string
 	NextToken              string
+	Status                 string
 }
 
 type InstanceTypeFromBaseReq struct {
@@ -203,6 +204,7 @@ type DescribeInstanceTypeFromBase struct {
 	InstanceTypeFamily     string  `db:"instance_type_family"`
 	PhysicalProcessorModel string  `db:"physical_processor_model"`
 	Price                  float32 `db:"price"`
+	Status                 string  `db:"status"`
 }
 
 type CreateKeyPairResponse struct {

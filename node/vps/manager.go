@@ -39,9 +39,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		SQLDB: sdb,
 		cfg:   cfg,
 	}
-
-	log.Infoln("----------------------- vps ------------------------------")
-	// go m.cronGetInstanceDefaultInfo()
+	go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
@@ -165,8 +163,10 @@ func (m *Manager) cronGetInstanceDefaultInfo() {
 	task := func() {
 		m.UpdateInstanceDefaultInfo(ctx)
 	}
-	spec := "0 0 1,13 * * ?"
+	//spec := "0 0 1,13 * * ?"
+	spec := "*/60 * * * * ?"
 	crontab.AddFunc(spec, task)
+	crontab.Start()
 }
 
 func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
@@ -205,6 +205,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 				log.Errorf("DescribePrice err:%v", err.Error())
 				continue
 			}
+			time.Sleep(500 * time.Millisecond)
 			for _, disk := range disks {
 				priceReq := &types.DescribePriceReq{
 					RegionId:                *region.RegionId,
@@ -246,6 +247,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 					InstanceTypeFamily:     instance.InstanceTypeFamily,
 					PhysicalProcessorModel: instance.PhysicalProcessorModel,
 					Price:                  price.USDPrice,
+					Status:                 instance.Status,
 				}
 				saveErr := m.SaveInstancesInfo(info)
 				if err != nil {
@@ -275,7 +277,7 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.
 	rspDataList := &types.DescribeInstanceTypeResponse{
 		NextToken: *rsp.Body.NextToken,
 	}
-	instanceTypes := make(map[string]int)
+	instanceTypes := make(map[string]string)
 	if AvailableResource.Body.AvailableZones == nil {
 		return nil, xerrors.New("parameter error")
 	}
@@ -290,29 +292,28 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.
 				Resources := instanceTypeResource.SupportedResources.SupportedResource
 				if len(Resources) > 0 {
 					for _, Resource := range Resources {
-						if *Resource.Status == "Available" {
-							instanceTypes[*Resource.Value] = 1
-						}
+						instanceTypes[*Resource.Value] = *Resource.Status
 					}
 				}
 			}
 		}
 	}
 	for _, data := range rsp.Body.InstanceTypes.InstanceType {
-		if _, ok := instanceTypes[*data.InstanceTypeId]; !ok {
-			continue
+		if v, ok := instanceTypes[*data.InstanceTypeId]; ok {
+			rspData := &types.DescribeInstanceType{
+				InstanceCategory:       *data.InstanceCategory,
+				InstanceTypeId:         *data.InstanceTypeId,
+				MemorySize:             *data.MemorySize,
+				CpuArchitecture:        *data.CpuArchitecture,
+				InstanceTypeFamily:     *data.InstanceTypeFamily,
+				CpuCoreCount:           *data.CpuCoreCount,
+				AvailableZone:          AvailableZone,
+				PhysicalProcessorModel: *data.PhysicalProcessorModel,
+				Status:                 v,
+			}
+			rspDataList.InstanceTypes = append(rspDataList.InstanceTypes, rspData)
 		}
-		rspData := &types.DescribeInstanceType{
-			InstanceCategory:       *data.InstanceCategory,
-			InstanceTypeId:         *data.InstanceTypeId,
-			MemorySize:             *data.MemorySize,
-			CpuArchitecture:        *data.CpuArchitecture,
-			InstanceTypeFamily:     *data.InstanceTypeFamily,
-			CpuCoreCount:           *data.CpuCoreCount,
-			AvailableZone:          AvailableZone,
-			PhysicalProcessorModel: *data.PhysicalProcessorModel,
-		}
-		rspDataList.InstanceTypes = append(rspDataList.InstanceTypes, rspData)
+
 	}
 	return rspDataList, nil
 }

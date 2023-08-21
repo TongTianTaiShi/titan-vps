@@ -18,9 +18,9 @@ func (n *SQLDB) SaveMyInstancesInfo(rInfo *types.MyInstance) error {
 // SaveInstancesInfo save order information
 func (n *SQLDB) SaveInstancesInfo(rInfo *types.DescribeInstanceTypeFromBase) error {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (instance_type_id, region_id, memory_size,cpu_architecture,instance_category,cpu_core_count,available_zone,instance_type_family,physical_processor_model,price) 
-		        VALUES (:instance_type_id, :region_id, :memory_size,:cpu_architecture,:instance_category,:cpu_core_count,:available_zone,:instance_type_family,:physical_processor_model,:price)
-				ON DUPLICATE KEY UPDATE price=:price`, instanceDefaultTable)
+		`INSERT INTO %s (instance_type_id, region_id, memory_size,cpu_architecture,instance_category,cpu_core_count,available_zone,instance_type_family,physical_processor_model,price,status) 
+		        VALUES (:instance_type_id, :region_id, :memory_size,:cpu_architecture,:instance_category,:cpu_core_count,:available_zone,:instance_type_family,:physical_processor_model,:price,:status)
+				ON DUPLICATE KEY UPDATE price=:price,status=:status`, instanceDefaultTable)
 	_, err := n.db.NamedExec(query, rInfo)
 
 	return err
