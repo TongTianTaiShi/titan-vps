@@ -21,9 +21,9 @@ func (n *SQLDB) SaveOrderInfo(rInfo *types.OrderRecord) error {
 }
 
 // LoadOrderRecord load order record information
-func (n *SQLDB) LoadOrderRecord(orderID string) (*types.OrderRecord, error) {
+func (n *SQLDB) LoadOrderRecord(orderID string, minute int64) (*types.OrderRecord, error) {
 	var info types.OrderRecord
-	query := fmt.Sprintf("SELECT * FROM %s WHERE order_id=?", orderRecordTable)
+	query := fmt.Sprintf("SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE order_id=?", minute, orderRecordTable)
 	err := n.db.Get(&info, query, orderID)
 	if err != nil {
 		return nil, err
@@ -57,10 +57,10 @@ func (n *SQLDB) LoadOrderRecordByUserUndone(userID string, limit, offset int64) 
 	return out, nil
 }
 
-func (n *SQLDB) LoadOrderRecordsByUser(userID string, limit, offset int64) (*types.OrderRecordResponse, error) {
+func (n *SQLDB) LoadOrderRecordsByUser(userID string, limit, offset int64, minute int) (*types.OrderRecordResponse, error) {
 	out := new(types.OrderRecordResponse)
 	var infos []*types.OrderRecord
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=?  order by created_time desc LIMIT ? OFFSET ?", orderRecordTable)
+	query := fmt.Sprintf("SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE user_id=?  order by created_time desc LIMIT ? OFFSET ?", minute, orderRecordTable)
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
@@ -94,11 +94,11 @@ func (n *SQLDB) OrderExists(orderID string) (bool, error) {
 }
 
 // LoadOrderRecords load the order records from the incoming scheduler
-func (n *SQLDB) LoadOrderRecords(statuses []int64, limit, offset int) (*sqlx.Rows, error) {
+func (n *SQLDB) LoadOrderRecords(statuses []int64, limit, offset, minute int) (*sqlx.Rows, error) {
 	if limit > loadOrderRecordsDefaultLimit || limit == 0 {
 		limit = loadOrderRecordsDefaultLimit
 	}
-	sQuery := fmt.Sprintf(`SELECT * FROM %s WHERE state in (?) order by order_id asc LIMIT ? OFFSET ?`, orderRecordTable)
+	sQuery := fmt.Sprintf(`SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE state in (?) order by order_id asc LIMIT ? OFFSET ?`, minute, orderRecordTable)
 	query, args, err := sqlx.In(sQuery, statuses, limit, offset)
 	if err != nil {
 		return nil, err
@@ -120,8 +120,8 @@ func (n *SQLDB) LoadOrderCount() (int, error) {
 }
 
 // LoadAllOrderRecords loads all order records
-func (n *SQLDB) LoadAllOrderRecords(statuses []int64) (*sqlx.Rows, error) {
-	sQuery := fmt.Sprintf(`SELECT * FROM %s WHERE state in (?) `, orderRecordTable)
+func (n *SQLDB) LoadAllOrderRecords(statuses []int64, minute int64) (*sqlx.Rows, error) {
+	sQuery := fmt.Sprintf(`SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE state in (?) `, minute, orderRecordTable)
 	query, args, err := sqlx.In(sQuery, statuses)
 	if err != nil {
 		return nil, err

@@ -34,6 +34,13 @@ func (m *Mall) GetRechargeAddress(ctx context.Context) (string, error) {
 		return address, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
+	if address == "" {
+		_, err = m.TransactionMgr.AllocateTronAddress(userID)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	return address, nil
 }
 
@@ -97,6 +104,7 @@ func (m *Mall) GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*
 
 	return info, nil
 }
+
 func (m *Mall) GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
 	req.Offset = req.Limit * (req.Page - 1)
 	return m.LoadInstanceDefaultInfo(req)
@@ -145,8 +153,11 @@ func (m *Mall) initUser(userID string) error {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
-	if exist {
-		return nil
+	if !exist {
+		err = m.SaveUserInfo(&types.UserInfo{UserID: userID, Balance: "0"})
+		if err != nil {
+			return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+		}
 	}
 
 	// init recharge address
@@ -160,11 +171,6 @@ func (m *Mall) initUser(userID string) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	err = m.SaveUserInfo(&types.UserInfo{UserID: userID, Balance: "0"})
-	if err != nil {
-		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
 	return nil

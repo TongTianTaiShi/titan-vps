@@ -50,6 +50,7 @@ var orderCmds = &cli.Command{
 		createOrderCmd,
 		cancelOrderCmd,
 		paymentCompletedCmd,
+		listCmd,
 	},
 }
 
@@ -473,6 +474,33 @@ var paymentCompletedCmd = &cli.Command{
 		orderID := cctx.String("oid")
 
 		return api.PaymentUserOrder(ctx, orderID)
+	},
+}
+
+var listCmd = &cli.Command{
+	Name:  "list",
+	Usage: "list order",
+	Flags: []cli.Flag{},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+		defer closer()
+
+		infos, err := api.GetUserOrderRecords(ctx, 10, 0)
+		if err != nil {
+			return err
+		}
+
+		for _, info := range infos.List {
+			fmt.Printf("info:%v \n", info.CreatedTime)
+			fmt.Printf("info:%v \n", info.Expiration)
+		}
+
+		return nil
 	},
 }
 

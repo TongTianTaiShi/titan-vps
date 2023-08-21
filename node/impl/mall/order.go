@@ -81,7 +81,7 @@ func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, offset int
 func (m *Mall) GetUserOrderRecords(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
-	info, err := m.LoadOrderRecordsByUser(userID, limit, offset)
+	info, err := m.LoadOrderRecordsByUser(userID, limit, offset, m.OrderMgr.GetOrderTimeoutMinute())
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}

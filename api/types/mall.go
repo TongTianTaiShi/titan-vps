@@ -237,6 +237,7 @@ type OrderRecord struct {
 	VpsID         int64      `db:"vps_id"`
 	Msg           string     `db:"msg"`
 	TxHash        string     `db:"tx_hash"`
+	Expiration    time.Time  `db:"expiration"`
 }
 
 type OrderRecordResponse struct {

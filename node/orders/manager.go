@@ -25,7 +25,8 @@ var log = logging.Logger("orders")
 
 const (
 	checkOrderInterval = 10 * time.Second
-	orderTimeoutTime   = 10 * time.Minute
+	orderTimeoutMinute = 10
+	orderTimeoutTime   = orderTimeoutMinute * time.Minute
 )
 
 // Manager manager order
@@ -89,7 +90,7 @@ func (m *Manager) checkOrdersTimeout() {
 			orderID := orderRecord.OrderID
 			addr := orderRecord.To
 
-			info, err := m.LoadOrderRecord(orderID)
+			info, err := m.LoadOrderRecord(orderID, orderTimeoutMinute)
 			if err != nil {
 				log.Errorf("checkOrderTimeout LoadOrderRecord %s , %s err:%s", addr, orderID, err.Error())
 				continue
@@ -155,7 +156,7 @@ func (m *Manager) Terminate(ctx context.Context) error {
 
 // CancelOrder cancel vps order
 func (m *Manager) CancelOrder(orderID, userID string) error {
-	order, err := m.LoadOrderRecord(orderID)
+	order, err := m.LoadOrderRecord(orderID, orderTimeoutMinute)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -176,7 +177,7 @@ func (m *Manager) CancelOrder(orderID, userID string) error {
 
 // PaymentCompleted cancel vps order
 func (m *Manager) PaymentCompleted(orderID, userID string) error {
-	order, err := m.LoadOrderRecord(orderID)
+	order, err := m.LoadOrderRecord(orderID, orderTimeoutMinute)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -238,4 +239,8 @@ func (m *Manager) getHeight() int64 {
 	}
 
 	return msg.Height
+}
+
+func (m *Manager) GetOrderTimeoutMinute() int {
+	return orderTimeoutMinute
 }

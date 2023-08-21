@@ -35,7 +35,7 @@ func trimPrefix(key datastore.Key) string {
 
 // Get retrieves data from the datastore
 func (d *Datastore) Get(ctx context.Context, key datastore.Key) (value []byte, err error) {
-	cInfo, err := d.orderDB.LoadOrderRecord(trimPrefix(key))
+	cInfo, err := d.orderDB.LoadOrderRecord(trimPrefix(key), orderTimeoutMinute)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (d *Datastore) Query(ctx context.Context, q query.Query) (query.Results, er
 	var rows *sqlx.Rows
 	var err error
 
-	rows, err = d.orderDB.LoadAllOrderRecords(PullingStates)
+	rows, err = d.orderDB.LoadAllOrderRecords(PullingStates, orderTimeoutMinute)
 	if err != nil {
 		log.Errorf("LoadAllOrderRecords :%s", err.Error())
 		return nil, err

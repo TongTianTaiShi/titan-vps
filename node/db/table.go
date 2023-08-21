@@ -17,6 +17,7 @@ var cOrderRecordTable = `
 		vps_id             BIGINT(20)   NOT NULL,
 		msg                VARCHAR(2048) DEFAULT "",
 	    trade_price  	   VARCHAR(128)  DEFAULT "",
+		expiration         DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (order_id),
 		KEY idx_user (user_id)
 	) ENGINE=InnoDB COMMENT='order record';`
@@ -145,6 +146,7 @@ var cAdminTable = `
 		nick_name    VARCHAR(32)  DEFAULT 0,
 		PRIMARY KEY (user_id)
 	) ENGINE=InnoDB COMMENT='admin info';`
+
 var cInstanceDefaultTable = `
 	CREATE TABLE if not exists %s (
 		region_id      VARCHAR(128) NOT NULL,
