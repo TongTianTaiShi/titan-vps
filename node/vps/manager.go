@@ -192,7 +192,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 			time.Sleep(1 * time.Second)
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
 			if err != nil {
-				log.Errorf("DescribePrice err:%v", err.Error())
+				log.Errorf("DescribeImages err:%v", err.Error())
 				continue
 			}
 			disk := &types.AvailableResourceReq{
