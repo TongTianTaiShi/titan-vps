@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -110,15 +111,15 @@ type MallStub struct {
 
 type OrderAPIStruct struct {
 	Internal struct {
-		CancelOrder func(p0 context.Context, p1 string) error `perm:"user"`
+		CancelUserOrder func(p0 context.Context, p1 string) error `perm:"user"`
 
 		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"user"`
 
-		GetOrderInfo func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
+		GetUseWaitingPaymentOrders func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
 
-		GetOrderWaitingPayment func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
+		GetUserOrderRecords func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
 
-		PaymentCompleted func(p0 context.Context, p1 string) error `perm:"user"`
+		PaymentUserOrder func(p0 context.Context, p1 string) error `perm:"user"`
 	}
 }
 
@@ -496,14 +497,14 @@ func (s *MallStub) UpdateInstanceDefaultInfo(p0 context.Context) error {
 	return ErrNotSupported
 }
 
-func (s *OrderAPIStruct) CancelOrder(p0 context.Context, p1 string) error {
-	if s.Internal.CancelOrder == nil {
+func (s *OrderAPIStruct) CancelUserOrder(p0 context.Context, p1 string) error {
+	if s.Internal.CancelUserOrder == nil {
 		return ErrNotSupported
 	}
-	return s.Internal.CancelOrder(p0, p1)
+	return s.Internal.CancelUserOrder(p0, p1)
 }
 
-func (s *OrderAPIStub) CancelOrder(p0 context.Context, p1 string) error {
+func (s *OrderAPIStub) CancelUserOrder(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 
@@ -518,36 +519,36 @@ func (s *OrderAPIStub) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) 
 	return "", ErrNotSupported
 }
 
-func (s *OrderAPIStruct) GetOrderInfo(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
-	if s.Internal.GetOrderInfo == nil {
+func (s *OrderAPIStruct) GetUseWaitingPaymentOrders(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
+	if s.Internal.GetUseWaitingPaymentOrders == nil {
 		return nil, ErrNotSupported
 	}
-	return s.Internal.GetOrderInfo(p0, p1, p2)
+	return s.Internal.GetUseWaitingPaymentOrders(p0, p1, p2)
 }
 
-func (s *OrderAPIStub) GetOrderInfo(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
+func (s *OrderAPIStub) GetUseWaitingPaymentOrders(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
 	return nil, ErrNotSupported
 }
 
-func (s *OrderAPIStruct) GetOrderWaitingPayment(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
-	if s.Internal.GetOrderWaitingPayment == nil {
+func (s *OrderAPIStruct) GetUserOrderRecords(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
+	if s.Internal.GetUserOrderRecords == nil {
 		return nil, ErrNotSupported
 	}
-	return s.Internal.GetOrderWaitingPayment(p0, p1, p2)
+	return s.Internal.GetUserOrderRecords(p0, p1, p2)
 }
 
-func (s *OrderAPIStub) GetOrderWaitingPayment(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
+func (s *OrderAPIStub) GetUserOrderRecords(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
 	return nil, ErrNotSupported
 }
 
-func (s *OrderAPIStruct) PaymentCompleted(p0 context.Context, p1 string) error {
-	if s.Internal.PaymentCompleted == nil {
+func (s *OrderAPIStruct) PaymentUserOrder(p0 context.Context, p1 string) error {
+	if s.Internal.PaymentUserOrder == nil {
 		return ErrNotSupported
 	}
-	return s.Internal.PaymentCompleted(p0, p1)
+	return s.Internal.PaymentUserOrder(p0, p1)
 }
 
-func (s *OrderAPIStub) PaymentCompleted(p0 context.Context, p1 string) error {
+func (s *OrderAPIStub) PaymentUserOrder(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 

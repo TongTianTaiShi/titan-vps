@@ -41,11 +41,11 @@ type AdminAPI interface {
 // OrderAPI is an interface for order
 type OrderAPI interface {
 	// order
-	CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error)                           //perm:user
-	GetOrderWaitingPayment(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) //perm:user
-	GetOrderInfo(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error)           //perm:user
-	CancelOrder(ctx context.Context, orderID string) error                                               //perm:user
-	PaymentCompleted(ctx context.Context, orderID string) error                                          //perm:user
+	CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error)                               //perm:user
+	GetUseWaitingPaymentOrders(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) //perm:user
+	GetUserOrderRecords(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error)        //perm:user
+	CancelUserOrder(ctx context.Context, orderID string) error                                               //perm:user
+	PaymentUserOrder(ctx context.Context, orderID string) error                                              //perm:user
 }
 
 // UserAPI is an interface for user

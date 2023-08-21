@@ -161,14 +161,19 @@ func (m *Manager) Terminate(ctx context.Context) error {
 }
 
 // CancelOrder cancel vps order
-func (m *Manager) CancelOrder(orderID string) error {
-	if exist, _ := m.orderStateMachines.Has(OrderHash(orderID)); !exist {
-		return &api.ErrWeb{Code: terrors.NotFoundOrder.Int(), Message: terrors.NotFoundOrder.String()}
+func (m *Manager) CancelOrder(orderID, userID string) error {
+	order, err := m.LoadOrderRecord(orderID)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	if order.UserID != userID {
+		return &api.ErrWeb{Code: terrors.UserMismatch.Int(), Message: terrors.UserMismatch.String()}
 	}
 
 	height := m.getHeight()
 
-	err := m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{Height: height})
+	err = m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{Height: height})
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.StateMachinesError.Int(), Message: err.Error()}
 	}
@@ -177,12 +182,17 @@ func (m *Manager) CancelOrder(orderID string) error {
 }
 
 // PaymentCompleted cancel vps order
-func (m *Manager) PaymentCompleted(orderID string) error {
-	if exist, _ := m.orderStateMachines.Has(OrderHash(orderID)); !exist {
-		return &api.ErrWeb{Code: terrors.NotFoundOrder.Int(), Message: terrors.NotFoundOrder.String()}
+func (m *Manager) PaymentCompleted(orderID, userID string) error {
+	order, err := m.LoadOrderRecord(orderID)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
-	err := m.orderStateMachines.Send(OrderHash(orderID), PaymentResult{})
+	if order.UserID != userID {
+		return &api.ErrWeb{Code: terrors.UserMismatch.Int(), Message: terrors.UserMismatch.String()}
+	}
+
+	err = m.orderStateMachines.Send(OrderHash(orderID), PaymentResult{})
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.StateMachinesError.Int(), Message: err.Error()}
 	}

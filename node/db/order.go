@@ -57,7 +57,7 @@ func (n *SQLDB) LoadOrderRecordByUserUndone(userID string, limit, offset int64) 
 	return out, nil
 }
 
-func (n *SQLDB) LoadOrderRecordByUserAll(userID string, limit, offset int64) (*types.OrderRecordResponse, error) {
+func (n *SQLDB) LoadOrderRecordsByUser(userID string, limit, offset int64) (*types.OrderRecordResponse, error) {
 	out := new(types.OrderRecordResponse)
 	var infos []*types.OrderRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=?  order by created_time desc LIMIT ? OFFSET ?", orderRecordTable)

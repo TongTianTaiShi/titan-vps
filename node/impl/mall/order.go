@@ -64,10 +64,10 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		return "", err
 	}
 
-	return info.To, nil
+	return orderID, nil
 }
 
-func (m *Mall) GetOrderWaitingPayment(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
+func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
 	info, err := m.LoadOrderRecordByUserUndone(userID, limit, offset)
@@ -78,10 +78,10 @@ func (m *Mall) GetOrderWaitingPayment(ctx context.Context, limit, offset int64) 
 	return info, nil
 }
 
-func (m *Mall) GetOrderInfo(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
+func (m *Mall) GetUserOrderRecords(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
-	info, err := m.LoadOrderRecordByUserAll(userID, limit, offset)
+	info, err := m.LoadOrderRecordsByUser(userID, limit, offset)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -89,10 +89,12 @@ func (m *Mall) GetOrderInfo(ctx context.Context, limit, offset int64) (*types.Or
 	return info, nil
 }
 
-func (m *Mall) CancelOrder(ctx context.Context, orderID string) error {
-	return m.OrderMgr.CancelOrder(orderID)
+func (m *Mall) CancelUserOrder(ctx context.Context, orderID string) error {
+	userID := handler.GetID(ctx)
+	return m.OrderMgr.CancelOrder(orderID, userID)
 }
 
-func (m *Mall) PaymentCompleted(ctx context.Context, orderID string) error {
-	return m.OrderMgr.PaymentCompleted(orderID)
+func (m *Mall) PaymentUserOrder(ctx context.Context, orderID string) error {
+	userID := handler.GetID(ctx)
+	return m.OrderMgr.PaymentCompleted(orderID, userID)
 }

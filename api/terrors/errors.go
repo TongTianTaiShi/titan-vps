@@ -19,6 +19,7 @@ const (
 	NotFoundOrder              // 找不到订单
 	StateMachinesError         // 订单状态机出错
 	DescribePriceError         // 询价出错
+	UserMismatch               // 用户不匹配
 
 	Success = 0
 	Unknown = -1
@@ -58,6 +59,8 @@ func (e TError) String() string {
 		return "order state machine error"
 	case DescribePriceError:
 		return "describe price error"
+	case UserMismatch:
+		return "user mismatch"
 	default:
 		return ""
 	}
