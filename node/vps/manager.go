@@ -202,10 +202,10 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 
 			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
 			if err != nil {
-				log.Errorf("DescribePrice err:%v", err.Error())
+				log.Errorf("DescribeAvailableResourceForDesk err:%v", err.Error())
 				continue
 			}
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(1500 * time.Millisecond)
 			for _, disk := range disks {
 				priceReq := &types.DescribePriceReq{
 					RegionId:                *region.RegionId,
@@ -360,6 +360,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	}
 	var rspDataList []*types.AvailableResourceResponse
 	if rsp.Body.AvailableZones == nil {
+		log.Infoln(desk)
 		return nil, xerrors.New("parameter error")
 	}
 	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
