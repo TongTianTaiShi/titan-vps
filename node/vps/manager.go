@@ -189,6 +189,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
+			time.Sleep(1500 * time.Millisecond)
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
@@ -205,7 +206,6 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 				log.Errorf("DescribeAvailableResourceForDesk err:%v", err.Error())
 				continue
 			}
-			time.Sleep(1500 * time.Millisecond)
 			for _, disk := range disks {
 				priceReq := &types.DescribePriceReq{
 					RegionId:                *region.RegionId,
