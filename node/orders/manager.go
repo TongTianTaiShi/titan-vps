@@ -547,7 +547,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	s := m.cfg.AliyunAccessKeySecret
 	rsp, err := aliyun.DescribeAvailableResourceForDesk(k, s, desk)
 	if err != nil {
-		log.Errorf("DescribeImages err: %s", err.Error())
+		log.Errorf("DescribeAvailableResourceForDesk err: %s", err.Error())
 		return nil, xerrors.New(err.Error())
 	}
 	var Category = map[string]int{
@@ -558,6 +558,9 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 		"ephemeral_ssd":    1,
 	}
 	var rspDataList []*types.AvailableResourceResponse
+	if rsp.Body.AvailableZones == nil {
+		return nil, xerrors.New("DescribeAvailableResourceForDesk null")
+	}
 	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
 		AvailableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource
 		if len(AvailableResources) > 0 {
