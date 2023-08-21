@@ -196,7 +196,8 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 	}
 	var rspDataList []*types.AvailableResourceResponse
 	if rsp.Body.AvailableZones == nil {
-		return nil, xerrors.New("parameter error")
+		log.Errorf("parameter error")
+		return nil, nil
 	}
 	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
 		AvailableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource
