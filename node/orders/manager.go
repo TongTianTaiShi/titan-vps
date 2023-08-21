@@ -390,7 +390,6 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 			log.Errorf("DescribeInstanceType err:%v", err.Error())
 			continue
 		}
-		fmt.Println("start--------")
 		for _, instance := range instances.InstanceTypes {
 			time.Sleep(500 * time.Millisecond)
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
@@ -403,7 +402,6 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 				RegionId:            *region.RegionId,
 				DestinationResource: "SystemDisk",
 			}
-
 			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
 			if err != nil {
 				log.Errorf("DescribeAvailableResourceForDesk err:%v", err.Error())
@@ -438,7 +436,6 @@ func (m *Manager) UpdateInstanceDefaultInfo(ctx context.Context) {
 				}
 				UsdRate := USDRateInfo.USDRate
 				price.USDPrice = price.USDPrice / UsdRate
-				fmt.Println(price.USDPrice)
 				var info = &types.DescribeInstanceTypeFromBase{
 					RegionId:               *region.RegionId,
 					InstanceTypeId:         instance.InstanceTypeId,
@@ -542,10 +539,10 @@ func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType str
 	return rspDataList, nil
 }
 
-func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
+func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, disk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
-	rsp, err := aliyun.DescribeAvailableResourceForDesk(k, s, desk)
+	rsp, err := aliyun.DescribeAvailableResourceForDesk(k, s, disk)
 	if err != nil {
 		log.Errorf("DescribeAvailableResourceForDesk err: %s", err.Error())
 		return nil, xerrors.New(err.Error())
@@ -559,6 +556,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	}
 	var rspDataList []*types.AvailableResourceResponse
 	if rsp.Body.AvailableZones == nil {
+		fmt.Println(disk)
 		return nil, xerrors.New("DescribeAvailableResourceForDesk null")
 	}
 	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
