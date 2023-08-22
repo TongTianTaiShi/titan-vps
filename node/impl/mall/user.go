@@ -11,18 +11,35 @@ import (
 	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/handler"
+	"github.com/LMF709268224/titan-vps/node/utils"
 )
 
 // GetBalance Get user balance
-func (m *Mall) GetBalance(ctx context.Context) (string, error) {
+func (m *Mall) GetBalance(ctx context.Context) (*types.UserInfo, error) {
 	userID := handler.GetID(ctx)
+
+	uInfo := &types.UserInfo{UserID: userID}
 
 	balance, err := m.LoadUserBalance(userID)
 	if err != nil {
-		return balance, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+		return uInfo, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
-	return balance, nil
+	uInfo.Balance = balance
+
+	list, err := m.LoadWithdrawRecordsByUserAndState(userID, types.WithdrawCreate)
+	if err != nil {
+		return uInfo, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	lockBalance := "0"
+	for _, info := range list {
+		lockBalance = utils.BigIntAdd(info.Value, lockBalance)
+	}
+
+	uInfo.LockedBalance = lockBalance
+
+	return uInfo, nil
 }
 
 // GetRechargeAddress  Get user recharge address
@@ -110,6 +127,7 @@ func (m *Mall) GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTy
 	req.Offset = req.Limit * (req.Page - 1)
 	return m.LoadInstanceDefaultInfo(req)
 }
+
 func (m *Mall) GetInstanceCpuInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*int32, error) {
 	return m.LoadInstanceCpuInfo(req)
 }

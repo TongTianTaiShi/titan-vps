@@ -45,8 +45,6 @@ func (m *Manager) GenerateSignCode(key string) string {
 
 func (m *Manager) GetSignCode(key string) (string, error) {
 	v, ok := m.user[key]
-	fmt.Println(ok)
-	fmt.Println(v)
 	if ok && v.UserLogin.SignCode != "" {
 		code := v.UserLogin.SignCode
 		v.UserLogin.SignCode = ""

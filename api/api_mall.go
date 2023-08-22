@@ -36,7 +36,8 @@ type AdminAPI interface {
 	LoginAdmin(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error)                        //perm:default
 	MintToken(ctx context.Context, address string) (string, error)                                            //perm:admin
 	GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error)           //perm:default
-	UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error                           //perm:admin
+	ApproveUserWithdrawal(ctx context.Context, orderID, withdrawHash string) error                            //perm:admin
+	RejectUserWithdrawal(ctx context.Context, orderID string) error                                           //perm:admin
 	GetRechargeAddresses(ctx context.Context, limit, offset int64) (*types.GetRechargeAddressResponse, error) //perm:admin
 }
 
@@ -53,7 +54,7 @@ type OrderAPI interface {
 // UserAPI is an interface for user
 type UserAPI interface {
 	// user
-	GetBalance(ctx context.Context) (string, error)                                                     //perm:user
+	GetBalance(ctx context.Context) (*types.UserInfo, error)                                            //perm:user
 	RebootInstance(ctx context.Context, regionID, instanceID string) error                              //perm:user
 	GetSignCode(ctx context.Context, userID string) (string, error)                                     //perm:default
 	Login(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error)                       //perm:default

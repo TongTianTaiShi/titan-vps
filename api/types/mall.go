@@ -268,6 +268,8 @@ const (
 	WithdrawCreate WithdrawState = iota
 	// WithdrawDone Withdraw done
 	WithdrawDone
+	// WithdrawRefund Withdraw Refund
+	WithdrawRefund
 )
 
 type (

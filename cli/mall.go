@@ -21,7 +21,8 @@ var adminCmds = &cli.Command{
 	Usage: "Manage admin",
 	Subcommands: []*cli.Command{
 		createAdminCmd,
-		updateWithdrawalCmd,
+		approveWithdrawalCmd,
+		rejectWithdrawalCmd,
 		getWithdrawalCmd,
 		getAddressesCmd,
 	},
@@ -671,9 +672,9 @@ var withdrawCmd = &cli.Command{
 	},
 }
 
-var updateWithdrawalCmd = &cli.Command{
-	Name:  "withdrawal",
-	Usage: "update withdrawal",
+var approveWithdrawalCmd = &cli.Command{
+	Name:  "aw",
+	Usage: "approve withdrawal",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "oid",
@@ -698,7 +699,32 @@ var updateWithdrawalCmd = &cli.Command{
 		oid := cctx.String("oid")
 		hash := cctx.String("hash")
 
-		return api.UpdateWithdrawalRecord(ctx, oid, hash)
+		return api.ApproveUserWithdrawal(ctx, oid, hash)
+	},
+}
+
+var rejectWithdrawalCmd = &cli.Command{
+	Name:  "rw",
+	Usage: "reject withdrawal",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "oid",
+			Usage: "user id",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+		defer closer()
+
+		oid := cctx.String("oid")
+
+		return api.RejectUserWithdrawal(ctx, oid)
 	},
 }
 

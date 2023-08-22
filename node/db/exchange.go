@@ -217,3 +217,16 @@ func (n *SQLDB) LoadRechargeRecordsByUser(userID string, limit, offset int64) (*
 
 	return out, nil
 }
+
+// LoadWithdrawRecordsByUserAndState load records
+func (n *SQLDB) LoadWithdrawRecordsByUserAndState(userID string, state types.WithdrawState) ([]*types.WithdrawRecord, error) {
+	var infos []*types.WithdrawRecord
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? AND state=?", withdrawRecordTable)
+
+	err := n.db.Select(&infos, query, userID, state)
+	if err != nil {
+		return nil, err
+	}
+
+	return infos, nil
+}

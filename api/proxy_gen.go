@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -16,6 +17,8 @@ type AdminAPIStruct struct {
 	Internal struct {
 		AddAdminUser func(p0 context.Context, p1 string, p2 string) error `perm:"admin"`
 
+		ApproveUserWithdrawal func(p0 context.Context, p1 string, p2 string) error `perm:"admin"`
+
 		GetAdminSignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
 		GetRechargeAddresses func(p0 context.Context, p1 int64, p2 int64) (*types.GetRechargeAddressResponse, error) `perm:"admin"`
@@ -26,7 +29,7 @@ type AdminAPIStruct struct {
 
 		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"admin"`
 
-		UpdateWithdrawalRecord func(p0 context.Context, p1 string, p2 string) error `perm:"admin"`
+		RejectUserWithdrawal func(p0 context.Context, p1 string) error `perm:"admin"`
 	}
 }
 
@@ -143,7 +146,7 @@ type TransactionStub struct {
 
 type UserAPIStruct struct {
 	Internal struct {
-		GetBalance func(p0 context.Context) (string, error) `perm:"user"`
+		GetBalance func(p0 context.Context) (*types.UserInfo, error) `perm:"user"`
 
 		GetInstanceDetailsInfo func(p0 context.Context, p1 string) (*types.InstanceDetails, error) `perm:"user"`
 
@@ -178,6 +181,17 @@ func (s *AdminAPIStruct) AddAdminUser(p0 context.Context, p1 string, p2 string) 
 }
 
 func (s *AdminAPIStub) AddAdminUser(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
+}
+
+func (s *AdminAPIStruct) ApproveUserWithdrawal(p0 context.Context, p1 string, p2 string) error {
+	if s.Internal.ApproveUserWithdrawal == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.ApproveUserWithdrawal(p0, p1, p2)
+}
+
+func (s *AdminAPIStub) ApproveUserWithdrawal(p0 context.Context, p1 string, p2 string) error {
 	return ErrNotSupported
 }
 
@@ -236,14 +250,14 @@ func (s *AdminAPIStub) MintToken(p0 context.Context, p1 string) (string, error) 
 	return "", ErrNotSupported
 }
 
-func (s *AdminAPIStruct) UpdateWithdrawalRecord(p0 context.Context, p1 string, p2 string) error {
-	if s.Internal.UpdateWithdrawalRecord == nil {
+func (s *AdminAPIStruct) RejectUserWithdrawal(p0 context.Context, p1 string) error {
+	if s.Internal.RejectUserWithdrawal == nil {
 		return ErrNotSupported
 	}
-	return s.Internal.UpdateWithdrawalRecord(p0, p1, p2)
+	return s.Internal.RejectUserWithdrawal(p0, p1)
 }
 
-func (s *AdminAPIStub) UpdateWithdrawalRecord(p0 context.Context, p1 string, p2 string) error {
+func (s *AdminAPIStub) RejectUserWithdrawal(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 
@@ -588,15 +602,15 @@ func (s *TransactionStub) Hello(p0 context.Context) error {
 	return ErrNotSupported
 }
 
-func (s *UserAPIStruct) GetBalance(p0 context.Context) (string, error) {
+func (s *UserAPIStruct) GetBalance(p0 context.Context) (*types.UserInfo, error) {
 	if s.Internal.GetBalance == nil {
-		return "", ErrNotSupported
+		return nil, ErrNotSupported
 	}
 	return s.Internal.GetBalance(p0)
 }
 
-func (s *UserAPIStub) GetBalance(p0 context.Context) (string, error) {
-	return "", ErrNotSupported
+func (s *UserAPIStub) GetBalance(p0 context.Context) (*types.UserInfo, error) {
+	return nil, ErrNotSupported
 }
 
 func (s *UserAPIStruct) GetInstanceDetailsInfo(p0 context.Context, p1 string) (*types.InstanceDetails, error) {

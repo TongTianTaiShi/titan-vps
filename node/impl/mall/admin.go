@@ -7,6 +7,7 @@ import (
 	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/handler"
+	"github.com/LMF709268224/titan-vps/node/utils"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/gbrlsnchs/jwt/v3"
 )
@@ -80,7 +81,7 @@ func (m *Mall) GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*
 	return info, nil
 }
 
-func (m *Mall) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash string) error {
+func (m *Mall) ApproveUserWithdrawal(ctx context.Context, orderID, withdrawHash string) error {
 	userID := handler.GetID(ctx)
 
 	info, err := m.LoadWithdrawRecord(orderID)
@@ -92,6 +93,36 @@ func (m *Mall) UpdateWithdrawalRecord(ctx context.Context, orderID, withdrawHash
 	info.Executor = userID
 
 	err = m.UpdateWithdrawRecord(info, types.WithdrawDone)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	return nil
+}
+
+func (m *Mall) RejectUserWithdrawal(ctx context.Context, orderID string) error {
+	userID := handler.GetID(ctx)
+
+	info, err := m.LoadWithdrawRecord(orderID)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	info.Executor = userID
+
+	err = m.UpdateWithdrawRecord(info, types.WithdrawRefund)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	original, err := m.LoadUserBalance(info.UserID)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	newValue := utils.BigIntAdd(original, info.Value)
+
+	err = m.UpdateUserBalance(info.UserID, newValue, original)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
