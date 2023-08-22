@@ -79,11 +79,10 @@ func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceRe
 	if len(instanceReq.DataDisk) > 0 {
 		for _, v := range instanceReq.DataDisk {
 			size := v.Size
-			size32 := int32(*size)
+			size32 := int32(size)
 			DataDiskInfo := &ecs20140526.CreateInstanceRequestDataDisk{
-				Category:         v.Category,
-				PerformanceLevel: tea.String("PL0"),
-				Size:             tea.Int32(size32),
+				Category: tea.String(v.Category),
+				Size:     tea.Int32(size32),
 			}
 			createInstanceRequest.DataDisk = append(createInstanceRequest.DataDisk, DataDiskInfo)
 		}
@@ -384,9 +383,9 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 	if len(priceReq.DescribePriceRequestDataDisk) > 0 {
 		for _, v := range priceReq.DescribePriceRequestDataDisk {
 			DataDiskInfo := &ecs20140526.DescribePriceRequestDataDisk{
-				Category:         v.Category,
+				Category:         tea.String(v.Category),
 				PerformanceLevel: tea.String("PL0"),
-				Size:             v.Size,
+				Size:             tea.Int64(v.Size),
 			}
 			describePriceRequest.DataDisk = append(describePriceRequest.DataDisk, DataDiskInfo)
 		}

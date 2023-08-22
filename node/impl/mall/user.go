@@ -2,7 +2,6 @@ package mall
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -151,7 +150,6 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
-
 	p := types.JWTPayload{
 		ID:        address,
 		LoginType: int64(user.Type),
@@ -164,12 +162,10 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 	}
 	rsp.UserId = address
 	rsp.Token = string(tk)
-
 	err = m.initUser(address)
 	if err != nil {
 		return nil, err
 	}
-
 	return rsp, nil
 }
 
@@ -178,27 +174,23 @@ func (m *Mall) initUser(userID string) error {
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
-
 	if !exist {
 		err = m.SaveUserInfo(&types.UserInfo{UserID: userID, Balance: "0"})
 		if err != nil {
 			return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 		}
 	}
-
 	// init recharge address
 	addr, err := m.LoadRechargeAddressOfUser(userID)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
-
 	if addr == "" {
 		_, err = m.TransactionMgr.AllocateTronAddress(userID)
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 

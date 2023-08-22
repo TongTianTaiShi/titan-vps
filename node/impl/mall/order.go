@@ -2,6 +2,7 @@ package mall
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 	"strings"
 
@@ -15,17 +16,26 @@ import (
 
 func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
 	userID := handler.GetID(ctx)
+	if len(req.DataDisk) > 0 {
+		dataDisk, err := json.Marshal(req.DataDisk)
+		if err != nil {
+			log.Errorf("Marshal DataDisk:%v", err)
+			return "", &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: err.Error()}
+		}
+		req.DataDiskString = string(dataDisk)
+	}
 	priceReq := &types.DescribePriceReq{
-		RegionId:                req.RegionId,
-		InstanceType:            req.InstanceType,
-		PriceUnit:               req.PeriodUnit,
-		Period:                  req.Period,
-		Amount:                  req.Amount,
-		InternetChargeType:      req.InternetChargeType,
-		ImageID:                 req.ImageId,
-		InternetMaxBandwidthOut: req.InternetMaxBandwidthOut,
-		SystemDiskCategory:      req.SystemDiskCategory,
-		SystemDiskSize:          req.SystemDiskSize,
+		RegionId:                     req.RegionId,
+		InstanceType:                 req.InstanceType,
+		PriceUnit:                    req.PeriodUnit,
+		Period:                       req.Period,
+		Amount:                       req.Amount,
+		InternetChargeType:           req.InternetChargeType,
+		ImageID:                      req.ImageId,
+		InternetMaxBandwidthOut:      req.InternetMaxBandwidthOut,
+		SystemDiskCategory:           req.SystemDiskCategory,
+		SystemDiskSize:               req.SystemDiskSize,
+		DescribePriceRequestDataDisk: req.DataDisk,
 	}
 	priceInfo, err := m.DescribePrice(ctx, priceReq)
 	if err != nil {

@@ -184,6 +184,8 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 	k, s := m.getAccessKeys()
 	rsp, err := aliyun.DescribeAvailableResourceForDesk(k, s, desk)
 	if err != nil {
+		fmt.Println(desk.RegionId)
+		fmt.Println(desk.InstanceType)
 		log.Errorf("DescribeAvailableResourceForDesk err: %s", err.Error())
 		return nil, xerrors.New(err.Error())
 	}
@@ -229,6 +231,11 @@ func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceR
 	price, err := aliyun.DescribePrice(k, s, priceReq)
 	if err != nil {
 		log.Errorf("DescribePrice err:%v", err.Error())
+		fmt.Println(priceReq.RegionId)
+		fmt.Println(priceReq.InstanceType)
+		fmt.Println(priceReq.SystemDiskCategory)
+		fmt.Println(priceReq.SystemDiskSize)
+		fmt.Println(priceReq.ImageID)
 		return nil, xerrors.New(err.Error())
 	}
 	if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {

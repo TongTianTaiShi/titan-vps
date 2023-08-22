@@ -54,7 +54,6 @@ func (m *Manager) AllocateTronAddress(userID string) (string, error) {
 	if err != nil {
 		return "", &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
-
 	if addr == "" {
 		return "", &api.ErrWeb{Code: terrors.NotFoundAddress.Int(), Message: terrors.NotFoundAddress.String()}
 	}
@@ -63,7 +62,6 @@ func (m *Manager) AllocateTronAddress(userID string) (string, error) {
 	if err != nil {
 		return "", &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
-
 	m.addTronAddr(addr, userID)
 
 	return addr, nil

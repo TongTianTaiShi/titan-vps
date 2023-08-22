@@ -26,16 +26,6 @@ func (n *SQLDB) SaveInstancesInfo(rInfo *types.DescribeInstanceTypeFromBase) err
 	return err
 }
 
-// SaveInstancesDefaultInfo  save instance information
-func (n *SQLDB) SaveInstancesDefaultInfo(rInfo *types.DescribeInstanceTypeFromBase) error {
-	query := fmt.Sprintf(
-		`INSERT INTO %s (instance_type_id,region_id,price,memory_size) 
-		        VALUES (:instance_type, :region_id, :price)`, instanceDefaultTable)
-	_, err := n.db.NamedExec(query, rInfo)
-
-	return err
-}
-
 // LoadMyInstancesInfo   load  my server information
 func (n *SQLDB) LoadMyInstancesInfo(userID string, limit, offset int64) (*types.MyInstanceResponse, error) {
 	out := new(types.MyInstanceResponse)

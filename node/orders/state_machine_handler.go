@@ -1,6 +1,7 @@
 package orders
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/node/utils"
@@ -74,6 +75,11 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	}
 	vInfo.UserID = info.User
 	vInfo.OrderID = info.OrderID.String()
+	if vInfo.DataDiskString != "" {
+		if err := json.Unmarshal([]byte(vInfo.DataDiskString), &vInfo.DataDisk); err != nil {
+			return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
+		}
+	}
 	_, err = m.vMgr.CreateAliyunInstance(vInfo)
 	if err != nil {
 		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})

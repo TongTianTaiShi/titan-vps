@@ -56,7 +56,7 @@ func (n *SQLDB) LoadRechargeAddressOfUser(userID string) (string, error) {
 func (n *SQLDB) LoadUnusedRechargeAddress() (string, error) {
 	var addr string
 	query := fmt.Sprintf("SELECT addr FROM %s WHERE user_id='' limit 1 ", rechargeAddressTable)
-	err := n.db.Select(&addr, query)
+	err := n.db.Get(&addr, query)
 	if err != nil {
 		return "", err
 	}

@@ -53,13 +53,13 @@ type DescribePriceReq struct {
 	Period                       int32
 	Amount                       int32
 	InternetMaxBandwidthOut      int32
-	DescribePriceRequestDataDisk []*DescribePriceRequestDataDisk
+	DescribePriceRequestDataDisk []DescribePriceRequestDataDisk
 }
 
 type DescribePriceRequestDataDisk struct {
-	Category         *string
-	PerformanceLevel *string
-	Size             *int64
+	Category         string
+	PerformanceLevel string
+	Size             int64
 }
 
 type DescribePriceResponse struct {
@@ -111,7 +111,7 @@ type CreateInstanceReq struct {
 	SystemDiskSize          int32     `db:"system_disk_size"`
 	DataDiskString          string    `db:"data_disk"`
 	CreatedTime             time.Time `db:"created_time"`
-	DataDisk                []*DescribePriceRequestDataDisk
+	DataDisk                []DescribePriceRequestDataDisk
 }
 
 type CreateInstanceResponse struct {
