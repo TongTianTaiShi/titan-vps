@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -165,6 +164,8 @@ type UserAPIStruct struct {
 		Logout func(p0 context.Context, p1 *types.UserReq) error `perm:"user"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"user"`
+
+		UpdateInstanceName func(p0 context.Context, p1 string, p2 string) error `perm:"user"`
 
 		Withdraw func(p0 context.Context, p1 string, p2 string) error `perm:"user"`
 	}
@@ -709,6 +710,17 @@ func (s *UserAPIStruct) RebootInstance(p0 context.Context, p1 string, p2 string)
 }
 
 func (s *UserAPIStub) RebootInstance(p0 context.Context, p1 string, p2 string) error {
+	return ErrNotSupported
+}
+
+func (s *UserAPIStruct) UpdateInstanceName(p0 context.Context, p1 string, p2 string) error {
+	if s.Internal.UpdateInstanceName == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.UpdateInstanceName(p0, p1, p2)
+}
+
+func (s *UserAPIStub) UpdateInstanceName(p0 context.Context, p1 string, p2 string) error {
 	return ErrNotSupported
 }
 

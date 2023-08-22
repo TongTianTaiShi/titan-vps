@@ -72,6 +72,18 @@ func (n *SQLDB) UpdateVpsInstance(info *types.CreateInstanceReq) error {
 	return err
 }
 
+func (n *SQLDB) UpdateVpsInstanceName(instanceID, instanceName, userID string) error {
+	query := fmt.Sprintf(`UPDATE %s SET instance_name=? WHERE instance_id=? and user_id=?`, instancesDetailsTable)
+	_, err := n.db.Exec(query, instanceName, instanceID, userID)
+	if err != nil {
+		return err
+	}
+	query = fmt.Sprintf(`UPDATE %s SET instance_name=? WHERE instance_id=? and user_id=?`, myInstancesTable)
+	_, err = n.db.Exec(query, instanceName, instanceID, userID)
+
+	return err
+}
+
 func (n *SQLDB) SaveVpsInstanceDevice(rInfo *types.CreateInstanceResponse) error {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (instance_id, order_id, request_id, trade_price, public_ip_address) 

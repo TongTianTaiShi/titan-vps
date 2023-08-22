@@ -195,17 +195,20 @@ type InstanceTypeResponse struct {
 }
 
 type DescribeInstanceTypeFromBase struct {
-	RegionId               string  `db:"region_id"`
-	InstanceTypeId         string  `db:"instance_type_id"`
-	MemorySize             float32 `db:"memory_size"`
-	CpuArchitecture        string  `db:"cpu_architecture"`
-	InstanceCategory       string  `db:"instance_category"`
-	CpuCoreCount           int32   `db:"cpu_core_count"`
-	AvailableZone          int     `db:"available_zone"`
-	InstanceTypeFamily     string  `db:"instance_type_family"`
-	PhysicalProcessorModel string  `db:"physical_processor_model"`
-	Price                  float32 `db:"price"`
-	Status                 string  `db:"status"`
+	RegionId               string    `db:"region_id"`
+	InstanceTypeId         string    `db:"instance_type_id"`
+	MemorySize             float32   `db:"memory_size"`
+	CpuArchitecture        string    `db:"cpu_architecture"`
+	InstanceCategory       string    `db:"instance_category"`
+	CpuCoreCount           int32     `db:"cpu_core_count"`
+	AvailableZone          int       `db:"available_zone"`
+	InstanceTypeFamily     string    `db:"instance_type_family"`
+	PhysicalProcessorModel string    `db:"physical_processor_model"`
+	OriginalPrice          float32   `db:"original_price"`
+	Price                  float32   `db:"price"`
+	Status                 string    `db:"status"`
+	CreatedTime            time.Time `db:"created_time"`
+	UpdatedTime            time.Time `db:"updated_time"`
 }
 
 type CreateKeyPairResponse struct {
@@ -450,6 +453,7 @@ type InstanceDefault struct {
 type InstanceDetails struct {
 	ID                 string    `db:"id"`
 	InstanceId         string    `db:"instance_id"`
+	InstanceName       string    `db:"instance_name"`
 	RegionId           string    `db:"region_id"`
 	Memory             float32   `db:"memory"`
 	MemoryUsed         float32   `db:"memory_used"`

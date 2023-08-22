@@ -65,4 +65,5 @@ type UserAPI interface {
 	GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.GetWithdrawResponse, error) //perm:user
 	GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error)    //perm:user
 	GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error)         //perm:user
+	UpdateInstanceName(ctx context.Context, instanceID, instanceName string) error                         //perm:user
 }

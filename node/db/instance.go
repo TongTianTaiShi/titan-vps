@@ -18,9 +18,10 @@ func (n *SQLDB) SaveMyInstancesInfo(rInfo *types.MyInstance) error {
 // SaveInstancesInfo save order information
 func (n *SQLDB) SaveInstancesInfo(rInfo *types.DescribeInstanceTypeFromBase) error {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (instance_type_id, region_id, memory_size,cpu_architecture,instance_category,cpu_core_count,available_zone,instance_type_family,physical_processor_model,price,status) 
-		        VALUES (:instance_type_id, :region_id, :memory_size,:cpu_architecture,:instance_category,:cpu_core_count,:available_zone,:instance_type_family,:physical_processor_model,:price,:status)
-				ON DUPLICATE KEY UPDATE price=:price,status=:status`, instanceDefaultTable)
+		`INSERT INTO %s (instance_type_id, region_id, memory_size,cpu_architecture,instance_category,cpu_core_count,available_zone,instance_type_family,physical_processor_model,price,original_price,status) 
+		        VALUES (:instance_type_id, :region_id, :memory_size,:cpu_architecture,:instance_category,:cpu_core_count,:available_zone,:instance_type_family,:physical_processor_model,:price,:original_price,:status)
+				ON DUPLICATE KEY UPDATE price=:price,status=:status,original_price=:original_price,updated_time=NOW()`, instanceDefaultTable)
+
 	_, err := n.db.NamedExec(query, rInfo)
 
 	return err
@@ -54,7 +55,7 @@ func (n *SQLDB) LoadMyInstancesInfo(userID string, limit, offset int64) (*types.
 
 func (n *SQLDB) LoadInstanceDetailsInfo(userID, instanceId string) (*types.InstanceDetails, error) {
 	var info types.InstanceDetails
-	query := fmt.Sprintf("SELECT region_id,instance_id,instance_type,image_id,security_group_id,instance_charge_type,internet_charge_type,bandwidth_out,bandwidth_in,system_disk_size,ip_address,system_disk_category,created_time,memory,memory_used,cores,cores_used,os_type FROM %s WHERE user_id=? and instance_id=?", instancesDetailsTable)
+	query := fmt.Sprintf("SELECT region_id,instance_id,instance_name,instance_type,image_id,security_group_id,instance_charge_type,internet_charge_type,bandwidth_out,bandwidth_in,system_disk_size,ip_address,system_disk_category,created_time,memory,memory_used,cores,cores_used,os_type FROM %s WHERE user_id=? and instance_id=?", instancesDetailsTable)
 	err := n.db.Get(&info, query, userID, instanceId)
 	if err != nil {
 		return nil, err

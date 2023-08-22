@@ -463,6 +463,7 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 					AvailableZone:          instance.AvailableZone,
 					InstanceTypeFamily:     instance.InstanceTypeFamily,
 					PhysicalProcessorModel: instance.PhysicalProcessorModel,
+					OriginalPrice:          price.OriginalPrice,
 					Price:                  price.USDPrice,
 					Status:                 instance.Status,
 				}

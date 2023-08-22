@@ -168,9 +168,8 @@ func (m *Manager) cronGetInstanceDefaultInfo() {
 	duration := next.Sub(now)
 
 	timer := time.NewTimer(duration)
-	<-timer.C
 	m.UpdateInstanceDefaultInfo()
-
+	<-timer.C
 	m.cronGetInstanceDefaultInfo()
 }
 
@@ -178,6 +177,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 	var ctx context.Context
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
+	var n int
 	regions, err := aliyun.DescribeRegions(k, s)
 	if err != nil {
 		log.Errorf("DescribePrice err:%v", err.Error())
@@ -213,7 +213,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 				priceReq := &types.DescribePriceReq{
 					RegionId:                *region.RegionId,
 					InstanceType:            instance.InstanceTypeId,
-					PriceUnit:               "Week",
+					PriceUnit:               "Month",
 					ImageID:                 images[0].ImageId,
 					InternetChargeType:      "PayByTraffic",
 					SystemDiskCategory:      disk.Value,
@@ -234,9 +234,11 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 					USDRateInfo.ET = time.Now().Add(time.Hour)
 				}
 				if USDRateInfo.USDRate == 0 {
+					fmt.Println("------------------err------------------")
 					USDRateInfo.USDRate = 7.2673
 				}
 				UsdRate := USDRateInfo.USDRate
+				price.OriginalPrice = price.OriginalPrice / UsdRate
 				price.USDPrice = price.USDPrice / UsdRate
 				info := &types.DescribeInstanceTypeFromBase{
 					RegionId:               *region.RegionId,
@@ -248,9 +250,12 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 					AvailableZone:          instance.AvailableZone,
 					InstanceTypeFamily:     instance.InstanceTypeFamily,
 					PhysicalProcessorModel: instance.PhysicalProcessorModel,
+					OriginalPrice:          price.OriginalPrice,
 					Price:                  price.USDPrice,
 					Status:                 instance.Status,
 				}
+				n++
+				fmt.Println(*region.RegionId, ":", n)
 				saveErr := m.SaveInstancesInfo(info)
 				if err != nil {
 					log.Errorf("SaveMyInstancesInfo:%v", saveErr)
