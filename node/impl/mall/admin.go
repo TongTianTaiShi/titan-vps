@@ -2,6 +2,8 @@ package mall
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/terrors"
@@ -72,8 +74,20 @@ func (m *Mall) GetRechargeAddresses(ctx context.Context, limit, offset int64) (*
 	return info, nil
 }
 
-func (m *Mall) GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
-	info, err := m.LoadWithdrawRecords(limit, offset)
+func (m *Mall) GetWithdrawalRecords(ctx context.Context, req *types.GetWithdrawRequest) (*types.GetWithdrawResponse, error) {
+	statuses := make([]types.WithdrawState, 0)
+	if req.State == "" {
+		statuses = []types.WithdrawState{types.WithdrawCreate, types.WithdrawDone, types.WithdrawRefund}
+	} else {
+		s2, err := strconv.Atoi(req.State)
+		if err != nil {
+			return nil, &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: fmt.Sprintf("state is %s , err:%s", req.State, err.Error())}
+		}
+
+		statuses = []types.WithdrawState{types.WithdrawState(s2)}
+	}
+
+	info, err := m.LoadWithdrawRecords(req.Limit, req.Offset, statuses, req.UserID, req.StartDate, req.EndDate)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -87,6 +101,10 @@ func (m *Mall) ApproveUserWithdrawal(ctx context.Context, orderID, withdrawHash 
 	info, err := m.LoadWithdrawRecord(orderID)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	if info.State != types.WithdrawCreate {
+		return &api.ErrWeb{Code: terrors.StatusNotEditable.Int(), Message: string(info.State)}
 	}
 
 	info.WithdrawHash = withdrawHash
@@ -106,6 +124,10 @@ func (m *Mall) RejectUserWithdrawal(ctx context.Context, orderID string) error {
 	info, err := m.LoadWithdrawRecord(orderID)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	if info.State != types.WithdrawCreate {
+		return &api.ErrWeb{Code: terrors.StatusNotEditable.Int(), Message: string(info.State)}
 	}
 
 	info.Executor = userID

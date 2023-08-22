@@ -20,6 +20,7 @@ const (
 	StateMachinesError         // 订单状态机出错
 	DescribePriceError         // 询价出错
 	UserMismatch               // 用户不匹配
+	StatusNotEditable          // 状态不可编辑
 
 	Success = 0
 	Unknown = -1
@@ -61,6 +62,8 @@ func (e TError) String() string {
 		return "describe price error"
 	case UserMismatch:
 		return "user mismatch"
+	case StatusNotEditable:
+		return "status not editable"
 	default:
 		return ""
 	}

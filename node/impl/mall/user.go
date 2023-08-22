@@ -78,7 +78,7 @@ func (m *Mall) GetUserRechargeRecords(ctx context.Context, limit, offset int64) 
 	return info, nil
 }
 
-func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) {
+func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.GetWithdrawResponse, error) {
 	userID := handler.GetID(ctx)
 
 	info, err := m.LoadWithdrawRecordsByUser(userID, limit, offset)

@@ -31,14 +31,14 @@ type Mall interface {
 
 // AdminAPI is an interface for admin
 type AdminAPI interface {
-	AddAdminUser(ctx context.Context, userID, nickName string) error                                          //perm:admin
-	GetAdminSignCode(ctx context.Context, userID string) (string, error)                                      //perm:default
-	LoginAdmin(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error)                        //perm:default
-	MintToken(ctx context.Context, address string) (string, error)                                            //perm:admin
-	GetWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error)           //perm:default
-	ApproveUserWithdrawal(ctx context.Context, orderID, withdrawHash string) error                            //perm:admin
-	RejectUserWithdrawal(ctx context.Context, orderID string) error                                           //perm:admin
-	GetRechargeAddresses(ctx context.Context, limit, offset int64) (*types.GetRechargeAddressResponse, error) //perm:admin
+	AddAdminUser(ctx context.Context, userID, nickName string) error                                             //perm:admin
+	GetAdminSignCode(ctx context.Context, userID string) (string, error)                                         //perm:default
+	LoginAdmin(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error)                           //perm:default
+	MintToken(ctx context.Context, address string) (string, error)                                               //perm:admin
+	GetWithdrawalRecords(ctx context.Context, req *types.GetWithdrawRequest) (*types.GetWithdrawResponse, error) //perm:default
+	ApproveUserWithdrawal(ctx context.Context, orderID, withdrawHash string) error                               //perm:admin
+	RejectUserWithdrawal(ctx context.Context, orderID string) error                                              //perm:admin
+	GetRechargeAddresses(ctx context.Context, limit, offset int64) (*types.GetRechargeAddressResponse, error)    //perm:admin
 }
 
 // OrderAPI is an interface for order
@@ -54,15 +54,15 @@ type OrderAPI interface {
 // UserAPI is an interface for user
 type UserAPI interface {
 	// user
-	GetBalance(ctx context.Context) (*types.UserInfo, error)                                            //perm:user
-	RebootInstance(ctx context.Context, regionID, instanceID string) error                              //perm:user
-	GetSignCode(ctx context.Context, userID string) (string, error)                                     //perm:default
-	Login(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error)                       //perm:default
-	Logout(ctx context.Context, user *types.UserReq) error                                              //perm:user
-	GetRechargeAddress(ctx context.Context) (string, error)                                             //perm:user
-	Withdraw(ctx context.Context, withdrawAddr, value string) error                                     //perm:user
-	GetUserRechargeRecords(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error)   //perm:user
-	GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.WithdrawResponse, error) //perm:user
-	GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error) //perm:user
-	GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error)      //perm:user
+	GetBalance(ctx context.Context) (*types.UserInfo, error)                                               //perm:user
+	RebootInstance(ctx context.Context, regionID, instanceID string) error                                 //perm:user
+	GetSignCode(ctx context.Context, userID string) (string, error)                                        //perm:default
+	Login(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error)                          //perm:default
+	Logout(ctx context.Context, user *types.UserReq) error                                                 //perm:user
+	GetRechargeAddress(ctx context.Context) (string, error)                                                //perm:user
+	Withdraw(ctx context.Context, withdrawAddr, value string) error                                        //perm:user
+	GetUserRechargeRecords(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error)      //perm:user
+	GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.GetWithdrawResponse, error) //perm:user
+	GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error)    //perm:user
+	GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error)         //perm:user
 }

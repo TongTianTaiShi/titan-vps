@@ -317,7 +317,16 @@ type RechargeRecord struct {
 	DoneHeight    int64         `db:"done_height"`
 }
 
-type WithdrawResponse struct {
+type GetWithdrawRequest struct {
+	Limit     int64
+	Offset    int64
+	StartDate string
+	EndDate   string
+	State     string
+	UserID    string
+}
+
+type GetWithdrawResponse struct {
 	Total int
 	List  []*WithdrawRecord
 }

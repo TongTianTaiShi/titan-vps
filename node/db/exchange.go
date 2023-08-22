@@ -3,8 +3,10 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
+	"github.com/jmoiron/sqlx"
 )
 
 // SaveRechargeRecordAndUserBalance save recharge information
@@ -135,23 +137,58 @@ func (n *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.
 }
 
 // LoadWithdrawRecords load the withdraw records from the incoming scheduler
-func (n *SQLDB) LoadWithdrawRecords(limit, offset int64) (*types.WithdrawResponse, error) {
-	out := new(types.WithdrawResponse)
+func (n *SQLDB) LoadWithdrawRecords(limit, offset int64, statuses []types.WithdrawState, userID, startDate, endDate string) (*types.GetWithdrawResponse, error) {
+	out := new(types.GetWithdrawResponse)
+
+	whereStr := ""
+	if userID != "" {
+		whereStr = "AND user_id='" + userID + "'"
+	}
+
+	if startDate != "" {
+		t, err := time.Parse("2006-01-02", startDate)
+		if err != nil {
+			log.Errorf("Parse time err:%s", err.Error())
+		} else {
+			whereStr = whereStr + "AND created_time>='" + t.String() + "'"
+		}
+	}
+
+	if endDate != "" {
+		t, err := time.Parse("2006-01-02", endDate)
+		if err != nil {
+			log.Errorf("Parse time err:%s", err.Error())
+		} else {
+			whereStr = whereStr + "AND created_time<='" + t.String() + "'"
+		}
+	}
 
 	var infos []*types.WithdrawRecord
-	query := fmt.Sprintf("SELECT * FROM %s order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable)
+	lQuery := fmt.Sprintf("SELECT * FROM %s WHERE state in (?) %s order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable, whereStr)
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
+	lQuery, lArgs, err := sqlx.In(lQuery, statuses, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	lQuery = n.db.Rebind(lQuery)
 
-	err := n.db.Select(&infos, query, limit, offset)
+	err = n.db.Select(&infos, lQuery, lArgs...)
 	if err != nil {
 		return nil, err
 	}
 
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s ", withdrawRecordTable)
+	cQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE state in (?) %s", withdrawRecordTable, whereStr)
 	var count int
-	err = n.db.Get(&count, countQuery)
+
+	cQuery, cArgs, err := sqlx.In(cQuery, statuses)
+	if err != nil {
+		return nil, err
+	}
+	cQuery = n.db.Rebind(cQuery)
+
+	err = n.db.Get(&count, cQuery, cArgs...)
 	if err != nil {
 		return nil, err
 	}
@@ -163,8 +200,8 @@ func (n *SQLDB) LoadWithdrawRecords(limit, offset int64) (*types.WithdrawRespons
 }
 
 // LoadWithdrawRecordsByUser load records
-func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, offset int64) (*types.WithdrawResponse, error) {
-	out := new(types.WithdrawResponse)
+func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, offset int64) (*types.GetWithdrawResponse, error) {
+	out := new(types.GetWithdrawResponse)
 
 	var infos []*types.WithdrawRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable)

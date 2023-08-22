@@ -762,7 +762,28 @@ var createAdminCmd = &cli.Command{
 var getWithdrawalCmd = &cli.Command{
 	Name:  "list-withdrawal",
 	Usage: "list withdrawals",
-	Flags: []cli.Flag{},
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "uid",
+			Usage: "user id",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "state",
+			Usage: "order state",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "start",
+			Usage: "start data",
+			Value: "",
+		},
+		&cli.StringFlag{
+			Name:  "end",
+			Usage: "end data",
+			Value: "",
+		},
+	},
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
@@ -772,13 +793,24 @@ var getWithdrawalCmd = &cli.Command{
 		}
 		defer closer()
 
-		info, err := api.GetWithdrawalRecords(ctx, 10, 0)
+		uid := cctx.String("uid")
+		state := cctx.String("state")
+		start := cctx.String("start")
+		end := cctx.String("end")
+		info, err := api.GetWithdrawalRecords(ctx, &types.GetWithdrawRequest{
+			Limit:     10,
+			Offset:    0,
+			UserID:    uid,
+			State:     state,
+			StartDate: start,
+			EndDate:   end,
+		})
 		if err != nil {
 			return err
 		}
 
 		for _, r := range info.List {
-			fmt.Println(r.OrderID)
+			fmt.Println(r)
 		}
 
 		return nil
