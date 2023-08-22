@@ -27,6 +27,7 @@ var cInstanceDetailsTable = `
 		id          		BIGINT(20) NOT NULL AUTO_INCREMENT,
 		region_id          	VARCHAR(128) ,
 		instance_id          	VARCHAR(128) ,
+		instance_name          	VARCHAR(128) ,
 		user_id          	VARCHAR(128) ,
 		order_id          	VARCHAR(128) ,
 		instance_type       VARCHAR(128) NOT NULL,
@@ -48,6 +49,7 @@ var cInstanceDetailsTable = `
 	    cores_used  		Float   NOT NULL DEFAULT 0,
 	    system_disk_category  		VARCHAR(128) NOT NULL,
 	    os_type 		VARCHAR(128) NOT NULL,
+	    data_disk 		VARCHAR(1028) NOT NULL,
 		created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (id)
 	) ENGINE=InnoDB COMMENT='vps instance';`
