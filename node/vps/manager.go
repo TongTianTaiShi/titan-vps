@@ -191,14 +191,12 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 		}
 		instances, err := m.DescribeInstanceType(ctx, instanceType)
 		if err != nil {
-			log.Errorf("DescribePrice err:%v", err.Error())
+			log.Errorf("DescribeInstanceType err:%v", err.Error())
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
-			time.Sleep(50 * time.Millisecond)
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
 			if err != nil {
-				log.Errorf("DescribeImages err:%v", err.Error())
 				continue
 			}
 			disk := &types.AvailableResourceReq{
@@ -209,7 +207,6 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 
 			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
 			if err != nil {
-				log.Errorf("DescribeAvailableResourceForDesk err:%v", err.Error())
 				continue
 			}
 			for _, disk := range disks {
@@ -231,7 +228,6 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 					log.Errorf("DescribePrice err:%v", err.Error())
 					continue
 				}
-				fmt.Println(price.USDPrice)
 				if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {
 					UsdRate := aliyun.GetExchangeRate()
 					USDRateInfo.USDRate = UsdRate
