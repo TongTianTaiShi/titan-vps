@@ -76,7 +76,7 @@ func (n *SQLDB) LoadUsedRechargeAddresses() ([]types.RechargeAddress, error) {
 	return infos, nil
 }
 
-func (n *SQLDB) LoadRechargeAddresses(limit, offset int64) (*types.GetRechargeAddressResponse, error) {
+func (n *SQLDB) LoadRechargeAddresses(limit, page int64) (*types.GetRechargeAddressResponse, error) {
 	out := new(types.GetRechargeAddressResponse)
 
 	var infos []*types.RechargeAddress
@@ -85,7 +85,7 @@ func (n *SQLDB) LoadRechargeAddresses(limit, offset int64) (*types.GetRechargeAd
 		limit = loadAddressesDefaultLimit
 	}
 
-	err := n.db.Select(&infos, query, limit, offset)
+	err := n.db.Select(&infos, query, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}

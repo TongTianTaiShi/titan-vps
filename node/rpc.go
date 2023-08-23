@@ -2,6 +2,7 @@ package node
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"net"
 	"net/http"
@@ -132,6 +133,11 @@ func downloadWithdrawFile(w http.ResponseWriter, r *http.Request) {
 	startDate := r.URL.Query().Get("start-date")
 	endDate := r.URL.Query().Get("end-date")
 
+	fmt.Println("state:", state)
+	fmt.Println("userID:", userID)
+	fmt.Println("startDate:", startDate)
+	fmt.Println("endDate:", endDate)
+
 	statuses := make([]types.WithdrawState, 0)
 	if state == "" {
 		statuses = []types.WithdrawState{types.WithdrawCreate, types.WithdrawDone, types.WithdrawRefund}
@@ -159,7 +165,7 @@ func downloadWithdrawFile(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	file := excelize.NewFile()
-	columns := []string{"OrderID", "UserID", "Value", "WithdrawAddr", "WithdrawHash", "CreatedTime"}
+	columns := []string{"OrderID", "UserID", "Value", "WithdrawAddr", "WithdrawHash", "CreatedTime", "State"}
 	for i, colName := range columns {
 		file.SetCellValue("Sheet1", string(rune('A'+i))+"1", colName)
 	}
@@ -173,7 +179,7 @@ func downloadWithdrawFile(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		values := []string{info.OrderID, info.UserID, info.Value, info.WithdrawAddr, info.WithdrawHash, info.CreatedTime.String()}
+		values := []string{info.OrderID, info.UserID, info.Value, info.WithdrawAddr, info.WithdrawHash, info.CreatedTime.String(), string(info.State)}
 		for i, value := range values {
 			file.SetCellValue("Sheet1", string(rune('A'+i))+strconv.Itoa(rowIdx), value)
 		}

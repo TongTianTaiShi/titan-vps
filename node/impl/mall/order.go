@@ -58,7 +58,8 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		log.Errorf("SaveVpsInstance:%v", err)
 		return "", err
 	}
-	newBalanceString := strconv.FormatFloat(float64(priceInfo.USDPrice)*1000000000000000000, 'f', -1, 64)
+	// newBalanceString := strconv.FormatFloat(float64(priceInfo.USDPrice)*1000000000000000000, 'f', -1, 64)
+	newBalanceString := strconv.FormatFloat(float64(priceInfo.USDPrice)*1000000, 'f', -1, 64)
 
 	info := &types.OrderRecord{
 		VpsID:   id,
@@ -75,10 +76,10 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	return orderID, nil
 }
 
-func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
+func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, page int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
-	info, err := m.LoadOrderRecordByUserUndone(userID, limit, offset, m.OrderMgr.GetOrderTimeoutMinute())
+	info, err := m.LoadOrderRecordByUserUndone(userID, limit, page, m.OrderMgr.GetOrderTimeoutMinute())
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -86,10 +87,10 @@ func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, offset int
 	return info, nil
 }
 
-func (m *Mall) GetUserOrderRecords(ctx context.Context, limit, offset int64) (*types.OrderRecordResponse, error) {
+func (m *Mall) GetUserOrderRecords(ctx context.Context, limit, page int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
-	info, err := m.LoadOrderRecordsByUser(userID, limit, offset, m.OrderMgr.GetOrderTimeoutMinute())
+	info, err := m.LoadOrderRecordsByUser(userID, limit, page, m.OrderMgr.GetOrderTimeoutMinute())
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}

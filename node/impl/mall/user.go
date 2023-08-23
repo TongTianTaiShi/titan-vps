@@ -3,6 +3,7 @@ package mall
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -68,10 +69,10 @@ func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 	return m.WithdrawManager.CreateWithdrawOrder(userID, withdrawAddr, value)
 }
 
-func (m *Mall) GetUserRechargeRecords(ctx context.Context, limit, offset int64) (*types.RechargeResponse, error) {
+func (m *Mall) GetUserRechargeRecords(ctx context.Context, limit, page int64) (*types.RechargeResponse, error) {
 	userID := handler.GetID(ctx)
 
-	info, err := m.LoadRechargeRecordsByUser(userID, limit, offset)
+	info, err := m.LoadRechargeRecordsByUser(userID, limit, page)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -79,10 +80,10 @@ func (m *Mall) GetUserRechargeRecords(ctx context.Context, limit, offset int64) 
 	return info, nil
 }
 
-func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, offset int64) (*types.GetWithdrawResponse, error) {
+func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, page int64) (*types.GetWithdrawResponse, error) {
 	userID := handler.GetID(ctx)
 
-	info, err := m.LoadWithdrawRecordsByUser(userID, limit, offset)
+	info, err := m.LoadWithdrawRecordsByUser(userID, limit, page)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}

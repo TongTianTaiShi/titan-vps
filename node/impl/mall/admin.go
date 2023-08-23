@@ -65,8 +65,8 @@ func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.Logi
 	return rsp, nil
 }
 
-func (m *Mall) GetRechargeAddresses(ctx context.Context, limit, offset int64) (*types.GetRechargeAddressResponse, error) {
-	info, err := m.LoadRechargeAddresses(limit, offset)
+func (m *Mall) GetRechargeAddresses(ctx context.Context, limit, page int64) (*types.GetRechargeAddressResponse, error) {
+	info, err := m.LoadRechargeAddresses(limit, page)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}

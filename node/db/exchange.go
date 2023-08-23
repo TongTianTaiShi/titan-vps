@@ -138,7 +138,7 @@ func (n *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.
 }
 
 // LoadWithdrawRecords load the withdraw records from the incoming scheduler
-func (n *SQLDB) LoadWithdrawRecords(limit, offset int64, statuses []types.WithdrawState, userID, startDate, endDate string) (*types.GetWithdrawResponse, error) {
+func (n *SQLDB) LoadWithdrawRecords(limit, page int64, statuses []types.WithdrawState, userID, startDate, endDate string) (*types.GetWithdrawResponse, error) {
 	out := new(types.GetWithdrawResponse)
 
 	whereStr := ""
@@ -169,7 +169,7 @@ func (n *SQLDB) LoadWithdrawRecords(limit, offset int64, statuses []types.Withdr
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
-	lQuery, lArgs, err := sqlx.In(lQuery, statuses, limit, offset)
+	lQuery, lArgs, err := sqlx.In(lQuery, statuses, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +236,7 @@ func (n *SQLDB) LoadWithdrawRecordRows(statuses []types.WithdrawState, userID, s
 }
 
 // LoadWithdrawRecordsByUser load records
-func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, offset int64) (*types.GetWithdrawResponse, error) {
+func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, page int64) (*types.GetWithdrawResponse, error) {
 	out := new(types.GetWithdrawResponse)
 
 	var infos []*types.WithdrawRecord
@@ -245,7 +245,7 @@ func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, offset int64) (*
 		limit = loadOrderRecordsDefaultLimit
 	}
 
-	err := n.db.Select(&infos, query, userID, limit, offset)
+	err := n.db.Select(&infos, query, userID, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +264,7 @@ func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, offset int64) (*
 }
 
 // LoadRechargeRecordsByUser load records
-func (n *SQLDB) LoadRechargeRecordsByUser(userID string, limit, offset int64) (*types.RechargeResponse, error) {
+func (n *SQLDB) LoadRechargeRecordsByUser(userID string, limit, page int64) (*types.RechargeResponse, error) {
 	out := new(types.RechargeResponse)
 
 	var infos []*types.RechargeRecord
@@ -273,7 +273,7 @@ func (n *SQLDB) LoadRechargeRecordsByUser(userID string, limit, offset int64) (*
 		limit = loadOrderRecordsDefaultLimit
 	}
 
-	err := n.db.Select(&infos, query, userID, limit, offset)
+	err := n.db.Select(&infos, query, userID, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}
