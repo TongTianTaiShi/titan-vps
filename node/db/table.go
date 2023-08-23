@@ -16,7 +16,6 @@ var cOrderRecordTable = `
 		done_height        INT          DEFAULT 0,
 		vps_id             BIGINT(20)   NOT NULL,
 		msg                VARCHAR(2048) DEFAULT "",
-	    trade_price  	   VARCHAR(128)  DEFAULT "",
 		expiration         DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (order_id),
 		KEY idx_user (user_id)

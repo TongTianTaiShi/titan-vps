@@ -240,7 +240,6 @@ type OrderRecord struct {
 	To            string     `db:"to_addr"`
 	Value         string     `db:"value"`
 	State         OrderState `db:"state"`
-	TradePrice    string     `db:"trade_price"`
 	DoneState     int64      `db:"done_state"`
 	CreatedHeight int64      `db:"created_height"`
 	CreatedTime   time.Time  `db:"created_time"`
@@ -250,6 +249,37 @@ type OrderRecord struct {
 	Msg           string     `db:"msg"`
 	TxHash        string     `db:"tx_hash"`
 	Expiration    time.Time  `db:"expiration"`
+}
+
+type IpcOrderInfo struct {
+	OrderID     string
+	UserID      string
+	Value       string
+	CreatedTime string
+	Type        string
+
+	PeriodUnit              string
+	Period                  int32
+	RegionId                string
+	InstanceId              string
+	InstanceType            string
+	ImageId                 string
+	Memory                  string
+	MemoryUsed              string
+	Cores                   int32
+	CoresUsed               string
+	SecurityGroupId         string
+	InstanceChargeType      string
+	InternetMaxBandwidthOut int32
+	InternetMaxBandwidthIn  int32
+	IpAddress               string
+	TradePrice              string
+	SystemDiskCategory      string
+	OSType                  string
+	InternetChargeType      string
+	SystemDiskSize          int32
+	DataDiskString          string
+	DataDisk                []DescribePriceRequestDataDisk
 }
 
 type OrderRecordResponse struct {

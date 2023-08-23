@@ -2,12 +2,13 @@ package aliyun
 
 import (
 	"encoding/json"
-	"github.com/LMF709268224/titan-vps/api/types"
-	"github.com/opentracing/opentracing-go/log"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/LMF709268224/titan-vps/api/types"
+	"github.com/opentracing/opentracing-go/log"
 
 	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
 	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
@@ -67,7 +68,7 @@ func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceRe
 		PeriodUnit:         tea.String(instanceReq.PeriodUnit),
 		InternetChargeType: tea.String(instanceReq.InternetChargeType),
 		Period:             tea.Int32(instanceReq.Period),
-		//Password:                tea.String(password),
+		// Password:                tea.String(password),
 		InternetMaxBandwidthOut: tea.Int32(1),
 		InternetMaxBandwidthIn:  tea.Int32(1),
 		SystemDisk: &ecs20140526.CreateInstanceRequestSystemDisk{
@@ -519,11 +520,9 @@ func DescribeRecommendInstanceType(keyID, keySecret string, instanceTypeReq *typ
 	}
 	if instanceTypeReq.Cores > 0 {
 		describeRecommendInstanceTypeRequest.Cores = tea.Int32(instanceTypeReq.Cores)
-
 	}
 	if instanceTypeReq.Memory > 0 {
 		describeRecommendInstanceTypeRequest.Memory = tea.Float32(instanceTypeReq.Memory)
-
 	}
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {
@@ -1030,7 +1029,7 @@ func RenewInstance(keyID, keySecret string, renewInstanceRequest *types.RenewIns
 func GetExchangeRate() float32 {
 	client := &http.Client{}
 	// todo
-	//resp, err := client.Get("https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD")
+	// resp, err := client.Get("https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD")
 	resp, err := client.Get("https://apis.tianapi.com/fxrate/index?key=af490d21502b58010c7feef4db2cd14a&fromcoin=USD&tocoin=CNY&money=1")
 	if err != nil {
 		return 0

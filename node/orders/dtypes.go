@@ -39,7 +39,6 @@ type OrderInfo struct {
 	VpsID         int64
 	Msg           string
 	TxHash        string
-	TradePrice    string
 
 	*PaymentInfo
 	*GoodsInfo
@@ -60,7 +59,6 @@ func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 		VpsID:         state.VpsID,
 		Msg:           state.Msg,
 		TxHash:        state.TxHash,
-		TradePrice:    state.TradePrice,
 	}
 }
 
@@ -79,7 +77,6 @@ func orderInfoFrom(info *types.OrderRecord) *OrderInfo {
 		Msg:           info.Msg,
 		User:          info.UserID,
 		TxHash:        info.TxHash,
-		TradePrice:    info.TradePrice,
 	}
 	return cInfo
 }
