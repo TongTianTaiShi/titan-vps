@@ -190,7 +190,7 @@ var runCmd = &cli.Command{
 		}
 
 		// Instantiate the mall handler.
-		h, err := node.MallHandler(bAPI, true, serverOptions...)
+		h, err := node.MallHandler(bAPI, true, bCfg, serverOptions...)
 		if err != nil {
 			return xerrors.Errorf("failed to instantiate rpc handler: %s", err.Error())
 		}

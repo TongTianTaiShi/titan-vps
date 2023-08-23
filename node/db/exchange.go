@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"time"
@@ -197,6 +198,41 @@ func (n *SQLDB) LoadWithdrawRecords(limit, offset int64, statuses []types.Withdr
 	out.List = infos
 
 	return out, nil
+}
+
+// LoadWithdrawRecordRows load the withdraw record rows
+func (n *SQLDB) LoadWithdrawRecordRows(statuses []types.WithdrawState, userID, startDate, endDate string) (*sqlx.Rows, error) {
+	whereStr := ""
+	if userID != "" {
+		whereStr = "AND user_id='" + userID + "'"
+	}
+
+	if startDate != "" {
+		t, err := time.Parse("2006-01-02", startDate)
+		if err != nil {
+			log.Errorf("Parse time err:%s", err.Error())
+		} else {
+			whereStr = whereStr + "AND created_time>='" + t.String() + "'"
+		}
+	}
+
+	if endDate != "" {
+		t, err := time.Parse("2006-01-02", endDate)
+		if err != nil {
+			log.Errorf("Parse time err:%s", err.Error())
+		} else {
+			whereStr = whereStr + "AND created_time<='" + t.String() + "'"
+		}
+	}
+
+	lQuery := fmt.Sprintf("SELECT * FROM %s WHERE state in (?) %s order by created_time desc ", withdrawRecordTable, whereStr)
+	query, args, err := sqlx.In(lQuery, statuses)
+	if err != nil {
+		return nil, err
+	}
+
+	query = n.db.Rebind(query)
+	return n.db.QueryxContext(context.Background(), query, args...)
 }
 
 // LoadWithdrawRecordsByUser load records
