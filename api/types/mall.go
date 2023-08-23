@@ -88,6 +88,7 @@ type CreateInstanceReq struct {
 	Id                      string    `db:"id"`
 	RegionId                string    `db:"region_id"`
 	InstanceId              string    `db:"instance_id"`
+	InstanceName            string    `db:"instance_name"`
 	UserID                  string    `db:"user_id"`
 	OrderID                 string    `db:"order_id"`
 	InstanceType            string    `db:"instance_type"`
@@ -139,6 +140,13 @@ type AvailableResourceReq struct {
 	InstanceChargeType  string
 	InstanceType        string
 	ResourceType        string
+}
+
+type RenewInstanceRequest struct {
+	RegionId   string
+	InstanceId string
+	PeriodUnit string
+	Period     int32
 }
 
 type AvailableResourceResponse struct {
@@ -451,25 +459,27 @@ type InstanceDefault struct {
 }
 
 type InstanceDetails struct {
-	ID                 string    `db:"id"`
-	InstanceId         string    `db:"instance_id"`
-	InstanceName       string    `db:"instance_name"`
-	RegionId           string    `db:"region_id"`
-	Memory             float32   `db:"memory"`
-	MemoryUsed         float32   `db:"memory_used"`
-	Cores              int32     `db:"cores"`
-	CoresUsed          float32   `db:"cores_used"`
-	OSType             string    `db:"os_type"`
-	InstanceType       string    `db:"instance_type"`
-	ImageID            string    `db:"image_id"`
-	SecurityGroupId    string    `db:"security_group_id"`
-	InstanceChargeType string    `db:"instance_charge_type"`
-	InternetChargeType string    `db:"internet_charge_type"`
-	BandwidthOut       int32     `db:"bandwidth_out"`
-	BandwidthIn        int32     `db:"bandwidth_in"`
-	SystemDiskSize     float32   `db:"system_disk_size"`
-	IpAddress          string    `db:"ip_address"`
-	SystemDiskCategory string    `db:"system_disk_category"`
+	ID                 string  `db:"id"`
+	InstanceId         string  `db:"instance_id"`
+	InstanceName       string  `db:"instance_name"`
+	RegionId           string  `db:"region_id"`
+	Memory             float32 `db:"memory"`
+	MemoryUsed         float32 `db:"memory_used"`
+	Cores              int32   `db:"cores"`
+	CoresUsed          float32 `db:"cores_used"`
+	OSType             string  `db:"os_type"`
+	InstanceType       string  `db:"instance_type"`
+	ImageID            string  `db:"image_id"`
+	SecurityGroupId    string  `db:"security_group_id"`
+	InstanceChargeType string  `db:"instance_charge_type"`
+	InternetChargeType string  `db:"internet_charge_type"`
+	BandwidthOut       int32   `db:"bandwidth_out"`
+	BandwidthIn        int32   `db:"bandwidth_in"`
+	SystemDiskSize     float32 `db:"system_disk_size"`
+	IpAddress          string  `db:"ip_address"`
+	SystemDiskCategory string  `db:"system_disk_category"`
+	DataDiskString     string  `db:"data_disk"`
+	DataDisk           []DescribePriceRequestDataDisk
 	CreatedTime        time.Time `db:"created_time"`
 }
 

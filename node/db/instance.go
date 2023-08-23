@@ -55,7 +55,7 @@ func (n *SQLDB) LoadMyInstancesInfo(userID string, limit, offset int64) (*types.
 
 func (n *SQLDB) LoadInstanceDetailsInfo(userID, instanceId string) (*types.InstanceDetails, error) {
 	var info types.InstanceDetails
-	query := fmt.Sprintf("SELECT region_id,instance_id,instance_name,instance_type,image_id,security_group_id,instance_charge_type,internet_charge_type,bandwidth_out,bandwidth_in,system_disk_size,ip_address,system_disk_category,created_time,memory,memory_used,cores,cores_used,os_type FROM %s WHERE user_id=? and instance_id=?", instancesDetailsTable)
+	query := fmt.Sprintf("SELECT region_id,instance_id,instance_name,instance_type,image_id,security_group_id,instance_charge_type,internet_charge_type,bandwidth_out,bandwidth_in,system_disk_size,ip_address,system_disk_category,created_time,memory,memory_used,cores,cores_used,os_type,data_disk  FROM %s WHERE user_id=? and instance_id=?", instancesDetailsTable)
 	err := n.db.Get(&info, query, userID, instanceId)
 	if err != nil {
 		return nil, err

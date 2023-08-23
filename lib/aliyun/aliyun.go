@@ -363,14 +363,13 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 		return out, err
 	}
 	describePriceRequest := &ecs20140526.DescribePriceRequest{
-		RegionId:           tea.String(priceReq.RegionId),
-		InstanceType:       tea.String(priceReq.InstanceType),
-		ResourceType:       tea.String("instance"),
-		PriceUnit:          tea.String(priceReq.PriceUnit),
-		Period:             tea.Int32(priceReq.Period),
-		ImageId:            tea.String(priceReq.ImageID),
-		InternetChargeType: tea.String(priceReq.InternetChargeType),
-		// todo 查询批量购买某种配置的云服务器ECS的价格
+		RegionId:                tea.String(priceReq.RegionId),
+		InstanceType:            tea.String(priceReq.InstanceType),
+		ResourceType:            tea.String("instance"),
+		PriceUnit:               tea.String(priceReq.PriceUnit),
+		Period:                  tea.Int32(priceReq.Period),
+		ImageId:                 tea.String(priceReq.ImageID),
+		InternetChargeType:      tea.String(priceReq.InternetChargeType),
 		Amount:                  tea.Int32(priceReq.Amount),
 		InternetMaxBandwidthOut: tea.Int32(priceReq.InternetMaxBandwidthOut),
 		// PayByBandwidth
@@ -383,9 +382,9 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 	if len(priceReq.DescribePriceRequestDataDisk) > 0 {
 		for _, v := range priceReq.DescribePriceRequestDataDisk {
 			DataDiskInfo := &ecs20140526.DescribePriceRequestDataDisk{
-				Category:         tea.String(v.Category),
-				PerformanceLevel: tea.String("PL0"),
-				Size:             tea.Int64(v.Size),
+				Category: tea.String(v.Category),
+				//PerformanceLevel: tea.String("PL0"),
+				Size: tea.Int64(v.Size),
 			}
 			describePriceRequest.DataDisk = append(describePriceRequest.DataDisk, DataDiskInfo)
 		}
@@ -970,6 +969,45 @@ func RebootInstance(regionID, keyID, keySecret, instanceId string) *tea.SDKError
 			}
 		}()
 		_, _e = client.RebootInstanceWithOptions(rebootInstanceRequest, runtime)
+		if _e != nil {
+			return _e
+		}
+
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return errors
+	}
+	return nil
+}
+
+// RenewInstance renew instance
+func RenewInstance(keyID, keySecret string, renewInstanceRequest *types.RenewInstanceRequest) *tea.SDKError {
+	client, err := newClient(renewInstanceRequest.RegionId, keyID, keySecret)
+	if err != nil {
+		return err
+	}
+
+	rebootInstanceRequest := &ecs20140526.RenewInstanceRequest{
+		InstanceId: tea.String(renewInstanceRequest.InstanceId),
+		Period:     tea.Int32(renewInstanceRequest.Period),
+		PeriodUnit: tea.String(renewInstanceRequest.PeriodUnit),
+	}
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		_, _e = client.RenewInstanceWithOptions(rebootInstanceRequest, runtime)
 		if _e != nil {
 			return _e
 		}

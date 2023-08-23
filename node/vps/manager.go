@@ -41,12 +41,12 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		cfg:       cfg,
 		vpsClient: make(map[string]*ecs20140526.Client),
 	}
-	go m.cronGetInstanceDefaultInfo()
+	//go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
 
-func (m *Manager) CreateAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
+func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
 
@@ -159,6 +159,18 @@ func (m *Manager) CreateAliyunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	return result, nil
 }
 
+func (m *Manager) RenewInstance(ctx context.Context, renewInstanceRequest *types.RenewInstanceRequest) error {
+	k := m.cfg.AliyunAccessKeyID
+	s := m.cfg.AliyunAccessKeySecret
+
+	err := aliyun.RenewInstance(k, s, renewInstanceRequest)
+	if err != nil {
+		log.Errorf("RenewInstance err: %s", err.Error())
+		return xerrors.New(err.Error())
+	}
+	return nil
+}
+
 func (m *Manager) cronGetInstanceDefaultInfo() {
 
 	now := time.Now()
@@ -170,6 +182,7 @@ func (m *Manager) cronGetInstanceDefaultInfo() {
 	timer := time.NewTimer(duration)
 	m.UpdateInstanceDefaultInfo()
 	<-timer.C
+
 	m.cronGetInstanceDefaultInfo()
 }
 

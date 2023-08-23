@@ -2,6 +2,7 @@ package mall
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -118,7 +119,11 @@ func (m *Mall) GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
-
+	if info.DataDiskString != "" {
+		if err := json.Unmarshal([]byte(info.DataDiskString), &info.DataDisk); err != nil {
+			return info, nil
+		}
+	}
 	return info, nil
 }
 

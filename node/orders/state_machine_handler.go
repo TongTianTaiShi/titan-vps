@@ -80,7 +80,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 			return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
 		}
 	}
-	_, err = m.vMgr.CreateAliyunInstance(vInfo)
+	_, err = m.vMgr.CreateAliYunInstance(vInfo)
 	if err != nil {
 		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
 	}
