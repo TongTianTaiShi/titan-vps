@@ -42,7 +42,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		cfg:       cfg,
 		vpsClient: make(map[string]*ecs20140526.Client),
 	}
-	go m.cronGetInstanceDefaultInfo()
+	//go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
@@ -197,24 +197,6 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 		return
 	}
 	for _, region := range regions.Body.Regions.Region {
-		if *region.RegionId == "cn-hangzhou" {
-			continue
-		}
-		if *region.RegionId == "cn-beijing" {
-			continue
-		}
-		if *region.RegionId == "cn-huhehaote" {
-			continue
-		}
-		if *region.RegionId == "cn-qingdao" {
-			continue
-		}
-		if *region.RegionId == "cn-wulanchabu" {
-			continue
-		}
-		if *region.RegionId == "cn-zhangjiakou" {
-			continue
-		}
 		instanceType := &types.DescribeInstanceTypeReq{
 			RegionId:     *region.RegionId,
 			CpuCoreCount: 0,
