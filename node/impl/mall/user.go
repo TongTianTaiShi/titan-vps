@@ -6,6 +6,7 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
+	"github.com/LMF709268224/titan-vps/lib/trxbridge"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/gbrlsnchs/jwt/v3"
 
@@ -65,6 +66,27 @@ func (m *Mall) GetRechargeAddress(ctx context.Context) (string, error) {
 // Withdraw user Withdraw
 func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 	userID := handler.GetID(ctx)
+
+	if withdrawAddr == "" || value == "" {
+		return &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: terrors.ParametersWrong.String()}
+	}
+
+	cfg, err := m.GetMallConfigFunc()
+	if err != nil {
+		log.Errorf("get config err:%s", err.Error())
+		return &api.ErrWeb{Code: terrors.ConfigError.Int(), Message: err.Error()}
+	}
+
+	node := trxbridge.NewGrpcClient(cfg.TrxHTTPSAddr)
+	err = node.Start()
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.ConfigError.Int(), Message: err.Error()}
+	}
+
+	_, err = node.GetAccount(withdrawAddr)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.WithdrawAddrError.Int(), Message: err.Error()}
+	}
 
 	return m.WithdrawManager.CreateWithdrawOrder(userID, withdrawAddr, value)
 }

@@ -21,6 +21,8 @@ const (
 	DescribePriceError         // 询价出错
 	UserMismatch               // 用户不匹配
 	StatusNotEditable          // 状态不可编辑
+	ConfigError                // 配置错误
+	WithdrawAddrError          // 提现地址不合法
 
 	Success = 0
 	Unknown = -1
@@ -64,6 +66,10 @@ func (e TError) String() string {
 		return "user mismatch"
 	case StatusNotEditable:
 		return "status not editable"
+	case ConfigError:
+		return "config error"
+	case WithdrawAddrError:
+		return "withdraw address error"
 	default:
 		return ""
 	}

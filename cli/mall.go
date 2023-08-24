@@ -658,7 +658,7 @@ var withdrawCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		ctx := ReqContext(cctx)
 
-		api, closer, err := GetMallAPI(cctx)
+		bApi, closer, err := GetMallAPI(cctx)
 		if err != nil {
 			return err
 		}
@@ -668,7 +668,14 @@ var withdrawCmd = &cli.Command{
 		withdrawAddr := cctx.String("addr")
 		value := cctx.String("value")
 
-		return api.Withdraw(ctx, withdrawAddr, value)
+		err = bApi.Withdraw(ctx, withdrawAddr, value)
+		if webErr, ok := err.(*api.ErrWeb); ok {
+			fmt.Printf("web error code %d,message:%s \n", webErr.Code, webErr.Message)
+		} else {
+			fmt.Printf("web error message:%v \n", err)
+		}
+
+		return err
 	},
 }
 
