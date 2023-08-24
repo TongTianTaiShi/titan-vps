@@ -72,6 +72,11 @@ func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 		return &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: terrors.ParametersWrong.String()}
 	}
 
+	_, isOK := utils.BigIntReduce(value, "0")
+	if !isOK {
+		return &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: terrors.ParametersWrong.String()}
+	}
+
 	cfg, err := m.GetMallConfigFunc()
 	if err != nil {
 		log.Errorf("get config err:%s", err.Error())
