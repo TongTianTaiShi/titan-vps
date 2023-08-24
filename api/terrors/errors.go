@@ -23,6 +23,7 @@ const (
 	StatusNotEditable          // 状态不可编辑
 	ConfigError                // 配置错误
 	WithdrawAddrError          // 提现地址不合法
+	AliApiGetFailed            // 地区获取失败
 
 	Success = 0
 	Unknown = -1
@@ -70,6 +71,8 @@ func (e TError) String() string {
 		return "config error"
 	case WithdrawAddrError:
 		return "withdraw address error"
+	case AliApiGetFailed:
+		return "get info error,please retry"
 	default:
 		return ""
 	}

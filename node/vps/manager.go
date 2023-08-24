@@ -41,7 +41,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		cfg:       cfg,
 		vpsClient: make(map[string]*ecs20140526.Client),
 	}
-	//go m.cronGetInstanceDefaultInfo()
+	go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
@@ -241,18 +241,6 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 					log.Errorf("DescribePrice err:%v", err.Error())
 					continue
 				}
-				if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {
-					UsdRate := aliyun.GetExchangeRate()
-					USDRateInfo.USDRate = UsdRate
-					USDRateInfo.ET = time.Now().Add(time.Hour)
-				}
-				if USDRateInfo.USDRate == 0 {
-					fmt.Println("------------------err------------------")
-					USDRateInfo.USDRate = 7.2673
-				}
-				UsdRate := USDRateInfo.USDRate
-				price.OriginalPrice = price.OriginalPrice / UsdRate
-				price.USDPrice = price.USDPrice / UsdRate
 				info := &types.DescribeInstanceTypeFromBase{
 					RegionId:               *region.RegionId,
 					InstanceTypeId:         instance.InstanceTypeId,

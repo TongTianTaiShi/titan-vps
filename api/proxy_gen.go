@@ -126,7 +126,7 @@ type OrderAPIStruct struct {
 
 		PaymentUserOrder func(p0 context.Context, p1 string) error `perm:"user"`
 
-		RenewOrder func(p0 context.Context, p1 string) (string, error) `perm:"user"`
+		RenewOrder func(p0 context.Context, p1 types.RenewOrderReq) (string, error) `perm:"user"`
 	}
 }
 
@@ -594,14 +594,14 @@ func (s *OrderAPIStub) PaymentUserOrder(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 
-func (s *OrderAPIStruct) RenewOrder(p0 context.Context, p1 string) (string, error) {
+func (s *OrderAPIStruct) RenewOrder(p0 context.Context, p1 types.RenewOrderReq) (string, error) {
 	if s.Internal.RenewOrder == nil {
 		return "", ErrNotSupported
 	}
 	return s.Internal.RenewOrder(p0, p1)
 }
 
-func (s *OrderAPIStub) RenewOrder(p0 context.Context, p1 string) (string, error) {
+func (s *OrderAPIStub) RenewOrder(p0 context.Context, p1 types.RenewOrderReq) (string, error) {
 	return "", ErrNotSupported
 }
 
