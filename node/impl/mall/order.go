@@ -3,6 +3,7 @@ package mall
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"strconv"
 	"strings"
 
@@ -58,8 +59,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		log.Errorf("SaveVpsInstance:%v", err)
 		return "", err
 	}
-	// newBalanceString := strconv.FormatFloat(float64(priceInfo.USDPrice)*1000000000000000000, 'f', -1, 64)
-	newBalanceString := strconv.FormatFloat(float64(priceInfo.USDPrice)*1000000, 'f', -1, 64)
+	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
 
 	info := &types.OrderRecord{
 		VpsID:   id,
