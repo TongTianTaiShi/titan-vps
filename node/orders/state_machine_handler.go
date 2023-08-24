@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/utils"
 	"github.com/filecoin-project/go-statemachine"
 )
@@ -40,7 +41,7 @@ func (m *Manager) handleCreated(ctx statemachine.Context, info OrderInfo) error 
 
 // handleWaitingPayment handles the order wait for user payment
 func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo) error {
-	log.Debugf("handle wait payment, %s , info : %v", info.OrderID, info.PaymentInfo)
+	log.Debugf("handle wait payment, %s ", info.OrderID)
 
 	original, err := m.LoadUserBalance(info.User)
 	if err != nil {
@@ -66,23 +67,34 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle buy goods: %s", info.OrderID)
 
-	height := m.getHeight()
-
 	// Buy Vps
 	vInfo, err := m.LoadVpsInfo(info.VpsID)
 	if err != nil {
-		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
+		return ctx.Send(BuyFailed{Msg: err.Error()})
 	}
 	vInfo.UserID = info.User
 	vInfo.OrderID = info.OrderID.String()
 	if vInfo.DataDiskString != "" {
 		if err := json.Unmarshal([]byte(vInfo.DataDiskString), &vInfo.DataDisk); err != nil {
-			return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
+			return ctx.Send(BuyFailed{Msg: err.Error()})
 		}
 	}
-	_, err = m.vMgr.CreateAliYunInstance(vInfo)
-	if err != nil {
-		return ctx.Send(BuyFailed{Height: height, Msg: err.Error()})
+
+	if info.OrderType == int64(types.BuyVPS) {
+		_, err = m.vMgr.CreateAliYunInstance(vInfo)
+		if err != nil {
+			return ctx.Send(BuyFailed{Msg: err.Error()})
+		}
+	} else if info.OrderType == int64(types.RenewVPS) {
+		err = m.vMgr.RenewInstance(&types.RenewInstanceRequest{
+			RegionId:   vInfo.RegionId,
+			InstanceId: vInfo.InstanceId,
+			PeriodUnit: vInfo.PeriodUnit,
+			Period:     vInfo.Period,
+		})
+		if err != nil {
+			return ctx.Send(BuyFailed{Msg: err.Error()})
+		}
 	}
 
 	//// Save To DB
@@ -91,7 +103,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	//	log.Errorf("SaveVpsInstanceDevice err:%s", err.Error())
 	//}
 
-	return ctx.Send(BuySucceed{GoodsInfo: &GoodsInfo{ID: "vps_id", Password: "abc"}, Height: height})
+	return ctx.Send(BuySucceed{GoodsInfo: &GoodsInfo{ID: "vps_id", Password: "abc"}})
 }
 
 // handleDone handles the order done

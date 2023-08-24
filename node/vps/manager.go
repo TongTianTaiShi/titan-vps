@@ -3,8 +3,9 @@ package vps
 import (
 	"context"
 	"fmt"
-	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
 	"time"
+
+	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
@@ -159,7 +160,7 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	return result, nil
 }
 
-func (m *Manager) RenewInstance(ctx context.Context, renewInstanceRequest *types.RenewInstanceRequest) error {
+func (m *Manager) RenewInstance(renewInstanceRequest *types.RenewInstanceRequest) error {
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
 
@@ -172,7 +173,6 @@ func (m *Manager) RenewInstance(ctx context.Context, renewInstanceRequest *types
 }
 
 func (m *Manager) cronGetInstanceDefaultInfo() {
-
 	now := time.Now()
 
 	next := time.Date(now.Year(), now.Month(), now.Day(), now.Hour()+12, now.Minute(), 0, 0, now.Location())
@@ -339,7 +339,6 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.
 			}
 			rspDataList.InstanceTypes = append(rspDataList.InstanceTypes, rspData)
 		}
-
 	}
 	return rspDataList, nil
 }

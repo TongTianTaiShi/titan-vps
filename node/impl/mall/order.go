@@ -62,10 +62,11 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
 
 	info := &types.OrderRecord{
-		VpsID:   id,
-		OrderID: orderID,
-		UserID:  userID,
-		Value:   newBalanceString,
+		VpsID:     id,
+		OrderID:   orderID,
+		UserID:    userID,
+		Value:     newBalanceString,
+		OrderType: types.BuyVPS,
 	}
 
 	err = m.OrderMgr.CreatedOrder(info)
@@ -120,10 +121,11 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
 
 	info := &types.OrderRecord{
-		VpsID:   req.Id,
-		OrderID: orderID,
-		UserID:  userID,
-		Value:   newBalanceString,
+		VpsID:     req.Id,
+		OrderID:   orderID,
+		UserID:    userID,
+		Value:     newBalanceString,
+		OrderType: types.RenewVPS,
 	}
 
 	err = m.OrderMgr.CreatedOrder(info)

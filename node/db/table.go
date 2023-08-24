@@ -2,21 +2,17 @@ package db
 
 var cOrderRecordTable = `
 	CREATE TABLE if not exists %s (
-		order_id           VARCHAR(128) NOT NULL UNIQUE,
-		from_addr          VARCHAR(128) DEFAULT "",
-		to_addr            VARCHAR(128) DEFAULT "",
-		user_id            VARCHAR(128) NOT NULL,
-		tx_hash            VARCHAR(128) DEFAULT "",
-		value              VARCHAR(32)  DEFAULT 0,
-		created_height     INT          DEFAULT 0,
-		created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
-		state              INT          DEFAULT 0,
-		done_state         INT          DEFAULT 0,
-		done_time          DATETIME     DEFAULT CURRENT_TIMESTAMP,
-		done_height        INT          DEFAULT 0,
-		vps_id             BIGINT(20)   NOT NULL,
+		order_id           VARCHAR(128)  NOT NULL UNIQUE,
+		user_id            VARCHAR(128)  NOT NULL,
+		value              VARCHAR(32)   DEFAULT 0,
+		created_time       DATETIME      DEFAULT CURRENT_TIMESTAMP,
+		state              INT           DEFAULT 0,
+		done_state         INT           DEFAULT 0,
+		done_time          DATETIME      DEFAULT CURRENT_TIMESTAMP,
+		vps_id             BIGINT(20)    NOT NULL,
 		msg                VARCHAR(2048) DEFAULT "",
-		expiration         DATETIME     DEFAULT CURRENT_TIMESTAMP,
+		order_type         INT           DEFAULT 0,
+		expiration         DATETIME      DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (order_id),
 		KEY idx_user (user_id)
 	) ENGINE=InnoDB COMMENT='order record';`

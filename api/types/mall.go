@@ -10,7 +10,7 @@ type Hellos struct {
 	Msg string
 }
 
-// OrderState represents the state of an order in the process of being pulled.
+// OrderState represents the state of an order in the process .
 type OrderState int64
 
 // Constants defining various states of the order process.
@@ -29,6 +29,17 @@ const (
 func (s OrderState) Int() int64 {
 	return int64(s)
 }
+
+// OrderType order type
+type OrderType int64
+
+// Constants defining various states of the order process.
+const (
+	// BuyVPS order
+	BuyVPS OrderType = iota
+	// Renew order
+	RenewVPS
+)
 
 // User user info
 type User struct {
@@ -241,21 +252,17 @@ type AttachKeyPairResponse struct {
 
 // OrderRecord represents information about an order record
 type OrderRecord struct {
-	OrderID       string     `db:"order_id"`
-	From          string     `db:"from_addr"`
-	UserID        string     `db:"user_id"`
-	To            string     `db:"to_addr"`
-	Value         string     `db:"value"`
-	State         OrderState `db:"state"`
-	DoneState     int64      `db:"done_state"`
-	CreatedHeight int64      `db:"created_height"`
-	CreatedTime   time.Time  `db:"created_time"`
-	DoneTime      time.Time  `db:"done_time"`
-	DoneHeight    int64      `db:"done_height"`
-	VpsID         int64      `db:"vps_id"`
-	Msg           string     `db:"msg"`
-	TxHash        string     `db:"tx_hash"`
-	Expiration    time.Time  `db:"expiration"`
+	OrderID     string     `db:"order_id"`
+	UserID      string     `db:"user_id"`
+	Value       string     `db:"value"`
+	State       OrderState `db:"state"`
+	DoneState   int64      `db:"done_state"`
+	CreatedTime time.Time  `db:"created_time"`
+	DoneTime    time.Time  `db:"done_time"`
+	VpsID       int64      `db:"vps_id"`
+	Msg         string     `db:"msg"`
+	Expiration  time.Time  `db:"expiration"`
+	OrderType   OrderType  `db:"order_type"`
 }
 
 type IpcOrderInfo struct {

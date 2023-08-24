@@ -88,60 +88,20 @@ func (m *Manager) checkOrdersTimeout() {
 
 		for _, orderRecord := range m.ongoingOrders {
 			orderID := orderRecord.OrderID
-			addr := orderRecord.To
 
 			info, err := m.LoadOrderRecord(orderID, orderTimeoutMinute)
 			if err != nil {
-				log.Errorf("checkOrderTimeout LoadOrderRecord %s , %s err:%s", addr, orderID, err.Error())
+				log.Errorf("checkOrderTimeout LoadOrderRecord , %s err:%s", orderID, err.Error())
 				continue
 			}
 
-			log.Debugf("checkout %s , %s ", addr, orderID)
+			log.Debugf("checkout  %s ", orderID)
 
 			if info.State.Int() != Done.Int() && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
 
-				height := m.getHeight()
-
-				err = m.orderStateMachines.Send(OrderHash(orderID), OrderTimeOut{Height: height})
+				err = m.orderStateMachines.Send(OrderHash(orderID), OrderTimeOut{})
 				if err != nil {
-					log.Errorf("checkOrderTimeout Send %s , %s err:%s", addr, orderID, err.Error())
-					continue
-				}
-			}
-		}
-	}
-}
-
-func (m *Manager) getOrderIDByToAddress(to string) (string, bool) {
-	for _, orderRecord := range m.ongoingOrders {
-		if orderRecord.To == to {
-			return orderRecord.OrderID, true
-		}
-	}
-
-	return "", false
-}
-
-func (m *Manager) subscribeEvents() {
-	subTransfer := m.notification.Sub(types.EventFvmTransferWatch.String())
-	defer m.notification.Unsub(subTransfer)
-
-	for {
-		select {
-		case u := <-subTransfer:
-			tr := u.(*types.FvmTransferWatch)
-
-			if orderID, exist := m.getOrderIDByToAddress(tr.To); exist {
-				err := m.orderStateMachines.Send(OrderHash(orderID), PaymentResult{
-					&PaymentInfo{
-						TxHash: tr.TxHash,
-						From:   tr.From,
-						To:     tr.To,
-						Value:  tr.Value,
-					},
-				})
-				if err != nil {
-					log.Errorf("subscribeNodeEvents Send %s err:%s", orderID, err.Error())
+					log.Errorf("checkOrderTimeout Send  %s err:%s", orderID, err.Error())
 					continue
 				}
 			}
@@ -165,9 +125,7 @@ func (m *Manager) CancelOrder(orderID, userID string) error {
 		return &api.ErrWeb{Code: terrors.UserMismatch.Int(), Message: terrors.UserMismatch.String()}
 	}
 
-	height := m.getHeight()
-
-	err = m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{Height: height})
+	err = m.orderStateMachines.Send(OrderHash(orderID), OrderCancel{})
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.StateMachinesError.Int(), Message: err.Error()}
 	}
@@ -197,7 +155,6 @@ func (m *Manager) PaymentCompleted(orderID, userID string) error {
 // CreatedOrder create vps order
 func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 	m.stateMachineWait.Wait()
-	req.CreatedHeight = m.getHeight()
 
 	m.addOrder(req)
 
