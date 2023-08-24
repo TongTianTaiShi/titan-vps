@@ -84,8 +84,15 @@ type CreateOrderReq struct {
 	Amount int32
 }
 
+type RenewOrderReq struct {
+	InstanceId string `db:"instance_id"`
+	PeriodUnit string `db:"period_unit"`
+	Period     int32  `db:"period"`
+	Renew      int    `db:"renew"`
+}
+
 type CreateInstanceReq struct {
-	Id                      string    `db:"id"`
+	Id                      int64     `db:"id"`
 	RegionId                string    `db:"region_id"`
 	InstanceId              string    `db:"instance_id"`
 	InstanceName            string    `db:"instance_name"`

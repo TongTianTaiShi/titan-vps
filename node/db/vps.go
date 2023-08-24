@@ -18,6 +18,17 @@ func (n *SQLDB) LoadVpsInfo(vpsID int64) (*types.CreateInstanceReq, error) {
 	return &info, nil
 }
 
+func (n *SQLDB) LoadVpsInfoByInstanceId(instanceID string) (*types.CreateInstanceReq, error) {
+	var info types.CreateInstanceReq
+	query := fmt.Sprintf("SELECT * FROM %s WHERE instance_id=?", instancesDetailsTable)
+	err := n.db.Get(&info, query, instanceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &info, nil
+}
+
 func (n *SQLDB) LoadVpsDeviceInfo(instanceID int64) (*types.CreateInstanceReq, error) {
 	var info types.CreateInstanceReq
 	query := fmt.Sprintf("SELECT * FROM %s WHERE instance_id=?", vpsInstanceDeviceTable)
@@ -70,6 +81,15 @@ func (n *SQLDB) UpdateVpsInstance(info *types.CreateInstanceReq) error {
 	_, err := n.db.Exec(query, info.IpAddress, info.InstanceId, info.UserID, info.OSType, info.Cores, info.Memory, info.SecurityGroupId, info.OrderID)
 
 	return err
+}
+
+func (n *SQLDB) RenewVpsInstance(info *types.CreateInstanceReq) error {
+	query := fmt.Sprintf(`UPDATE %s SET period_unit=?, period=?, trade_price=? WHERE instance_id=?`, instancesDetailsTable)
+	_, err := n.db.Exec(query, info.PeriodUnit, info.Period, info.TradePrice, info.InstanceId)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (n *SQLDB) UpdateVpsInstanceName(instanceID, instanceName, userID string) error {

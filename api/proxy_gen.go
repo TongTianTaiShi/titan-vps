@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -126,6 +125,8 @@ type OrderAPIStruct struct {
 		GetUserOrderRecords func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
 
 		PaymentUserOrder func(p0 context.Context, p1 string) error `perm:"user"`
+
+		RenewOrder func(p0 context.Context, p1 string) (string, error) `perm:"user"`
 	}
 }
 
@@ -591,6 +592,17 @@ func (s *OrderAPIStruct) PaymentUserOrder(p0 context.Context, p1 string) error {
 
 func (s *OrderAPIStub) PaymentUserOrder(p0 context.Context, p1 string) error {
 	return ErrNotSupported
+}
+
+func (s *OrderAPIStruct) RenewOrder(p0 context.Context, p1 string) (string, error) {
+	if s.Internal.RenewOrder == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.RenewOrder(p0, p1)
+}
+
+func (s *OrderAPIStub) RenewOrder(p0 context.Context, p1 string) (string, error) {
+	return "", ErrNotSupported
 }
 
 func (s *TransactionStruct) Hello(p0 context.Context) error {

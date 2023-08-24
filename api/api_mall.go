@@ -45,6 +45,7 @@ type AdminAPI interface {
 type OrderAPI interface {
 	// order
 	CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error)                             //perm:user
+	RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (string, error)                          //perm:user
 	GetUseWaitingPaymentOrders(ctx context.Context, limit, page int64) (*types.OrderRecordResponse, error) //perm:user
 	GetUserOrderRecords(ctx context.Context, limit, page int64) (*types.OrderRecordResponse, error)        //perm:user
 	CancelUserOrder(ctx context.Context, orderID string) error                                             //perm:user

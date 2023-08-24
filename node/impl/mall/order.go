@@ -76,6 +76,64 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	return orderID, nil
 }
 
+func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (string, error) {
+	userID := handler.GetID(ctx)
+	req, err := m.LoadVpsInfoByInstanceId(renewReq.InstanceId)
+	if len(req.DataDisk) > 0 {
+		dataDisk, err := json.Marshal(req.DataDisk)
+		if err != nil {
+			log.Errorf("Marshal DataDisk:%v", err)
+			return "", &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: err.Error()}
+		}
+		req.DataDiskString = string(dataDisk)
+	}
+	priceReq := &types.DescribePriceReq{
+		RegionId:                     req.RegionId,
+		InstanceType:                 req.InstanceType,
+		PriceUnit:                    renewReq.PeriodUnit,
+		Period:                       renewReq.Period,
+		Amount:                       1,
+		InternetChargeType:           req.InternetChargeType,
+		ImageID:                      req.ImageId,
+		InternetMaxBandwidthOut:      req.InternetMaxBandwidthOut,
+		SystemDiskCategory:           req.SystemDiskCategory,
+		SystemDiskSize:               req.SystemDiskSize,
+		DescribePriceRequestDataDisk: req.DataDisk,
+	}
+	priceInfo, err := m.DescribePrice(ctx, priceReq)
+	if err != nil {
+		log.Errorf("DescribePrice:%v", err)
+		return "", &api.ErrWeb{Code: terrors.DescribePriceError.Int(), Message: err.Error()}
+	}
+
+	hash := uuid.NewString()
+	orderID := strings.Replace(hash, "-", "", -1)
+	req.OrderID = orderID
+	req.TradePrice = priceInfo.USDPrice
+	req.PeriodUnit = renewReq.PeriodUnit
+	req.Period = renewReq.Period
+	err = m.RenewVpsInstance(req)
+	if err != nil {
+		log.Errorf("SaveVpsInstance:%v", err)
+		return "", err
+	}
+	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
+
+	info := &types.OrderRecord{
+		VpsID:   req.Id,
+		OrderID: orderID,
+		UserID:  userID,
+		Value:   newBalanceString,
+	}
+
+	err = m.OrderMgr.CreatedOrder(info)
+	if err != nil {
+		return "", err
+	}
+
+	return orderID, nil
+}
+
 func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, page int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
