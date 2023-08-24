@@ -209,7 +209,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 		if *region.RegionId == "cn-qingdao" {
 			continue
 		}
-		if *region.RegionId == "cn-wulunchabu" {
+		if *region.RegionId == "cn-wulanchabu" {
 			continue
 		}
 		if *region.RegionId == "cn-zhangjiakou" {
