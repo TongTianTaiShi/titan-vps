@@ -223,7 +223,13 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 			}
 		}
 	}
+	reverse(rspDataList)
 	return rspDataList, nil
+}
+func reverse(s []*types.AvailableResourceResponse) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
 }
 
 func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
