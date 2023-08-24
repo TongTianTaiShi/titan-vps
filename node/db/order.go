@@ -35,7 +35,7 @@ func (n *SQLDB) LoadOrderRecord(orderID string, minute int64) (*types.OrderRecor
 func (n *SQLDB) LoadOrderRecordByUserUndone(userID string, limit, page int64, minute int) (*types.OrderRecordResponse, error) {
 	out := new(types.OrderRecordResponse)
 	var infos []*types.OrderRecord
-	query := fmt.Sprintf("SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE user_id=? and state=1  order by created_time desc LIMIT ? OFFSET ?", minute, orderRecordTable)
+	query := fmt.Sprintf("SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE user_id=? and state!=3  order by created_time desc LIMIT ? OFFSET ?", minute, orderRecordTable)
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
@@ -44,7 +44,7 @@ func (n *SQLDB) LoadOrderRecordByUserUndone(userID string, limit, page int64, mi
 		return nil, err
 	}
 
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=? and state=1", orderRecordTable)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=? and state!=3", orderRecordTable)
 	var count int
 	err = n.db.Get(&count, countQuery, userID)
 	if err != nil {

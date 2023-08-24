@@ -179,7 +179,7 @@ func downloadWithdrawFile(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		values := []string{info.OrderID, info.UserID, info.Value, info.WithdrawAddr, info.WithdrawHash, info.CreatedTime.String(), string(info.State)}
+		values := []string{info.OrderID, info.UserID, info.Value, info.WithdrawAddr, info.WithdrawHash, info.CreatedTime.String(), strconv.Itoa(int(info.State))}
 		for i, value := range values {
 			file.SetCellValue("Sheet1", string(rune('A'+i))+strconv.Itoa(rowIdx), value)
 		}
