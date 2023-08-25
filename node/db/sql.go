@@ -53,8 +53,11 @@ const (
 	instanceDefaultTable   = "instance_default"
 
 	// Default limits for loading table entries.
-	loadOrderRecordsDefaultLimit = 100
-	loadAddressesDefaultLimit    = 100
+	loadOrderRecordsDefaultLimit    = 1000
+	loadRechargeRecordsDefaultLimit = 1000
+	loadWithdrawRecordsDefaultLimit = 1000
+	loadAddressesDefaultLimit       = 1000
+	loadInstancesDefaultLimit       = 1000
 )
 
 // initTables initializes data tables.

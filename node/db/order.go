@@ -95,7 +95,7 @@ func (n *SQLDB) OrderExists(orderID string) (bool, error) {
 
 // LoadOrderRecords load the order records from the incoming scheduler
 func (n *SQLDB) LoadOrderRecords(statuses []int64, limit, page, minute int) (*sqlx.Rows, error) {
-	if limit > loadOrderRecordsDefaultLimit || limit == 0 {
+	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
 	sQuery := fmt.Sprintf(`SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE state in (?) order by order_id asc LIMIT ? OFFSET ?`, minute, orderRecordTable)

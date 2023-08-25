@@ -158,8 +158,8 @@ func (n *SQLDB) LoadWithdrawRecords(limit, page int64, statuses []types.Withdraw
 
 	var infos []*types.WithdrawRecord
 	lQuery := fmt.Sprintf("SELECT * FROM %s WHERE state in (?) %s order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable, whereStr)
-	if limit > loadOrderRecordsDefaultLimit {
-		limit = loadOrderRecordsDefaultLimit
+	if limit > loadWithdrawRecordsDefaultLimit {
+		limit = loadWithdrawRecordsDefaultLimit
 	}
 	lQuery, lArgs, err := sqlx.In(lQuery, statuses, limit, page*limit)
 	if err != nil {
@@ -233,8 +233,8 @@ func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, page int64) (*ty
 
 	var infos []*types.WithdrawRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? order by created_time desc LIMIT ? OFFSET ?", withdrawRecordTable)
-	if limit > loadOrderRecordsDefaultLimit {
-		limit = loadOrderRecordsDefaultLimit
+	if limit > loadWithdrawRecordsDefaultLimit {
+		limit = loadWithdrawRecordsDefaultLimit
 	}
 
 	err := n.db.Select(&infos, query, userID, limit, page*limit)
@@ -261,8 +261,8 @@ func (n *SQLDB) LoadRechargeRecordsByUser(userID string, limit, page int64) (*ty
 
 	var infos []*types.RechargeRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? order by created_time desc LIMIT ? OFFSET ?", rechargeRecordTable)
-	if limit > loadOrderRecordsDefaultLimit {
-		limit = loadOrderRecordsDefaultLimit
+	if limit > loadRechargeRecordsDefaultLimit {
+		limit = loadRechargeRecordsDefaultLimit
 	}
 
 	err := n.db.Select(&infos, query, userID, limit, page*limit)

@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"time"
 )
@@ -55,8 +56,8 @@ func (n *SQLDB) LoadMyInstancesInfo(userID string, limit, offset int64) (*types.
 	out := new(types.MyInstanceResponse)
 	var infos []*types.MyInstance
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=?  order by created_time desc LIMIT ? OFFSET ?", myInstancesTable)
-	if limit > loadOrderRecordsDefaultLimit {
-		limit = loadOrderRecordsDefaultLimit
+	if limit > loadInstancesDefaultLimit {
+		limit = loadInstancesDefaultLimit
 	}
 	err := n.db.Select(&infos, query, userID, limit, offset)
 	if err != nil {

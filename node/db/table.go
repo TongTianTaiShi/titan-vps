@@ -119,8 +119,9 @@ var cConfigTable = `
 
 var cUserTable = `
 	CREATE TABLE if not exists %s (
-		user_id      VARCHAR(128) NOT NULL UNIQUE,
+		user_id        VARCHAR(128) NOT NULL UNIQUE,
 		balance        VARCHAR(32)  DEFAULT 0,
+		created_time   DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (user_id)
 	) ENGINE=InnoDB COMMENT='user info';`
 
@@ -133,8 +134,9 @@ var cRechargeAddressTable = `
 
 var cAdminTable = `
 	CREATE TABLE if not exists %s (
-		user_id      VARCHAR(128) NOT NULL UNIQUE,
-		nick_name    VARCHAR(32)  DEFAULT 0,
+		user_id       VARCHAR(128) NOT NULL UNIQUE,
+		nick_name     VARCHAR(32)  DEFAULT 0,
+		created_time  DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (user_id)
 	) ENGINE=InnoDB COMMENT='admin info';`
 
