@@ -71,11 +71,7 @@ type MallStruct struct {
 	AdminAPIStruct
 
 	Internal struct {
-		AttachKeyPair func(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) `perm:"default"`
-
-		CreateInstance func(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) `perm:"default"`
-
-		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"default"`
+		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"user"`
 
 		DescribeAvailableResourceForDesk func(p0 context.Context, p1 *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) `perm:"default"`
 
@@ -97,9 +93,9 @@ type MallStruct struct {
 
 		GetInstanceMemoryInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) ([]*float32, error) `perm:"default"`
 
-		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
+		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"user"`
 
-		UpdateInstanceDefaultInfo func(p0 context.Context) error `perm:"default"`
+		UpdateInstanceDefaultInfo func(p0 context.Context) error `perm:"admin"`
 	}
 }
 
@@ -364,28 +360,6 @@ func (s *CommonStruct) Version(p0 context.Context) (APIVersion, error) {
 
 func (s *CommonStub) Version(p0 context.Context) (APIVersion, error) {
 	return *new(APIVersion), ErrNotSupported
-}
-
-func (s *MallStruct) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) {
-	if s.Internal.AttachKeyPair == nil {
-		return *new([]*types.AttachKeyPairResponse), ErrNotSupported
-	}
-	return s.Internal.AttachKeyPair(p0, p1, p2, p3)
-}
-
-func (s *MallStub) AttachKeyPair(p0 context.Context, p1 string, p2 string, p3 []string) ([]*types.AttachKeyPairResponse, error) {
-	return *new([]*types.AttachKeyPairResponse), ErrNotSupported
-}
-
-func (s *MallStruct) CreateInstance(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
-	if s.Internal.CreateInstance == nil {
-		return nil, ErrNotSupported
-	}
-	return s.Internal.CreateInstance(p0, p1)
-}
-
-func (s *MallStub) CreateInstance(p0 context.Context, p1 *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
-	return nil, ErrNotSupported
 }
 
 func (s *MallStruct) CreateKeyPair(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) {

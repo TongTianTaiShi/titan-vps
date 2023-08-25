@@ -13,16 +13,14 @@ type Mall interface {
 	AdminAPI
 
 	DescribeRegions(ctx context.Context) (map[string]string, error)                                                                                                 //perm:default
-	UpdateInstanceDefaultInfo(ctx context.Context) error                                                                                                            //perm:default
+	UpdateInstanceDefaultInfo(ctx context.Context) error                                                                                                            //perm:admin
 	DescribeInstanceType(ctx context.Context, instanceTypeReq *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error)                          //perm:default
 	DescribeRecommendInstanceType(ctx context.Context, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) //perm:default
 	DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error)                                                      //perm:default
 	DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error)                             //perm:default
 	DescribePrice(ctx context.Context, describePriceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error)                                              //perm:default
-	CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error)                                                    //perm:default
-	CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error)                                                           //perm:default
-	AttachKeyPair(ctx context.Context, regionID, keyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error)                                  //perm:default
-	RebootInstance(ctx context.Context, regionID, instanceID string) error                                                                                          //perm:default
+	CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error)                                                           //perm:user
+	RebootInstance(ctx context.Context, regionID, instanceID string) error                                                                                          //perm:user
 	DescribeInstances(ctx context.Context, regionID, instanceId string) error                                                                                       //perm:default
 	GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error)                                            //perm:default
 	GetInstanceCpuInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*int32, error)                                                                   //perm:default

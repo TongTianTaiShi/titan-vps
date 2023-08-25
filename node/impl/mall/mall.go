@@ -137,6 +137,7 @@ func (m *Mall) DescribeImages(ctx context.Context, regionID, instanceType string
 func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
 	return m.VpsMgr.DescribeAvailableResourceForDesk(ctx, desk)
 }
+
 func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	k, s := m.getAccessKeys()
 
@@ -190,17 +191,6 @@ func (m *Mall) CreateKeyPair(ctx context.Context, regionID, instanceID string) (
 	return keyInfo, nil
 }
 
-func (m *Mall) AttachKeyPair(ctx context.Context, regionID, keyPairName string, instanceIds []string) ([]*types.AttachKeyPairResponse, error) {
-	k, s := m.getAccessKeys()
-	AttachResult, err := aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
-	if err != nil {
-		log.Errorf("AttachKeyPair err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
-	}
-
-	return AttachResult, nil
-}
-
 func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceId string) error {
 	k, s := m.getAccessKeys()
 	err := aliyun.RebootInstance(regionID, k, s, instanceId)
@@ -222,70 +212,6 @@ func (m *Mall) DescribeInstances(ctx context.Context, regionID, instanceId strin
 		return &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
 	return nil
-}
-
-func (m *Mall) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
-	k, s := m.getAccessKeys()
-	priceUnit := vpsInfo.PeriodUnit
-	period := vpsInfo.Period
-	regionID := vpsInfo.RegionId
-	if priceUnit == "Year" {
-		priceUnit = "Month"
-		period = period * 12
-	}
-
-	var securityGroupID string
-
-	group, err := aliyun.DescribeSecurityGroups(regionID, k, s)
-	if err == nil && len(group) > 0 {
-		securityGroupID = group[0]
-	} else {
-		securityGroupID, err = aliyun.CreateSecurityGroup(regionID, k, s)
-		if err != nil {
-			log.Errorf("CreateSecurityGroup err: %s", err.Error())
-			return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
-		}
-	}
-
-	log.Debugf("securityGroupID : ", securityGroupID)
-	result, err := aliyun.CreateInstance(k, s, vpsInfo, false)
-	if err != nil {
-		log.Errorf("CreateInstance err: %s", *err.Message)
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
-	}
-
-	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceID)
-	if err != nil {
-		log.Errorf("AllocatePublicIpAddress err: %s", *err.Message)
-	} else {
-		result.PublicIpAddress = address
-	}
-
-	err = aliyun.AuthorizeSecurityGroup(regionID, k, s, securityGroupID)
-	if err != nil {
-		log.Errorf("AuthorizeSecurityGroup err: %s", *err.Message)
-	}
-	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
-	keyPairName := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
-	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairName)
-	if err != nil {
-		log.Errorf("CreateKeyPair err: %s", *err.Message)
-	} else {
-		result.PrivateKey = keyInfo.PrivateKeyBody
-	}
-	var instanceIds []string
-	instanceIds = append(instanceIds, result.InstanceID)
-	_, err = aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
-	if err != nil {
-		log.Errorf("AttachKeyPair err: %s", *err.Message)
-	}
-	go func() {
-		time.Sleep(1 * time.Minute)
-
-		err := aliyun.StartInstance(regionID, k, s, result.InstanceID)
-		log.Infoln("StartInstance err:", err)
-	}()
-	return result, nil
 }
 
 func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
