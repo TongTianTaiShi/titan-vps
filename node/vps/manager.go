@@ -190,7 +190,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 	var ctx context.Context
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
-	//var n int
+	var n int
 	regions, err := aliyun.DescribeRegions(k, s)
 	if err != nil {
 		log.Errorf("DescribePrice err:%v", err.Error())
@@ -258,8 +258,8 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 					Price:                  price.USDPrice,
 					Status:                 instance.Status,
 				}
-				//n++
-				//fmt.Println(*region.RegionId, ":", n)
+				n++
+				fmt.Println(*region.RegionId, ":", n)
 				saveErr := m.SaveInstancesInfo(info)
 				if err != nil {
 					log.Errorf("SaveMyInstancesInfo:%v", saveErr)
