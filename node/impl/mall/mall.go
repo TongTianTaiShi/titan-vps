@@ -235,7 +235,7 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 			}
 		}
 	}
-	//reverse(rspDataList)
+	reverse(rspDataList)
 	return rspDataList, nil
 }
 func reverse(s []*types.AvailableResourceResponse) {
