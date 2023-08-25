@@ -127,136 +127,16 @@ func (m *Mall) DescribeRecommendInstanceType(ctx context.Context, instanceTypeRe
 }
 
 func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
-	k, s := m.getAccessKeys()
-	rsp, err := aliyun.DescribeInstanceTypes(k, s, instanceType)
-	if err != nil {
-		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
-	}
-	AvailableResource, err := aliyun.DescribeAvailableResource(k, s, instanceType)
-	if err != nil {
-		log.Errorf("DescribeAvailableResource err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
-	}
-	rspDataList := &types.DescribeInstanceTypeResponse{
-		NextToken: *rsp.Body.NextToken,
-	}
-	instanceTypes := make(map[string]string)
-	if AvailableResource.Body.AvailableZones == nil {
-		return nil, xerrors.New("parameter error")
-	}
-	AvailableZone := len(AvailableResource.Body.AvailableZones.AvailableZone)
-	if AvailableZone < 0 {
-		return rspDataList, nil
-	}
-	for _, data := range AvailableResource.Body.AvailableZones.AvailableZone {
-		availableTypes := data.AvailableResources.AvailableResource
-		if len(availableTypes) > 0 {
-			for _, instanceTypeResource := range availableTypes {
-				Resources := instanceTypeResource.SupportedResources.SupportedResource
-				if len(Resources) > 0 {
-					for _, Resource := range Resources {
-						instanceTypes[*Resource.Value] = *Resource.Status
-					}
-				}
-			}
-		}
-	}
-	for _, data := range rsp.Body.InstanceTypes.InstanceType {
-		if v, ok := instanceTypes[*data.InstanceTypeId]; ok {
-			rspData := &types.DescribeInstanceType{
-				InstanceCategory:       *data.InstanceCategory,
-				InstanceTypeId:         *data.InstanceTypeId,
-				MemorySize:             *data.MemorySize,
-				CpuArchitecture:        *data.CpuArchitecture,
-				InstanceTypeFamily:     *data.InstanceTypeFamily,
-				CpuCoreCount:           *data.CpuCoreCount,
-				AvailableZone:          AvailableZone,
-				PhysicalProcessorModel: *data.PhysicalProcessorModel,
-				Status:                 v,
-			}
-			rspDataList.InstanceTypes = append(rspDataList.InstanceTypes, rspData)
-		}
-	}
-	return rspDataList, nil
+	return m.VpsMgr.DescribeInstanceType(ctx, instanceType)
 }
 
 func (m *Mall) DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error) {
-	k, s := m.getAccessKeys()
-
-	rsp, err := aliyun.DescribeImages(regionID, k, s, instanceType)
-	if err != nil {
-		log.Errorf("DescribeImages err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
-	}
-	var rspDataList []*types.DescribeImageResponse
-	for _, data := range rsp.Body.Images.Image {
-		rspData := &types.DescribeImageResponse{
-			ImageId:      *data.ImageId,
-			ImageFamily:  *data.ImageFamily,
-			ImageName:    *data.ImageName,
-			Architecture: *data.Architecture,
-			OSName:       *data.OSName,
-			OSType:       *data.OSType,
-			Platform:     *data.Platform,
-		}
-		rspDataList = append(rspDataList, rspData)
-	}
-	return rspDataList, nil
+	return m.VpsMgr.DescribeImages(ctx, regionID, instanceType)
 }
 
 func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
-	k, s := m.getAccessKeys()
-	rsp, err := aliyun.DescribeAvailableResourceForDesk(k, s, desk)
-	if err != nil {
-		fmt.Println(desk.RegionId)
-		fmt.Println(desk.InstanceType)
-		log.Errorf("DescribeAvailableResourceForDesk err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
-	}
-	Category := map[string]int{
-		"cloud":            1,
-		"cloud_essd":       1,
-		"cloud_ssd":        1,
-		"cloud_efficiency": 1,
-		"ephemeral_ssd":    1,
-	}
-	var rspDataList []*types.AvailableResourceResponse
-	if rsp.Body.AvailableZones == nil {
-		log.Errorf("parameter error")
-		return nil, nil
-	}
-	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
-		AvailableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource
-		if len(AvailableResources) > 0 {
-			systemDesk := AvailableResources[0].SupportedResources.SupportedResource
-			if len(systemDesk) > 0 {
-				for _, data := range systemDesk {
-					if *data.Status == "Available" {
-						if _, ok := Category[*data.Value]; ok {
-							desk := &types.AvailableResourceResponse{
-								Min:   *data.Min,
-								Max:   *data.Max,
-								Value: *data.Value,
-								Unit:  *data.Unit,
-							}
-							rspDataList = append(rspDataList, desk)
-						}
-					}
-				}
-			}
-		}
-	}
-	reverse(rspDataList)
-	return rspDataList, nil
+	return m.VpsMgr.DescribeAvailableResourceForDesk(ctx, desk)
 }
-
-func reverse(s []*types.AvailableResourceResponse) {
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
-	}
-}
-
 func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	k, s := m.getAccessKeys()
 
@@ -423,102 +303,37 @@ func (m *Mall) MintToken(ctx context.Context, address string) (string, error) {
 }
 
 func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
-	k, s := m.getAccessKeys()
-	var n int
-	regions, err := aliyun.DescribeRegions(k, s)
+	go m.VpsMgr.UpdateInstanceDefaultInfo()
+	return nil
+}
+
+func (m *Mall) RenewInstance(ctx context.Context, renewReq types.SetRenewOrderReq) error {
+	err := m.UpdateRenewInstanceStatus(&renewReq)
 	if err != nil {
-		log.Errorf("DescribePrice err:%v", err.Error())
+		log.Errorf("UpdateRenewInstanceStatus:%v", err)
 		return err
 	}
-	for _, region := range regions.Body.Regions.Region {
-		instanceType := &types.DescribeInstanceTypeReq{
-			RegionId:     *region.RegionId,
-			CpuCoreCount: 0,
-			MemorySize:   0,
-		}
-		//if *region.RegionId != "eu-central-1" {
-		//	continue
-		//}
-		instances, err := m.DescribeInstanceType(ctx, instanceType)
+	k, s := m.getAccessKeys()
+	if renewReq.Renew == 1 {
+		err := aliyun.ModifyInstanceAutoRenewAttribute(k, s, &renewReq)
 		if err != nil {
-			log.Errorf("DescribeInstanceType err:%v", err.Error())
-			continue
+			log.Errorf("RenewInstance err: %s", err.Error())
+			return xerrors.New(err.Error())
 		}
-		for _, instance := range instances.InstanceTypes {
-			ok, err := m.InstancesDefaultExists(instance.InstanceTypeId, *region.RegionId)
-			if err != nil {
-				log.Errorf("InstancesDefaultExists err:%v", err.Error())
-				continue
-			}
-			if ok {
-				fmt.Println(*region.RegionId, ":", instance.InstanceTypeId, "已更新")
-				continue
-			}
-			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
-			if err != nil {
-				log.Errorf("DescribePrice err:%v", err.Error())
-				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
-				continue
-			}
-			disk := &types.AvailableResourceReq{
-				InstanceType:        instance.InstanceTypeId,
-				RegionId:            *region.RegionId,
-				DestinationResource: "SystemDisk",
-			}
-
-			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
-			if err != nil {
-				log.Errorf("DescribePrice err:%v", err.Error())
-				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
-				continue
-			}
-			if len(disks) > 0 {
-				priceReq := &types.DescribePriceReq{
-					RegionId:                *region.RegionId,
-					InstanceType:            instance.InstanceTypeId,
-					PriceUnit:               "Month",
-					ImageID:                 images[0].ImageId,
-					InternetChargeType:      "PayByTraffic",
-					SystemDiskCategory:      disks[0].Value,
-					SystemDiskSize:          40,
-					Period:                  1,
-					Amount:                  1,
-					InternetMaxBandwidthOut: 10,
-				}
-				price, err := aliyun.DescribePrice(k, s, priceReq)
-				if err != nil {
-					fmt.Println("get price fail")
-					log.Errorf("DescribePrice err:%v", err.Error())
-					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
-					continue
-				}
-				info := &types.DescribeInstanceTypeFromBase{
-					RegionId:               *region.RegionId,
-					InstanceTypeId:         instance.InstanceTypeId,
-					MemorySize:             instance.MemorySize,
-					CpuArchitecture:        instance.CpuArchitecture,
-					InstanceCategory:       instance.InstanceCategory,
-					CpuCoreCount:           instance.CpuCoreCount,
-					AvailableZone:          instance.AvailableZone,
-					InstanceTypeFamily:     instance.InstanceTypeFamily,
-					PhysicalProcessorModel: instance.PhysicalProcessorModel,
-					OriginalPrice:          price.OriginalPrice,
-					Price:                  price.USDPrice,
-					Status:                 instance.Status,
-				}
-				n++
-				fmt.Println(*region.RegionId, ":", n)
-				saveErr := m.SaveInstancesInfo(info)
-				if err != nil {
-					log.Errorf("SaveMyInstancesInfo:%v", saveErr)
-				}
-
-			}
-
-		}
-
 	}
+
 	return nil
+}
+
+func (m *Mall) GetRenewInstance(ctx context.Context, renewReq types.SetRenewOrderReq) (string, error) {
+	k, s := m.getAccessKeys()
+	info, err := aliyun.DescribeInstanceAutoRenewAttribute(k, s, &renewReq)
+	if err != nil {
+		log.Errorf("DescribeInstanceAutoRenewAttribute err: %s", err.Error())
+		return "", &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: err.Error()}
+	}
+	out := *info.Body.InstanceRenewAttributes.InstanceRenewAttribute[0].RenewalStatus
+	return out, nil
 }
 
 func verifyEthMessage(code string, signedMessage string) (string, error) {

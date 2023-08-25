@@ -38,9 +38,10 @@ var vpsCmds = &cli.Command{
 		describePriceCmd,
 		createKeyPairCmd,
 		getDeskCmd,
-		GetDeskInfoCmd,
+		UpdateDefaultInfoCmd,
 		GetInstanceDefaultCmd,
 		GetInstanceCpuCmd,
+		GetInstanceRenewStatusCmd,
 		GetInstanceMemoryCmd,
 		describeInstancesCmd,
 	},
@@ -206,9 +207,9 @@ var getDeskCmd = &cli.Command{
 	},
 }
 
-var GetDeskInfoCmd = &cli.Command{
+var UpdateDefaultInfoCmd = &cli.Command{
 	Name:  "tdc",
-	Usage: "get  desk indo",
+	Usage: "UpdateDefaultInfo",
 	Flags: []cli.Flag{},
 	Before: func(cctx *cli.Context) error {
 		return nil
@@ -232,7 +233,7 @@ var GetDeskInfoCmd = &cli.Command{
 
 var GetInstanceDefaultCmd = &cli.Command{
 	Name:  "gidc",
-	Usage: "get  desk indo",
+	Usage: "Get InstanceDefault indo",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "c",
@@ -325,6 +326,43 @@ var GetInstanceCpuCmd = &cli.Command{
 		for _, data := range list {
 			fmt.Println(*data)
 		}
+
+		return nil
+	},
+}
+
+var GetInstanceRenewStatusCmd = &cli.Command{
+	Name:  "girs",
+	Usage: "GetInstanceRenewStatus",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "i",
+			Usage: "instance id",
+			Value: "",
+		},
+	},
+	Before: func(cctx *cli.Context) error {
+		return nil
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+
+		defer closer()
+		m := cctx.String("i")
+		req := types.SetRenewOrderReq{
+			RegionID:   "cn-hangzhou",
+			InstanceId: m,
+		}
+		list, err := api.GetRenewInstance(ctx, req)
+		if err != nil {
+			return err
+		}
+		fmt.Println(list)
 
 		return nil
 	},

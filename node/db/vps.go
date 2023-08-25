@@ -64,8 +64,8 @@ func (n *SQLDB) VpsDeviceExists(instanceID int64) (bool, error) {
 // SaveVpsInstance   saves vps info into the database.
 func (n *SQLDB) SaveVpsInstance(rInfo *types.CreateOrderReq) (int64, error) {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (region_id,instance_id,user_id,order_id, instance_type, dry_run, image_id, security_group_id, instance_charge_type,internet_charge_type, period_unit, period, bandwidth_out,bandwidth_in,ip_address,trade_price,system_disk_category,system_disk_size,os_type,data_disk) 
-				VALUES (:region_id,:instance_id,:user_id,:order_id, :instance_type, :dry_run, :image_id, :security_group_id, :instance_charge_type,:internet_charge_type, :period_unit, :period, :bandwidth_out,:bandwidth_in,:ip_address,:trade_price,:system_disk_category,:system_disk_size,:os_type,:data_disk)`, instancesDetailsTable)
+		`INSERT INTO %s (region_id,instance_id,user_id,order_id, instance_type, dry_run, image_id, security_group_id, instance_charge_type,internet_charge_type, period_unit, period, bandwidth_out,bandwidth_in,ip_address,trade_price,system_disk_category,system_disk_size,os_type,data_disk,renew) 
+				VALUES (:region_id,:instance_id,:user_id,:order_id, :instance_type, :dry_run, :image_id, :security_group_id, :instance_charge_type,:internet_charge_type, :period_unit, :period, :bandwidth_out,:bandwidth_in,:ip_address,:trade_price,:system_disk_category,:system_disk_size,:os_type,:data_disk,:renew)`, instancesDetailsTable)
 
 	result, err := n.db.NamedExec(query, rInfo)
 	if err != nil {
@@ -84,14 +84,21 @@ func (n *SQLDB) UpdateVpsInstance(info *types.CreateInstanceReq) error {
 }
 
 func (n *SQLDB) RenewVpsInstance(info *types.CreateInstanceReq) error {
-	query := fmt.Sprintf(`UPDATE %s SET period_unit=?, period=?, trade_price=? WHERE instance_id=?`, instancesDetailsTable)
-	_, err := n.db.Exec(query, info.PeriodUnit, info.Period, info.TradePrice, info.InstanceId)
+	query := fmt.Sprintf(`UPDATE %s SET period_unit=?, period=?, trade_price=?,renew=? WHERE instance_id=?`, instancesDetailsTable)
+	_, err := n.db.Exec(query, info.PeriodUnit, info.Period, info.TradePrice, info.Renew, info.InstanceId)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-
+func (n *SQLDB) UpdateRenewInstanceStatus(info *types.SetRenewOrderReq) error {
+	query := fmt.Sprintf(`UPDATE %s SET renew=? WHERE instance_id=?`, instancesDetailsTable)
+	_, err := n.db.Exec(query, info.Renew, info.InstanceId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 func (n *SQLDB) UpdateVpsInstanceName(instanceID, instanceName, userID string) error {
 	query := fmt.Sprintf(`UPDATE %s SET instance_name=? WHERE instance_id=? and user_id=?`, instancesDetailsTable)
 	_, err := n.db.Exec(query, instanceName, instanceID, userID)

@@ -3,6 +3,8 @@ package vps
 import (
 	"context"
 	"fmt"
+	"github.com/LMF709268224/titan-vps/api"
+	"github.com/LMF709268224/titan-vps/api/terrors"
 	"time"
 
 	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
@@ -50,7 +52,6 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
-
 	priceUnit := vpsInfo.PeriodUnit
 	period := vpsInfo.Period
 	regionID := vpsInfo.RegionId
@@ -141,6 +142,10 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 		if errU != nil {
 			log.Errorf("UpdateVpsInstance:%v", errU)
 		}
+		instanceName := *InstanceName
+		if *InstanceName == "" {
+			instanceName = result.InstanceID
+		}
 		info := &types.MyInstance{
 			OrderID:            vpsInfo.OrderID,
 			UserID:             vpsInfo.UserID,
@@ -149,7 +154,7 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 			InternetChargeType: vpsInfo.InternetChargeType,
 			Location:           vpsInfo.RegionId,
 			InstanceSystem:     *OSType,
-			InstanceName:       *InstanceName,
+			InstanceName:       instanceName,
 			BandwidthOut:       *BandwidthOut,
 		}
 		saveErr := m.SaveMyInstancesInfo(info)
@@ -187,9 +192,9 @@ func (m *Manager) cronGetInstanceDefaultInfo() {
 }
 
 func (m *Manager) UpdateInstanceDefaultInfo() {
-	var ctx context.Context
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
+	var ctx context.Context
 	var n int
 	regions, err := aliyun.DescribeRegions(k, s)
 	if err != nil {
@@ -211,9 +216,19 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
+			ok, err := m.InstancesDefaultExists(instance.InstanceTypeId, *region.RegionId)
+			if err != nil {
+				log.Errorf("InstancesDefaultExists err:%v", err.Error())
+				continue
+			}
+			if ok {
+				fmt.Println(*region.RegionId, ":", instance.InstanceTypeId, "已更新")
+				continue
+			}
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
 				continue
 			}
 			disk := &types.AvailableResourceReq{
@@ -225,6 +240,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
 				continue
 			}
 			if len(disks) > 0 {
@@ -244,6 +260,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 				if err != nil {
 					fmt.Println("get price fail")
 					log.Errorf("DescribePrice err:%v", err.Error())
+					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
 					continue
 				}
 				info := &types.DescribeInstanceTypeFromBase{
@@ -281,12 +298,12 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.
 	rsp, err := aliyun.DescribeInstanceTypes(k, s, instanceType)
 	if err != nil {
 		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
-		return nil, xerrors.New(err.Error())
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
 	}
 	AvailableResource, err := aliyun.DescribeAvailableResource(k, s, instanceType)
 	if err != nil {
 		log.Errorf("DescribeAvailableResource err: %s", err.Error())
-		return nil, xerrors.New(err.Error())
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
 	}
 	rspDataList := &types.DescribeInstanceTypeResponse{
 		NextToken: *rsp.Body.NextToken,
@@ -338,7 +355,7 @@ func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType str
 	rsp, err := aliyun.DescribeImages(regionID, k, s, instanceType)
 	if err != nil {
 		log.Errorf("DescribeImages err: %s", err.Error())
-		return nil, xerrors.New(err.Error())
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
 	}
 	var rspDataList []*types.DescribeImageResponse
 	for _, data := range rsp.Body.Images.Image {
@@ -362,7 +379,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	rsp, err := aliyun.DescribeAvailableResourceForDesk(k, s, desk)
 	if err != nil {
 		log.Errorf("DescribeImages err: %s", err.Error())
-		return nil, xerrors.New(err.Error())
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
 	}
 	Category := map[string]int{
 		"cloud":            1,
@@ -374,7 +391,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	var rspDataList []*types.AvailableResourceResponse
 	if rsp.Body.AvailableZones == nil {
 		log.Infoln(desk)
-		return nil, xerrors.New("parameter error")
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
 	}
 	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
 		AvailableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource
@@ -397,5 +414,11 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 			}
 		}
 	}
+	reverse(rspDataList)
 	return rspDataList, nil
+}
+func reverse(s []*types.AvailableResourceResponse) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
 }

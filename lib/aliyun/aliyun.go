@@ -1026,6 +1026,82 @@ func RenewInstance(keyID, keySecret string, renewInstanceRequest *types.RenewIns
 	return nil
 }
 
+func ModifyInstanceAutoRenewAttribute(keyID, keySecret string, renewInstanceRequest *types.SetRenewOrderReq) *tea.SDKError {
+	client, err := newClient(renewInstanceRequest.RegionID, keyID, keySecret)
+	if err != nil {
+		return err
+	}
+
+	rebootInstanceRequest := &ecs20140526.ModifyInstanceAutoRenewAttributeRequest{
+		InstanceId: tea.String(renewInstanceRequest.InstanceId),
+		RegionId:   tea.String(renewInstanceRequest.RegionID),
+		Duration:   tea.Int32(1),
+		PeriodUnit: tea.String("Month"),
+	}
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		_, _e = client.ModifyInstanceAutoRenewAttributeWithOptions(rebootInstanceRequest, runtime)
+		if _e != nil {
+			return _e
+		}
+
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return errors
+	}
+	return nil
+}
+
+func DescribeInstanceAutoRenewAttribute(keyID, keySecret string, renewInstanceRequest *types.SetRenewOrderReq) (*ecs20140526.DescribeInstanceAutoRenewAttributeResponse, *tea.SDKError) {
+	client, err := newClient(renewInstanceRequest.RegionID, keyID, keySecret)
+	if err != nil {
+		return nil, err
+	}
+	var result *ecs20140526.DescribeInstanceAutoRenewAttributeResponse
+	rebootInstanceRequest := &ecs20140526.DescribeInstanceAutoRenewAttributeRequest{
+		InstanceId: tea.String(renewInstanceRequest.InstanceId),
+		RegionId:   tea.String(renewInstanceRequest.RegionID),
+	}
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		result, _e = client.DescribeInstanceAutoRenewAttributeWithOptions(rebootInstanceRequest, runtime)
+		if _e != nil {
+			return _e
+		}
+
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return nil, errors
+	}
+	return result, nil
+}
+
 func GetExchangeRate() float32 {
 	client := &http.Client{}
 	// todo

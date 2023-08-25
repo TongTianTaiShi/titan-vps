@@ -135,7 +135,22 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 			log.Errorf("DescribeInstanceStatus err: %s", err.Error())
 			return nil, &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: err.Error()}
 		}
+		renewInfo := types.SetRenewOrderReq{
+			RegionID:   instanceInfo.Location,
+			InstanceId: instanceInfo.InstanceId,
+		}
 		instanceInfo.State = *rsp.Body.InstanceStatuses.InstanceStatus[0].Status
+		instanceInfo.Renew = ""
+		if instanceInfo.State == "Stopped" {
+			continue
+		}
+		status, errEk := m.GetRenewInstance(ctx, renewInfo)
+		if errEk != nil {
+			log.Errorf("GetRenewInstance err: %s", errEk.Error())
+			continue
+		}
+		instanceInfo.Renew = status
+
 	}
 
 	return instanceInfos, nil

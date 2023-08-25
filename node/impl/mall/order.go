@@ -113,6 +113,7 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 	req.TradePrice = priceInfo.USDPrice
 	req.PeriodUnit = renewReq.PeriodUnit
 	req.Period = renewReq.Period
+	req.Renew = renewReq.Renew
 	err = m.RenewVpsInstance(req)
 	if err != nil {
 		log.Errorf("SaveVpsInstance:%v", err)

@@ -41,6 +41,7 @@ var cInstanceDetailsTable = `
 	    memory  		Float   NOT NULL DEFAULT 0,
 	    memory_used  		Float   NOT NULL DEFAULT 0,
 	    cores        INT          DEFAULT 0,
+	    renew        INT          DEFAULT 0,
 	    cores_used  		Float   NOT NULL DEFAULT 0,
 	    system_disk_category  		VARCHAR(128) NOT NULL,
 	    os_type 		VARCHAR(128) NOT NULL,

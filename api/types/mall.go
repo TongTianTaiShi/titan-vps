@@ -102,6 +102,12 @@ type RenewOrderReq struct {
 	Renew      int    `db:"renew"`
 }
 
+type SetRenewOrderReq struct {
+	RegionID   string `db:"region_id"`
+	InstanceId string `db:"instance_id"`
+	Renew      int    `db:"renew"`
+}
+
 type CreateInstanceReq struct {
 	Id                      int64     `db:"id"`
 	RegionId                string    `db:"region_id"`
@@ -128,6 +134,7 @@ type CreateInstanceReq struct {
 	OSType                  string    `db:"os_type"`
 	InternetChargeType      string    `db:"internet_charge_type"`
 	SystemDiskSize          int32     `db:"system_disk_size"`
+	Renew                   int       `db:"renew"`
 	DataDiskString          string    `db:"data_disk"`
 	CreatedTime             time.Time `db:"created_time"`
 	DataDisk                []DescribePriceRequestDataDisk
@@ -485,9 +492,10 @@ type MyInstance struct {
 	Location           string             `db:"location"`
 	Price              float32            `db:"price"`
 	State              string             `db:"state"`
-	InternetChargeType string             `db:"internet_charge_type"`
-	BandwidthOut       int32              `db:"bandwidth_out"`
-	CreatedTime        time.Time          `db:"created_time"`
+	Renew              string
+	InternetChargeType string    `db:"internet_charge_type"`
+	BandwidthOut       int32     `db:"bandwidth_out"`
+	CreatedTime        time.Time `db:"created_time"`
 }
 
 type InstanceDefault struct {
@@ -517,6 +525,7 @@ type InstanceDetails struct {
 	IpAddress          string  `db:"ip_address"`
 	SystemDiskCategory string  `db:"system_disk_category"`
 	DataDiskString     string  `db:"data_disk"`
+	Renew              int     `db:"renew"`
 	DataDisk           []DescribePriceRequestDataDisk
 	CreatedTime        time.Time `db:"created_time"`
 }

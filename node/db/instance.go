@@ -27,6 +27,7 @@ func (n *SQLDB) SaveInstancesInfo(rInfo *types.DescribeInstanceTypeFromBase) err
 
 	return err
 }
+
 func (n *SQLDB) InstancesDefaultExists(instanceTypeID, regionID string) (bool, error) {
 	var total int64
 	timeString := time.Now().Format(time.DateOnly)
@@ -38,6 +39,7 @@ func (n *SQLDB) InstancesDefaultExists(instanceTypeID, regionID string) (bool, e
 
 	return total > 0, nil
 }
+
 func (n *SQLDB) UpdateInstanceDefaultStatus(instanceTypeID, regionID string) error {
 	query := fmt.Sprintf(`UPDATE %s SET status='' and updated_time=NOW() WHERE instance_type_id=? and region_id=?`, instancesDetailsTable)
 	_, err := n.db.Exec(query, instanceTypeID, regionID)
@@ -84,6 +86,7 @@ func (n *SQLDB) LoadInstanceDetailsInfo(userID, instanceId string) (*types.Insta
 
 	return &info, nil
 }
+
 func (n *SQLDB) LoadInstanceDefaultInfo(req *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
 	out := new(types.InstanceTypeResponse)
 	var info []*types.DescribeInstanceTypeFromBase

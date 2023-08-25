@@ -120,11 +120,15 @@ type OrderAPIStruct struct {
 
 		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"user"`
 
+		GetRenewInstance func(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) `perm:"user"`
+
 		GetUseWaitingPaymentOrders func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
 
 		GetUserOrderRecords func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
 
 		PaymentUserOrder func(p0 context.Context, p1 string) error `perm:"user"`
+
+		RenewInstance func(p0 context.Context, p1 types.SetRenewOrderReq) error `perm:"user"`
 
 		RenewOrder func(p0 context.Context, p1 types.RenewOrderReq) (string, error) `perm:"user"`
 	}
@@ -561,6 +565,17 @@ func (s *OrderAPIStub) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) 
 	return "", ErrNotSupported
 }
 
+func (s *OrderAPIStruct) GetRenewInstance(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) {
+	if s.Internal.GetRenewInstance == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.GetRenewInstance(p0, p1)
+}
+
+func (s *OrderAPIStub) GetRenewInstance(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) {
+	return "", ErrNotSupported
+}
+
 func (s *OrderAPIStruct) GetUseWaitingPaymentOrders(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) {
 	if s.Internal.GetUseWaitingPaymentOrders == nil {
 		return nil, ErrNotSupported
@@ -591,6 +606,17 @@ func (s *OrderAPIStruct) PaymentUserOrder(p0 context.Context, p1 string) error {
 }
 
 func (s *OrderAPIStub) PaymentUserOrder(p0 context.Context, p1 string) error {
+	return ErrNotSupported
+}
+
+func (s *OrderAPIStruct) RenewInstance(p0 context.Context, p1 types.SetRenewOrderReq) error {
+	if s.Internal.RenewInstance == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.RenewInstance(p0, p1)
+}
+
+func (s *OrderAPIStub) RenewInstance(p0 context.Context, p1 types.SetRenewOrderReq) error {
 	return ErrNotSupported
 }
 
