@@ -42,7 +42,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		cfg:       cfg,
 		vpsClient: make(map[string]*ecs20140526.Client),
 	}
-	go m.cronGetInstanceDefaultInfo()
+	//go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
@@ -213,6 +213,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 		for _, instance := range instances.InstanceTypes {
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
 			if err != nil {
+				log.Errorf("DescribePrice err:%v", err.Error())
 				continue
 			}
 			disk := &types.AvailableResourceReq{
@@ -223,6 +224,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 
 			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
 			if err != nil {
+				log.Errorf("DescribePrice err:%v", err.Error())
 				continue
 			}
 			if len(disks) > 0 {

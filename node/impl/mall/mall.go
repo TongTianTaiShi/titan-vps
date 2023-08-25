@@ -250,6 +250,7 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 	reverse(rspDataList)
 	return rspDataList, nil
 }
+
 func reverse(s []*types.AvailableResourceResponse) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]
@@ -423,10 +424,11 @@ func (m *Mall) MintToken(ctx context.Context, address string) (string, error) {
 
 func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 	k, s := m.getAccessKeys()
+	var n int
 	regions, err := aliyun.DescribeRegions(k, s)
 	if err != nil {
 		log.Errorf("DescribePrice err:%v", err.Error())
-		return &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
+		return err
 	}
 	for _, region := range regions.Body.Regions.Region {
 		instanceType := &types.DescribeInstanceTypeReq{
@@ -434,15 +436,28 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 			CpuCoreCount: 0,
 			MemorySize:   0,
 		}
+		//if *region.RegionId != "eu-central-1" {
+		//	continue
+		//}
 		instances, err := m.DescribeInstanceType(ctx, instanceType)
 		if err != nil {
-			log.Errorf("DescribePrice err:%v", err.Error())
+			log.Errorf("DescribeInstanceType err:%v", err.Error())
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
+			ok, err := m.InstancesDefaultExists(instance.InstanceTypeId, *region.RegionId)
+			if err != nil {
+				log.Errorf("InstancesDefaultExists err:%v", err.Error())
+				continue
+			}
+			if ok {
+				fmt.Println(*region.RegionId, ":", instance.InstanceTypeId, "已更新")
+				continue
+			}
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
 				continue
 			}
 			disk := &types.AvailableResourceReq{
@@ -454,16 +469,17 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
 				continue
 			}
-			for _, disk := range disks {
+			if len(disks) > 0 {
 				priceReq := &types.DescribePriceReq{
 					RegionId:                *region.RegionId,
 					InstanceType:            instance.InstanceTypeId,
-					PriceUnit:               "Week",
+					PriceUnit:               "Month",
 					ImageID:                 images[0].ImageId,
 					InternetChargeType:      "PayByTraffic",
-					SystemDiskCategory:      disk.Value,
+					SystemDiskCategory:      disks[0].Value,
 					SystemDiskSize:          40,
 					Period:                  1,
 					Amount:                  1,
@@ -471,19 +487,11 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 				}
 				price, err := aliyun.DescribePrice(k, s, priceReq)
 				if err != nil {
+					fmt.Println("get price fail")
 					log.Errorf("DescribePrice err:%v", err.Error())
+					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
 					continue
 				}
-				if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {
-					UsdRate := aliyun.GetExchangeRate()
-					USDRateInfo.USDRate = UsdRate
-					USDRateInfo.ET = time.Now().Add(time.Hour)
-				}
-				if USDRateInfo.USDRate == 0 {
-					USDRateInfo.USDRate = 7.2673
-				}
-				UsdRate := USDRateInfo.USDRate
-				price.USDPrice = price.USDPrice / UsdRate
 				info := &types.DescribeInstanceTypeFromBase{
 					RegionId:               *region.RegionId,
 					InstanceTypeId:         instance.InstanceTypeId,
@@ -498,16 +506,19 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 					Price:                  price.USDPrice,
 					Status:                 instance.Status,
 				}
+				n++
+				fmt.Println(*region.RegionId, ":", n)
 				saveErr := m.SaveInstancesInfo(info)
 				if err != nil {
 					log.Errorf("SaveMyInstancesInfo:%v", saveErr)
 				}
+
 			}
 
 		}
 
 	}
-	return err
+	return nil
 }
 
 func verifyEthMessage(code string, signedMessage string) (string, error) {

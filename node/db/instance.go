@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"github.com/LMF709268224/titan-vps/api/types"
+	"time"
 )
 
 // SaveMyInstancesInfo  save instance information
@@ -23,6 +24,26 @@ func (n *SQLDB) SaveInstancesInfo(rInfo *types.DescribeInstanceTypeFromBase) err
 				ON DUPLICATE KEY UPDATE price=:price,status=:status,original_price=:original_price,updated_time=NOW()`, instanceDefaultTable)
 
 	_, err := n.db.NamedExec(query, rInfo)
+
+	return err
+}
+func (n *SQLDB) InstancesDefaultExists(instanceTypeID, regionID string) (bool, error) {
+	var total int64
+	timeString := time.Now().Format(time.DateOnly)
+	fmt.Println(timeString)
+	countSQL := fmt.Sprintf(`SELECT count(1) FROM %s WHERE instance_type_id=? and region_id=? and updated_time>?`, instanceDefaultTable)
+	if err := n.db.Get(&total, countSQL, instanceTypeID, regionID, timeString); err != nil {
+		return false, err
+	}
+
+	return total > 0, nil
+}
+func (n *SQLDB) UpdateInstanceDefaultStatus(instanceTypeID, regionID string) error {
+	query := fmt.Sprintf(`UPDATE %s SET status='' and updated_time=NOW() WHERE instance_type_id=? and region_id=?`, instancesDetailsTable)
+	_, err := n.db.Exec(query, instanceTypeID, regionID)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
