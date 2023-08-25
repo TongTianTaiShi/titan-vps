@@ -42,7 +42,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		cfg:       cfg,
 		vpsClient: make(map[string]*ecs20140526.Client),
 	}
-	//go m.cronGetInstanceDefaultInfo()
+	go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
