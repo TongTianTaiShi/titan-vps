@@ -89,13 +89,13 @@ func (m *Mall) DescribeRegions(ctx context.Context) (map[string]string, error) {
 			continue
 		case "me-east-1":
 			continue
+		case "us-east-1":
+			continue
 		case "eu-central-1":
 			continue
-		case "ap-southeast-7":
+		case "ap-northeast-1":
 			continue
 		case "ap-southeast-2":
-			continue
-		case "ap-northeast-1":
 			continue
 		}
 		rpsData[*region.RegionId] = *region.LocalName
