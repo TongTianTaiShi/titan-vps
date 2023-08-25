@@ -35,7 +35,6 @@ type AdminAPI interface {
 	AddAdminUser(ctx context.Context, userID, nickName string) error                                             //perm:admin
 	GetAdminSignCode(ctx context.Context, userID string) (string, error)                                         //perm:default
 	LoginAdmin(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error)                           //perm:default
-	MintToken(ctx context.Context, address string) (string, error)                                               //perm:admin
 	GetWithdrawalRecords(ctx context.Context, req *types.GetWithdrawRequest) (*types.GetWithdrawResponse, error) //perm:default
 	ApproveUserWithdrawal(ctx context.Context, orderID, withdrawHash string) error                               //perm:admin
 	RejectUserWithdrawal(ctx context.Context, orderID string) error                                              //perm:admin

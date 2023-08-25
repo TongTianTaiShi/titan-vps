@@ -3,10 +3,11 @@ package mall
 import (
 	"context"
 	"fmt"
-	"github.com/LMF709268224/titan-vps/api/terrors"
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/LMF709268224/titan-vps/api/terrors"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/exchange"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
-	"github.com/LMF709268224/titan-vps/lib/filecoinbridge"
 	"github.com/LMF709268224/titan-vps/node/common"
 	"github.com/LMF709268224/titan-vps/node/db"
 	"github.com/LMF709268224/titan-vps/node/modules/dtypes"
@@ -286,20 +286,6 @@ func (m *Mall) CreateInstance(ctx context.Context, vpsInfo *types.CreateInstance
 		log.Infoln("StartInstance err:", err)
 	}()
 	return result, nil
-}
-
-func (m *Mall) MintToken(ctx context.Context, address string) (string, error) {
-	cfg, err := m.GetMallConfigFunc()
-	if err != nil {
-		log.Errorf("get config err:%s", err.Error())
-		return "", err
-	}
-
-	valueStr := "9000000000000000000"
-
-	client := filecoinbridge.NewGrpcClient(cfg.LotusHTTPSAddr, cfg.TitanContractorAddr)
-
-	return client.Mint(cfg.PrivateKeyStr, address, valueStr)
 }
 
 func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {

@@ -21,8 +21,7 @@ type Manager struct {
 
 	cfg config.MallCfg
 
-	tronAddrs    map[string]string
-	tronAddrLock *sync.Mutex
+	tronAddrs sync.Map
 }
 
 // NewManager creates a new instance of the node manager
@@ -36,9 +35,6 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, db *db.SQLDB
 		notification: pb,
 		cfg:          cfg,
 		SQLDB:        db,
-
-		tronAddrs:    make(map[string]string),
-		tronAddrLock: &sync.Mutex{},
 	}
 
 	manager.initTronAddress(cfg.RechargeAddresses)

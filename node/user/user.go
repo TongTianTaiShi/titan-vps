@@ -12,43 +12,42 @@ import (
 
 // Manager is the node manager responsible for managing the online nodes
 type Manager struct {
-	user     map[string]*types.UserInfoTmp
-	userLock *sync.Mutex
+	user sync.Map // map[string]*types.UserInfoTmp
 }
 
 // NewManager creates a new instance of the node manager
 func NewManager() (*Manager, error) {
-	mgr := make(map[string]*types.UserInfoTmp)
-	manager := &Manager{
-		user:     mgr,
-		userLock: &sync.Mutex{},
-	}
+	manager := &Manager{}
 	return manager, nil
 }
 
 func (m *Manager) GenerateSignCode(key string) string {
-	m.userLock.Lock()
-	defer m.userLock.Unlock()
-
+	userInfo := &types.UserInfoTmp{}
 	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
 	Code := "Vps(" + fmt.Sprintf("%06d", randNew.Intn(1000000)) + ")"
-	v, ok := m.user[key]
+	vI, ok := m.user.Load(key)
 	if ok {
-		v.UserLogin.SignCode = Code
+		userInfo = vI.(*types.UserInfoTmp)
 	} else {
-		m.user[key] = &types.UserInfoTmp{}
-		m.user[key].UserLogin.SignCode = Code
-		m.user[key].UserLogin.UserId = key
+		userInfo.UserLogin.UserId = key
 	}
+	userInfo.UserLogin.SignCode = Code
+
+	m.user.Store(key, userInfo)
 	return Code
 }
 
 func (m *Manager) GetSignCode(key string) (string, error) {
-	v, ok := m.user[key]
-	if ok && v.UserLogin.SignCode != "" {
-		code := v.UserLogin.SignCode
-		v.UserLogin.SignCode = ""
-		return code, nil
+	vI, ok := m.user.Load(key)
+	userInfo := vI.(*types.UserInfoTmp)
+	if ok {
+		code := userInfo.UserLogin.SignCode
+		if code != "" {
+			userInfo.UserLogin.SignCode = ""
+			m.user.Store(key, userInfo)
+			return code, nil
+		}
 	}
+
 	return "", xerrors.New("sign code is null")
 }

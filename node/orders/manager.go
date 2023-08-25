@@ -37,8 +37,7 @@ type Manager struct {
 
 	notification *pubsub.PubSub
 
-	ongoingOrders map[string]*types.OrderRecord
-	orderLock     *sync.Mutex
+	ongoingOrders sync.Map // map[string]*types.OrderRecord
 
 	cfg  config.MallCfg
 	tMgr *transaction.Manager
@@ -53,13 +52,11 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg 
 	}
 
 	m := &Manager{
-		SQLDB:         sdb,
-		notification:  pb,
-		ongoingOrders: make(map[string]*types.OrderRecord),
-		orderLock:     &sync.Mutex{},
-		cfg:           cfg,
-		tMgr:          fm,
-		vMgr:          vm,
+		SQLDB:        sdb,
+		notification: pb,
+		cfg:          cfg,
+		tMgr:         fm,
+		vMgr:         vm,
 	}
 
 	// state machine initialization
@@ -86,13 +83,14 @@ func (m *Manager) checkOrdersTimeout() {
 	for {
 		<-ticker.C
 
-		for _, orderRecord := range m.ongoingOrders {
+		m.ongoingOrders.Range(func(key, value interface{}) bool {
+			orderRecord := value.(*types.OrderRecord)
 			orderID := orderRecord.OrderID
 
 			info, err := m.LoadOrderRecord(orderID, orderTimeoutMinute)
 			if err != nil {
 				log.Errorf("checkOrderTimeout LoadOrderRecord , %s err:%s", orderID, err.Error())
-				continue
+				return true
 			}
 
 			log.Debugf("checkout  %s ", orderID)
@@ -102,10 +100,12 @@ func (m *Manager) checkOrdersTimeout() {
 				err = m.orderStateMachines.Send(OrderHash(orderID), OrderTimeOut{})
 				if err != nil {
 					log.Errorf("checkOrderTimeout Send  %s err:%s", orderID, err.Error())
-					continue
+					return true
 				}
 			}
-		}
+			return true
+		})
+
 	}
 }
 
@@ -168,23 +168,11 @@ func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 }
 
 func (m *Manager) addOrder(req *types.OrderRecord) {
-	m.orderLock.Lock()
-	defer m.orderLock.Unlock()
-
-	// if _, exist := m.ongoingOrders[req.OrderID]; exist {
-	// 	return xerrors.New("user have order")
-	// }
-
-	m.ongoingOrders[req.OrderID] = req
-
-	return
+	m.ongoingOrders.Store(req.OrderID, req)
 }
 
 func (m *Manager) removeOrder(orderID string) {
-	m.orderLock.Lock()
-	defer m.orderLock.Unlock()
-
-	delete(m.ongoingOrders, orderID)
+	m.ongoingOrders.Delete(orderID)
 }
 
 func (m *Manager) getHeight() int64 {

@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -25,8 +26,6 @@ type AdminAPIStruct struct {
 		GetWithdrawalRecords func(p0 context.Context, p1 *types.GetWithdrawRequest) (*types.GetWithdrawResponse, error) `perm:"default"`
 
 		LoginAdmin func(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) `perm:"default"`
-
-		MintToken func(p0 context.Context, p1 string) (string, error) `perm:"admin"`
 
 		RejectUserWithdrawal func(p0 context.Context, p1 string) error `perm:"admin"`
 	}
@@ -244,17 +243,6 @@ func (s *AdminAPIStruct) LoginAdmin(p0 context.Context, p1 *types.UserReq) (*typ
 
 func (s *AdminAPIStub) LoginAdmin(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) {
 	return nil, ErrNotSupported
-}
-
-func (s *AdminAPIStruct) MintToken(p0 context.Context, p1 string) (string, error) {
-	if s.Internal.MintToken == nil {
-		return "", ErrNotSupported
-	}
-	return s.Internal.MintToken(p0, p1)
-}
-
-func (s *AdminAPIStub) MintToken(p0 context.Context, p1 string) (string, error) {
-	return "", ErrNotSupported
 }
 
 func (s *AdminAPIStruct) RejectUserWithdrawal(p0 context.Context, p1 string) error {

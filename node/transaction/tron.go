@@ -174,7 +174,11 @@ func (m *Manager) decodeData(trc20 []byte) (to string, amount string, flag bool)
 
 func (m *Manager) handleTransfer(txID, from, to string, height int64, amount string, state core.Transaction_ResultContractResult) {
 	// log.Debugf("Transfer :%s,%s,%s,%s,%s", txID, to, from, amount, state)
-	if userID, ok := m.tronAddrs[to]; ok {
+
+	userI, exist := m.tronAddrs.Load(to)
+	if exist && userI != nil {
+		userID := userI.(string)
+
 		m.notification.Pub(&types.TronTransferWatch{
 			TxHash: txID,
 			From:   from,
