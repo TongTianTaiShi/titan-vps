@@ -183,7 +183,7 @@ func (m *Manager) cronGetInstanceDefaultInfo() {
 	m.UpdateInstanceDefaultInfo()
 	<-timer.C
 
-	//m.cronGetInstanceDefaultInfo()
+	m.cronGetInstanceDefaultInfo()
 }
 
 func (m *Manager) UpdateInstanceDefaultInfo() {
