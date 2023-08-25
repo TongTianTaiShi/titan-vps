@@ -42,7 +42,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		cfg:       cfg,
 		vpsClient: make(map[string]*ecs20140526.Client),
 	}
-	go m.cronGetInstanceDefaultInfo()
+	//go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
@@ -202,9 +202,9 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 			CpuCoreCount: 0,
 			MemorySize:   0,
 		}
-		if *region.RegionId != "eu-central-1" {
-			continue
-		}
+		//if *region.RegionId != "eu-central-1" {
+		//	continue
+		//}
 		instances, err := m.DescribeInstanceType(ctx, instanceType)
 		if err != nil {
 			log.Errorf("DescribeInstanceType err:%v", err.Error())

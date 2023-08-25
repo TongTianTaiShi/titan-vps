@@ -74,6 +74,18 @@ func (m *Mall) DescribeRegions(ctx context.Context) (map[string]string, error) {
 	for _, region := range rsp.Body.Regions.Region {
 		// fmt.Printf("Region ID: %s\n", region.RegionId)
 		// rpsData = append(rpsData, *region.RegionId)
+		switch *region.RegionId {
+		case "ap-northeast-2":
+			continue
+		case "ap-south-1":
+			continue
+		case "eu-west-1":
+			continue
+		case "ap-southeast-5":
+			continue
+		case "ap-southeast-3":
+			continue
+		}
 		rpsData[*region.RegionId] = *region.LocalName
 	}
 
@@ -223,7 +235,7 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 			}
 		}
 	}
-	reverse(rspDataList)
+	//reverse(rspDataList)
 	return rspDataList, nil
 }
 func reverse(s []*types.AvailableResourceResponse) {
