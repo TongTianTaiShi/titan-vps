@@ -42,7 +42,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		cfg:       cfg,
 		vpsClient: make(map[string]*ecs20140526.Client),
 	}
-	//go m.cronGetInstanceDefaultInfo()
+	go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
@@ -202,6 +202,9 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 			CpuCoreCount: 0,
 			MemorySize:   0,
 		}
+		if *region.RegionId != "eu-central-1" {
+			continue
+		}
 		instances, err := m.DescribeInstanceType(ctx, instanceType)
 		if err != nil {
 			log.Errorf("DescribeInstanceType err:%v", err.Error())
@@ -222,14 +225,14 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 			if err != nil {
 				continue
 			}
-			for _, disk := range disks {
+			if len(disks) > 0 {
 				priceReq := &types.DescribePriceReq{
 					RegionId:                *region.RegionId,
 					InstanceType:            instance.InstanceTypeId,
 					PriceUnit:               "Month",
 					ImageID:                 images[0].ImageId,
 					InternetChargeType:      "PayByTraffic",
-					SystemDiskCategory:      disk.Value,
+					SystemDiskCategory:      disks[0].Value,
 					SystemDiskSize:          40,
 					Period:                  1,
 					Amount:                  1,
@@ -261,6 +264,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 				if err != nil {
 					log.Errorf("SaveMyInstancesInfo:%v", saveErr)
 				}
+
 			}
 
 		}

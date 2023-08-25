@@ -86,13 +86,13 @@ func (n *SQLDB) LoadInstanceDefaultInfo(req *types.InstanceTypeFromBaseReq) (*ty
 		query += " and cpu_architecture=?"
 		args = append(args, req.CpuArchitecture)
 	}
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE %s", instanceDefaultTable, query)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE %s and status!=''", instanceDefaultTable, query)
 	var count int
 	err := n.db.Get(&count, countQuery, args...)
 	if err != nil {
 		return nil, err
 	}
-	querySql := fmt.Sprintf("SELECT * FROM %s WHERE %s LIMIT %d OFFSET %d ", instanceDefaultTable, query, req.Limit, req.Offset)
+	querySql := fmt.Sprintf("SELECT * FROM %s WHERE %s and status!='' LIMIT %d OFFSET %d ", instanceDefaultTable, query, req.Limit, req.Offset)
 	err = n.db.Select(&info, querySql, args...)
 	if err != nil {
 		return nil, err
