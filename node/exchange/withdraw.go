@@ -58,12 +58,11 @@ func (m *WithdrawManager) CreateWithdrawOrder(userID, withdrawAddr, value string
 	orderID := strings.Replace(hash, "-", "", -1)
 
 	info := &types.WithdrawRecord{
-		OrderID:       orderID,
-		UserID:        userID,
-		WithdrawAddr:  withdrawAddr,
-		Value:         value,
-		CreatedHeight: getFilecoinHeight(m.cfg.LotusHTTPSAddr),
-		State:         types.WithdrawCreate,
+		OrderID:      orderID,
+		UserID:       userID,
+		WithdrawAddr: withdrawAddr,
+		Value:        value,
+		State:        types.WithdrawCreate,
 	}
 
 	err = m.SaveWithdrawInfoAndUserBalance(info, newValue, original)

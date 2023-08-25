@@ -79,17 +79,13 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 		return
 	}
 
-	height := getFilecoinHeight(m.cfg.LotusHTTPSAddr)
-
 	info := &types.RechargeRecord{
-		OrderID:       tr.TxHash,
-		UserID:        userID,
-		CreatedHeight: height,
-		DoneHeight:    height,
-		Value:         tr.Value,
-		From:          tr.From,
-		State:         types.RechargeDone,
-		To:            tr.To,
+		OrderID: tr.TxHash,
+		UserID:  userID,
+		Value:   tr.Value,
+		From:    tr.From,
+		State:   types.RechargeDone,
+		To:      tr.To,
 	}
 
 	value := utils.BigIntAdd(original, tr.Value)

@@ -41,11 +41,11 @@ func NewSQLDB(path string) (*SQLDB, error) {
 const (
 	// Database table names.
 	orderRecordTable       = "order_record"
+	rechargeRecordTable    = "recharge_record"
+	withdrawRecordTable    = "withdraw_record"
 	vpsInstanceDeviceTable = "vps_instance_device"
 	instancesDetailsTable  = "instances_details"
 	myInstancesTable       = "my_instances"
-	rechargeRecordTable    = "recharge_record"
-	withdrawRecordTable    = "withdraw_record"
 	configTable            = "config"
 	userTable              = "user_info"
 	adminTable             = "admin_info"

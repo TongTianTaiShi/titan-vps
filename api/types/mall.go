@@ -360,16 +360,14 @@ type RechargeResponse struct {
 
 // RechargeRecord represents information about an recharge record
 type RechargeRecord struct {
-	OrderID       string        `db:"order_id"`
-	From          string        `db:"from_addr"`
-	UserID        string        `db:"user_id"`
-	To            string        `db:"to_addr"`
-	Value         string        `db:"value"`
-	State         RechargeState `db:"state"`
-	CreatedHeight int64         `db:"created_height"`
-	CreatedTime   time.Time     `db:"created_time"`
-	DoneTime      time.Time     `db:"done_time"`
-	DoneHeight    int64         `db:"done_height"`
+	OrderID     string        `db:"order_id"`
+	From        string        `db:"from_addr"`
+	UserID      string        `db:"user_id"`
+	To          string        `db:"to_addr"`
+	Value       string        `db:"value"`
+	State       RechargeState `db:"state"`
+	CreatedTime time.Time     `db:"created_time"`
+	DoneTime    time.Time     `db:"done_time"`
 }
 
 type GetWithdrawRequest struct {
@@ -388,19 +386,15 @@ type GetWithdrawResponse struct {
 
 // WithdrawRecord represents information about an withdraw record
 type WithdrawRecord struct {
-	OrderID       string        `db:"order_id"`
-	From          string        `db:"from_addr"`
-	UserID        string        `db:"user_id"`
-	To            string        `db:"to_addr"`
-	Value         string        `db:"value"`
-	State         WithdrawState `db:"state"`
-	CreatedHeight int64         `db:"created_height"`
-	CreatedTime   time.Time     `db:"created_time"`
-	DoneTime      time.Time     `db:"done_time"`
-	DoneHeight    int64         `db:"done_height"`
-	WithdrawAddr  string        `db:"withdraw_addr"`
-	WithdrawHash  string        `db:"withdraw_hash"`
-	Executor      string        `db:"executor"`
+	OrderID      string        `db:"order_id"`
+	UserID       string        `db:"user_id"`
+	Value        string        `db:"value"`
+	State        WithdrawState `db:"state"`
+	CreatedTime  time.Time     `db:"created_time"`
+	DoneTime     time.Time     `db:"done_time"`
+	WithdrawAddr string        `db:"withdraw_addr"`
+	WithdrawHash string        `db:"withdraw_hash"`
+	Executor     string        `db:"executor"`
 }
 
 type PaymentCompletedReq struct {

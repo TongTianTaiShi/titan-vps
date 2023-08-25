@@ -25,8 +25,8 @@ func (n *SQLDB) SaveRechargeRecordAndUserBalance(rInfo *types.RechargeRecord, ba
 	}()
 
 	query := fmt.Sprintf(
-		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state,  user_id) 
-		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :user_id)`, rechargeRecordTable)
+		`INSERT INTO %s (order_id, from_addr, to_addr, value, state,  user_id) 
+		        VALUES (:order_id, :from_addr, :to_addr, :value, :state, :user_id)`, rechargeRecordTable)
 	_, err = tx.NamedExec(query, rInfo)
 	if err != nil {
 		return err
@@ -50,14 +50,6 @@ func (n *SQLDB) RechargeRecordExists(orderID string) (bool, error) {
 	}
 
 	return total > 0, nil
-}
-
-// UpdateRechargeRecord update recharge record information
-func (n *SQLDB) UpdateRechargeRecord(info *types.RechargeRecord, newState types.RechargeState) error {
-	query := fmt.Sprintf(`UPDATE %s SET state=?, done_time=NOW(), done_height=? WHERE order_id=? AND state=?`, rechargeRecordTable)
-	_, err := n.db.Exec(query, newState, info.DoneHeight, info.OrderID, info.State)
-
-	return err
 }
 
 // LoadRechargeRecord load recharge record information
@@ -100,8 +92,8 @@ func (n *SQLDB) SaveWithdrawInfoAndUserBalance(rInfo *types.WithdrawRecord, bala
 	}()
 
 	query := fmt.Sprintf(
-		`INSERT INTO %s (order_id, from_addr, to_addr, value, created_height, done_height, state, withdraw_addr, withdraw_hash,  user_id) 
-		        VALUES (:order_id, :from_addr, :to_addr, :value, :created_height, :done_height, :state, :withdraw_addr, :withdraw_hash, :user_id)`, withdrawRecordTable)
+		`INSERT INTO %s (order_id, value, state, withdraw_addr, withdraw_hash,  user_id) 
+		        VALUES (:order_id,  :value, :state, :withdraw_addr, :withdraw_hash, :user_id)`, withdrawRecordTable)
 	_, err = tx.NamedExec(query, rInfo)
 	if err != nil {
 		return err
@@ -130,9 +122,9 @@ func (n *SQLDB) LoadWithdrawRecord(orderID string) (*types.WithdrawRecord, error
 
 // UpdateWithdrawRecord update withdraw record information
 func (n *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.WithdrawState) error {
-	query := fmt.Sprintf(`UPDATE %s SET state=?, value=?, done_time=NOW(), from_addr=?,
-	    done_height=?, withdraw_hash=?, executor=? WHERE order_id=? AND state=?`, withdrawRecordTable)
-	_, err := n.db.Exec(query, newState, info.Value, info.From, info.DoneHeight, info.WithdrawHash, info.Executor, info.OrderID, info.State)
+	query := fmt.Sprintf(`UPDATE %s SET state=?, value=?, done_time=NOW(), 
+	     withdraw_hash=?, executor=? WHERE order_id=? AND state=?`, withdrawRecordTable)
+	_, err := n.db.Exec(query, newState, info.Value, info.WithdrawHash, info.Executor, info.OrderID, info.State)
 
 	return err
 }
