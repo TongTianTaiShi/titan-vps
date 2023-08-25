@@ -160,3 +160,7 @@ func (m *Mall) AddAdminUser(ctx context.Context, userID, nickName string) error 
 
 	return nil
 }
+
+func (m *Mall) SupplementRechargeOrder(ctx context.Context, hash string) error {
+	return m.TransactionMgr.SupplementOrder(hash)
+}

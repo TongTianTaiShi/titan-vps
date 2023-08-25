@@ -25,6 +25,7 @@ var adminCmds = &cli.Command{
 		rejectWithdrawalCmd,
 		getWithdrawalCmd,
 		getAddressesCmd,
+		supplementRechargeCmd,
 	},
 }
 
@@ -885,5 +886,29 @@ var getAddressesCmd = &cli.Command{
 		}
 
 		return nil
+	},
+}
+
+var supplementRechargeCmd = &cli.Command{
+	Name:  "supplement",
+	Usage: "supplement recharge order",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "hash",
+			Usage: "tx hash",
+			Value: "",
+		},
+	},
+	Action: func(cctx *cli.Context) error {
+		ctx := ReqContext(cctx)
+
+		api, closer, err := GetMallAPI(cctx)
+		if err != nil {
+			return err
+		}
+		defer closer()
+
+		hash := cctx.String("hash")
+		return api.SupplementRechargeOrder(ctx, hash)
 	},
 }

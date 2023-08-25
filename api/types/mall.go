@@ -459,7 +459,6 @@ type TronTransferWatch struct {
 	To     string
 	Value  string
 	State  core.Transaction_ResultContractResult
-	Height int64
 	UserID string
 }
 

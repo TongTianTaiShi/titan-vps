@@ -28,6 +28,8 @@ type AdminAPIStruct struct {
 		LoginAdmin func(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) `perm:"default"`
 
 		RejectUserWithdrawal func(p0 context.Context, p1 string) error `perm:"admin"`
+
+		SupplementRechargeOrder func(p0 context.Context, p1 string) error `perm:"admin,user"`
 	}
 }
 
@@ -249,6 +251,17 @@ func (s *AdminAPIStruct) RejectUserWithdrawal(p0 context.Context, p1 string) err
 }
 
 func (s *AdminAPIStub) RejectUserWithdrawal(p0 context.Context, p1 string) error {
+	return ErrNotSupported
+}
+
+func (s *AdminAPIStruct) SupplementRechargeOrder(p0 context.Context, p1 string) error {
+	if s.Internal.SupplementRechargeOrder == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.SupplementRechargeOrder(p0, p1)
+}
+
+func (s *AdminAPIStub) SupplementRechargeOrder(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 

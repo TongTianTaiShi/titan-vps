@@ -37,6 +37,7 @@ type AdminAPI interface {
 	ApproveUserWithdrawal(ctx context.Context, orderID, withdrawHash string) error                               //perm:admin
 	RejectUserWithdrawal(ctx context.Context, orderID string) error                                              //perm:admin
 	GetRechargeAddresses(ctx context.Context, limit, page int64) (*types.GetRechargeAddressResponse, error)      //perm:admin
+	SupplementRechargeOrder(ctx context.Context, hash string) error                                              //perm:admin,user
 }
 
 // OrderAPI is an interface for order

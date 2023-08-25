@@ -106,8 +106,6 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 		return xerrors.New("block is nil")
 	}
 
-	height := blockExtention.BlockHeader.RawData.Number
-
 	for _, te := range blockExtention.Transactions {
 		if len(te.Transaction.GetRet()) == 0 {
 			continue
@@ -119,14 +117,14 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 		// userAddr := string(te.Transaction.RawData.Data)
 
 		for _, contract := range te.Transaction.RawData.Contract {
-			m.filterTransaction(contract, txID, height, state)
+			m.filterTransaction(contract, txID, state)
 		}
 	}
 
 	return nil
 }
 
-func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txID string, height int64, state core.Transaction_ResultContractResult) {
+func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txID string, state core.Transaction_ResultContractResult) {
 	if contract.Type == core.Transaction_Contract_TriggerSmartContract {
 		// trc20
 		unObj := &core.TriggerSmartContract{}
@@ -139,6 +137,7 @@ func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txID st
 		contractAddress := hdwallet.EncodeCheck(unObj.GetContractAddress())
 
 		if contractAddress != m.cfg.TrxContractorAddr {
+			// log.Errorf("contractAddress err: %s", contractAddress)
 			return
 		}
 
@@ -147,11 +146,11 @@ func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txID st
 
 		to, amount, isOk := m.decodeData(data)
 		if !isOk {
-			// log.Errorf("decodeData err: %s", txid)
+			// log.Errorf("decodeData err: %s", txID)
 			return
 		}
 
-		m.handleTransfer(txID, from, to, height, amount, state)
+		m.handleTransfer(txID, from, to, amount, state)
 	}
 }
 
@@ -172,7 +171,7 @@ func (m *Manager) decodeData(trc20 []byte) (to string, amount string, flag bool)
 	return
 }
 
-func (m *Manager) handleTransfer(txID, from, to string, height int64, amount string, state core.Transaction_ResultContractResult) {
+func (m *Manager) handleTransfer(txID, from, to string, amount string, state core.Transaction_ResultContractResult) {
 	// log.Debugf("Transfer :%s,%s,%s,%s,%s", txID, to, from, amount, state)
 
 	userI, exist := m.tronAddrs.Load(to)
@@ -185,8 +184,33 @@ func (m *Manager) handleTransfer(txID, from, to string, height int64, amount str
 			To:     to,
 			Value:  amount,
 			State:  state,
-			Height: height,
 			UserID: userID,
 		}, types.EventTronTransferWatch.String())
 	}
+}
+
+func (m *Manager) SupplementOrder(hash string) error {
+	client, err := m.getGrpcClient()
+	if err != nil {
+		log.Errorln("getGrpcClient err :", err.Error())
+		return err
+	}
+
+	info, err := client.GetTransactionByID(hash)
+	if err != nil {
+		log.Errorln("GetTransactionByID err :", err.Error())
+		return err
+	}
+
+	if len(info.GetRet()) == 0 {
+		return xerrors.New("GetRet is nil")
+	}
+
+	state := info.GetRet()[0].ContractRet
+
+	for _, contract := range info.RawData.Contract {
+		m.filterTransaction(contract, hash, state)
+	}
+
+	return nil
 }
