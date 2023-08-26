@@ -140,7 +140,6 @@ func (n *SQLDB) SaveInstancesInfo(rInfo *types.DescribeInstanceTypeFromBase) err
 func (n *SQLDB) InstancesDefaultExists(instanceTypeID, regionID string) (bool, error) {
 	var total int64
 	timeString := time.Now().Format(time.DateOnly)
-	fmt.Println(timeString)
 	countSQL := fmt.Sprintf(`SELECT count(1) FROM %s WHERE instance_type_id=? and region_id=? and updated_time>?`, instanceDefaultTable)
 	if err := n.db.Get(&total, countSQL, instanceTypeID, regionID, timeString); err != nil {
 		return false, err
