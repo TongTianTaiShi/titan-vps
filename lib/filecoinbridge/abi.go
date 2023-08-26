@@ -29,113 +29,151 @@ var (
 	_ = abi.ConvertType
 )
 
-// AbiMetaData contains all meta data concerning the Abi contract.
-var AbiMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burnFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"subtractedValue\",\"type\":\"uint256\"}],\"name\":\"decreaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"addedValue\",\"type\":\"uint256\"}],\"name\":\"increaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unpause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+// DescribePriceRequestDataDisk is an auto generated low-level Go binding around an user-defined struct.
+type DescribePriceRequestDataDisk struct {
+	Category         string
+	PerformanceLevel string
+	Size             int64
 }
 
-// AbiABI is the input ABI used to generate the binding from.
-// Deprecated: Use AbiMetaData.ABI instead.
-var AbiABI = AbiMetaData.ABI
-
-// Abi is an auto generated Go binding around an Ethereum contract.
-type Abi struct {
-	AbiCaller     // Read-only binding to the contract
-	AbiTransactor // Write-only binding to the contract
-	AbiFilterer   // Log filterer for contract events
+// IpcOrderInfo is an auto generated low-level Go binding around an user-defined struct.
+type IpcOrderInfo struct {
+	OrderID                 string
+	UserID                  string
+	Value                   string
+	CreatedTime             string
+	Type                    string
+	PeriodUnit              string
+	Period                  int32
+	RegionId                string
+	InstanceId              string
+	InstanceType            string
+	ImageId                 string
+	Memory                  string
+	MemoryUsed              string
+	Cores                   int32
+	CoresUsed               string
+	SecurityGroupId         string
+	InstanceChargeType      string
+	InternetMaxBandwidthOut int32
+	InternetMaxBandwidthIn  int32
+	IpAddress               string
+	TradePrice              string
+	SystemDiskCategory      string
+	OSType                  string
+	InternetChargeType      string
+	SystemDiskSize          int32
+	DataDiskString          string
+	DataDisk                []DescribePriceRequestDataDisk
 }
 
-// AbiCaller is an auto generated read-only Go binding around an Ethereum contract.
-type AbiCaller struct {
+// FvmMetaData contains all meta data concerning the Fvm contract.
+var FvmMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"OrderID\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"UserID\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"Value\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"CreatedTime\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"Type\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"PeriodUnit\",\"type\":\"string\"},{\"internalType\":\"int32\",\"name\":\"Period\",\"type\":\"int32\"},{\"internalType\":\"string\",\"name\":\"RegionId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"InstanceId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"InstanceType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"ImageId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"Memory\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"MemoryUsed\",\"type\":\"string\"},{\"internalType\":\"int32\",\"name\":\"Cores\",\"type\":\"int32\"},{\"internalType\":\"string\",\"name\":\"CoresUsed\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"SecurityGroupId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"InstanceChargeType\",\"type\":\"string\"},{\"internalType\":\"int32\",\"name\":\"InternetMaxBandwidthOut\",\"type\":\"int32\"},{\"internalType\":\"int32\",\"name\":\"InternetMaxBandwidthIn\",\"type\":\"int32\"},{\"internalType\":\"string\",\"name\":\"IpAddress\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"TradePrice\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"SystemDiskCategory\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"OSType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"InternetChargeType\",\"type\":\"string\"},{\"internalType\":\"int32\",\"name\":\"SystemDiskSize\",\"type\":\"int32\"},{\"internalType\":\"string\",\"name\":\"DataDiskString\",\"type\":\"string\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"Category\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"PerformanceLevel\",\"type\":\"string\"},{\"internalType\":\"int64\",\"name\":\"Size\",\"type\":\"int64\"}],\"internalType\":\"structDescribePriceRequestDataDisk[]\",\"name\":\"DataDisk\",\"type\":\"tuple[]\"}],\"internalType\":\"structIpcOrderInfo\",\"name\":\"x\",\"type\":\"tuple\"}],\"name\":\"setOrderInfo\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"orderID\",\"type\":\"string\"}],\"name\":\"getOrderInfo\",\"outputs\":[{\"components\":[{\"internalType\":\"string\",\"name\":\"OrderID\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"UserID\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"Value\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"CreatedTime\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"Type\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"PeriodUnit\",\"type\":\"string\"},{\"internalType\":\"int32\",\"name\":\"Period\",\"type\":\"int32\"},{\"internalType\":\"string\",\"name\":\"RegionId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"InstanceId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"InstanceType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"ImageId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"Memory\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"MemoryUsed\",\"type\":\"string\"},{\"internalType\":\"int32\",\"name\":\"Cores\",\"type\":\"int32\"},{\"internalType\":\"string\",\"name\":\"CoresUsed\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"SecurityGroupId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"InstanceChargeType\",\"type\":\"string\"},{\"internalType\":\"int32\",\"name\":\"InternetMaxBandwidthOut\",\"type\":\"int32\"},{\"internalType\":\"int32\",\"name\":\"InternetMaxBandwidthIn\",\"type\":\"int32\"},{\"internalType\":\"string\",\"name\":\"IpAddress\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"TradePrice\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"SystemDiskCategory\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"OSType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"InternetChargeType\",\"type\":\"string\"},{\"internalType\":\"int32\",\"name\":\"SystemDiskSize\",\"type\":\"int32\"},{\"internalType\":\"string\",\"name\":\"DataDiskString\",\"type\":\"string\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"Category\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"PerformanceLevel\",\"type\":\"string\"},{\"internalType\":\"int64\",\"name\":\"Size\",\"type\":\"int64\"}],\"internalType\":\"structDescribePriceRequestDataDisk[]\",\"name\":\"DataDisk\",\"type\":\"tuple[]\"}],\"internalType\":\"structIpcOrderInfo\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+}
+
+// FvmABI is the input ABI used to generate the binding from.
+// Deprecated: Use FvmMetaData.ABI instead.
+var FvmABI = FvmMetaData.ABI
+
+// Fvm is an auto generated Go binding around an Ethereum contract.
+type Fvm struct {
+	FvmCaller     // Read-only binding to the contract
+	FvmTransactor // Write-only binding to the contract
+	FvmFilterer   // Log filterer for contract events
+}
+
+// FvmCaller is an auto generated read-only Go binding around an Ethereum contract.
+type FvmCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// AbiTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type AbiTransactor struct {
+// FvmTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type FvmTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// AbiFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type AbiFilterer struct {
+// FvmFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type FvmFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// AbiSession is an auto generated Go binding around an Ethereum contract,
+// FvmSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type AbiSession struct {
-	Contract     *Abi              // Generic contract binding to set the session for
+type FvmSession struct {
+	Contract     *Fvm              // Generic contract binding to set the session for
 	CallOpts     bind.CallOpts     // Call options to use throughout this session
 	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// AbiCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// FvmCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type AbiCallerSession struct {
-	Contract *AbiCaller    // Generic contract caller binding to set the session for
+type FvmCallerSession struct {
+	Contract *FvmCaller    // Generic contract caller binding to set the session for
 	CallOpts bind.CallOpts // Call options to use throughout this session
 }
 
-// AbiTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// FvmTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type AbiTransactorSession struct {
-	Contract     *AbiTransactor    // Generic contract transactor binding to set the session for
+type FvmTransactorSession struct {
+	Contract     *FvmTransactor    // Generic contract transactor binding to set the session for
 	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// AbiRaw is an auto generated low-level Go binding around an Ethereum contract.
-type AbiRaw struct {
-	Contract *Abi // Generic contract binding to access the raw methods on
+// FvmRaw is an auto generated low-level Go binding around an Ethereum contract.
+type FvmRaw struct {
+	Contract *Fvm // Generic contract binding to access the raw methods on
 }
 
-// AbiCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type AbiCallerRaw struct {
-	Contract *AbiCaller // Generic read-only contract binding to access the raw methods on
+// FvmCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type FvmCallerRaw struct {
+	Contract *FvmCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// AbiTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type AbiTransactorRaw struct {
-	Contract *AbiTransactor // Generic write-only contract binding to access the raw methods on
+// FvmTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type FvmTransactorRaw struct {
+	Contract *FvmTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewAbi creates a new instance of Abi, bound to a specific deployed contract.
-func NewAbi(address common.Address, backend bind.ContractBackend) (*Abi, error) {
-	contract, err := bindAbi(address, backend, backend, backend)
+// NewFvm creates a new instance of Fvm, bound to a specific deployed contract.
+func NewFvm(address common.Address, backend bind.ContractBackend) (*Fvm, error) {
+	contract, err := bindFvm(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &Abi{AbiCaller: AbiCaller{contract: contract}, AbiTransactor: AbiTransactor{contract: contract}, AbiFilterer: AbiFilterer{contract: contract}}, nil
+	return &Fvm{FvmCaller: FvmCaller{contract: contract}, FvmTransactor: FvmTransactor{contract: contract}, FvmFilterer: FvmFilterer{contract: contract}}, nil
 }
 
-// NewAbiCaller creates a new read-only instance of Abi, bound to a specific deployed contract.
-func NewAbiCaller(address common.Address, caller bind.ContractCaller) (*AbiCaller, error) {
-	contract, err := bindAbi(address, caller, nil, nil)
+// NewFvmCaller creates a new read-only instance of Fvm, bound to a specific deployed contract.
+func NewFvmCaller(address common.Address, caller bind.ContractCaller) (*FvmCaller, error) {
+	contract, err := bindFvm(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &AbiCaller{contract: contract}, nil
+	return &FvmCaller{contract: contract}, nil
 }
 
-// NewAbiTransactor creates a new write-only instance of Abi, bound to a specific deployed contract.
-func NewAbiTransactor(address common.Address, transactor bind.ContractTransactor) (*AbiTransactor, error) {
-	contract, err := bindAbi(address, nil, transactor, nil)
+// NewFvmTransactor creates a new write-only instance of Fvm, bound to a specific deployed contract.
+func NewFvmTransactor(address common.Address, transactor bind.ContractTransactor) (*FvmTransactor, error) {
+	contract, err := bindFvm(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &AbiTransactor{contract: contract}, nil
+	return &FvmTransactor{contract: contract}, nil
 }
 
-// NewAbiFilterer creates a new log filterer instance of Abi, bound to a specific deployed contract.
-func NewAbiFilterer(address common.Address, filterer bind.ContractFilterer) (*AbiFilterer, error) {
-	contract, err := bindAbi(address, nil, nil, filterer)
+// NewFvmFilterer creates a new log filterer instance of Fvm, bound to a specific deployed contract.
+func NewFvmFilterer(address common.Address, filterer bind.ContractFilterer) (*FvmFilterer, error) {
+	contract, err := bindFvm(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &AbiFilterer{contract: contract}, nil
+	return &FvmFilterer{contract: contract}, nil
 }
 
-// bindAbi binds a generic wrapper to an already deployed contract.
-func bindAbi(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := AbiMetaData.GetAbi()
+// bindFvm binds a generic wrapper to an already deployed contract.
+func bindFvm(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := FvmMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
@@ -146,1265 +184,88 @@ func bindAbi(address common.Address, caller bind.ContractCaller, transactor bind
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Abi *AbiRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Abi.Contract.AbiCaller.contract.Call(opts, result, method, params...)
+func (_Fvm *FvmRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Fvm.Contract.FvmCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_Abi *AbiRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Abi.Contract.AbiTransactor.contract.Transfer(opts)
+func (_Fvm *FvmRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Fvm.Contract.FvmTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_Abi *AbiRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Abi.Contract.AbiTransactor.contract.Transact(opts, method, params...)
+func (_Fvm *FvmRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Fvm.Contract.FvmTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Abi *AbiCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Abi.Contract.contract.Call(opts, result, method, params...)
+func (_Fvm *FvmCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Fvm.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_Abi *AbiTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Abi.Contract.contract.Transfer(opts)
+func (_Fvm *FvmTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Fvm.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_Abi *AbiTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Abi.Contract.contract.Transact(opts, method, params...)
+func (_Fvm *FvmTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Fvm.Contract.contract.Transact(opts, method, params...)
 }
 
-// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
+// GetOrderInfo is a free data retrieval call binding the contract method 0x15eb3f30.
 //
-// Solidity: function allowance(address owner, address spender) view returns(uint256)
-func (_Abi *AbiCaller) Allowance(opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
+// Solidity: function getOrderInfo(string orderID) view returns((string,string,string,string,string,string,int32,string,string,string,string,string,string,int32,string,string,string,int32,int32,string,string,string,string,string,int32,string,(string,string,int64)[]))
+func (_Fvm *FvmCaller) GetOrderInfo(opts *bind.CallOpts, orderID string) (IpcOrderInfo, error) {
 	var out []interface{}
-	err := _Abi.contract.Call(opts, &out, "allowance", owner, spender)
+	err := _Fvm.contract.Call(opts, &out, "getOrderInfo", orderID)
 
 	if err != nil {
-		return *new(*big.Int), err
+		return *new(IpcOrderInfo), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	out0 := *abi.ConvertType(out[0], new(IpcOrderInfo)).(*IpcOrderInfo)
 
 	return out0, err
 
 }
 
-// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
+// GetOrderInfo is a free data retrieval call binding the contract method 0x15eb3f30.
 //
-// Solidity: function allowance(address owner, address spender) view returns(uint256)
-func (_Abi *AbiSession) Allowance(owner common.Address, spender common.Address) (*big.Int, error) {
-	return _Abi.Contract.Allowance(&_Abi.CallOpts, owner, spender)
+// Solidity: function getOrderInfo(string orderID) view returns((string,string,string,string,string,string,int32,string,string,string,string,string,string,int32,string,string,string,int32,int32,string,string,string,string,string,int32,string,(string,string,int64)[]))
+func (_Fvm *FvmSession) GetOrderInfo(orderID string) (IpcOrderInfo, error) {
+	return _Fvm.Contract.GetOrderInfo(&_Fvm.CallOpts, orderID)
 }
 
-// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
+// GetOrderInfo is a free data retrieval call binding the contract method 0x15eb3f30.
 //
-// Solidity: function allowance(address owner, address spender) view returns(uint256)
-func (_Abi *AbiCallerSession) Allowance(owner common.Address, spender common.Address) (*big.Int, error) {
-	return _Abi.Contract.Allowance(&_Abi.CallOpts, owner, spender)
+// Solidity: function getOrderInfo(string orderID) view returns((string,string,string,string,string,string,int32,string,string,string,string,string,string,int32,string,string,string,int32,int32,string,string,string,string,string,int32,string,(string,string,int64)[]))
+func (_Fvm *FvmCallerSession) GetOrderInfo(orderID string) (IpcOrderInfo, error) {
+	return _Fvm.Contract.GetOrderInfo(&_Fvm.CallOpts, orderID)
 }
 
-// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
+// SetOrderInfo is a paid mutator transaction binding the contract method 0x4aa7d79b.
 //
-// Solidity: function balanceOf(address account) view returns(uint256)
-func (_Abi *AbiCaller) BalanceOf(opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	var out []interface{}
-	err := _Abi.contract.Call(opts, &out, "balanceOf", account)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
-//
-// Solidity: function balanceOf(address account) view returns(uint256)
-func (_Abi *AbiSession) BalanceOf(account common.Address) (*big.Int, error) {
-	return _Abi.Contract.BalanceOf(&_Abi.CallOpts, account)
-}
-
-// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
-//
-// Solidity: function balanceOf(address account) view returns(uint256)
-func (_Abi *AbiCallerSession) BalanceOf(account common.Address) (*big.Int, error) {
-	return _Abi.Contract.BalanceOf(&_Abi.CallOpts, account)
-}
-
-// Decimals is a free data retrieval call binding the contract method 0x313ce567.
-//
-// Solidity: function decimals() view returns(uint8)
-func (_Abi *AbiCaller) Decimals(opts *bind.CallOpts) (uint8, error) {
-	var out []interface{}
-	err := _Abi.contract.Call(opts, &out, "decimals")
-
-	if err != nil {
-		return *new(uint8), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
-
-	return out0, err
-
-}
-
-// Decimals is a free data retrieval call binding the contract method 0x313ce567.
-//
-// Solidity: function decimals() view returns(uint8)
-func (_Abi *AbiSession) Decimals() (uint8, error) {
-	return _Abi.Contract.Decimals(&_Abi.CallOpts)
-}
-
-// Decimals is a free data retrieval call binding the contract method 0x313ce567.
-//
-// Solidity: function decimals() view returns(uint8)
-func (_Abi *AbiCallerSession) Decimals() (uint8, error) {
-	return _Abi.Contract.Decimals(&_Abi.CallOpts)
-}
-
-// Name is a free data retrieval call binding the contract method 0x06fdde03.
-//
-// Solidity: function name() view returns(string)
-func (_Abi *AbiCaller) Name(opts *bind.CallOpts) (string, error) {
-	var out []interface{}
-	err := _Abi.contract.Call(opts, &out, "name")
-
-	if err != nil {
-		return *new(string), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(string)).(*string)
-
-	return out0, err
-
-}
-
-// Name is a free data retrieval call binding the contract method 0x06fdde03.
-//
-// Solidity: function name() view returns(string)
-func (_Abi *AbiSession) Name() (string, error) {
-	return _Abi.Contract.Name(&_Abi.CallOpts)
-}
-
-// Name is a free data retrieval call binding the contract method 0x06fdde03.
-//
-// Solidity: function name() view returns(string)
-func (_Abi *AbiCallerSession) Name() (string, error) {
-	return _Abi.Contract.Name(&_Abi.CallOpts)
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_Abi *AbiCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _Abi.contract.Call(opts, &out, "owner")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_Abi *AbiSession) Owner() (common.Address, error) {
-	return _Abi.Contract.Owner(&_Abi.CallOpts)
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_Abi *AbiCallerSession) Owner() (common.Address, error) {
-	return _Abi.Contract.Owner(&_Abi.CallOpts)
-}
-
-// Paused is a free data retrieval call binding the contract method 0x5c975abb.
-//
-// Solidity: function paused() view returns(bool)
-func (_Abi *AbiCaller) Paused(opts *bind.CallOpts) (bool, error) {
-	var out []interface{}
-	err := _Abi.contract.Call(opts, &out, "paused")
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// Paused is a free data retrieval call binding the contract method 0x5c975abb.
-//
-// Solidity: function paused() view returns(bool)
-func (_Abi *AbiSession) Paused() (bool, error) {
-	return _Abi.Contract.Paused(&_Abi.CallOpts)
-}
-
-// Paused is a free data retrieval call binding the contract method 0x5c975abb.
-//
-// Solidity: function paused() view returns(bool)
-func (_Abi *AbiCallerSession) Paused() (bool, error) {
-	return _Abi.Contract.Paused(&_Abi.CallOpts)
-}
-
-// Symbol is a free data retrieval call binding the contract method 0x95d89b41.
-//
-// Solidity: function symbol() view returns(string)
-func (_Abi *AbiCaller) Symbol(opts *bind.CallOpts) (string, error) {
-	var out []interface{}
-	err := _Abi.contract.Call(opts, &out, "symbol")
-
-	if err != nil {
-		return *new(string), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(string)).(*string)
-
-	return out0, err
-
-}
-
-// Symbol is a free data retrieval call binding the contract method 0x95d89b41.
-//
-// Solidity: function symbol() view returns(string)
-func (_Abi *AbiSession) Symbol() (string, error) {
-	return _Abi.Contract.Symbol(&_Abi.CallOpts)
-}
-
-// Symbol is a free data retrieval call binding the contract method 0x95d89b41.
-//
-// Solidity: function symbol() view returns(string)
-func (_Abi *AbiCallerSession) Symbol() (string, error) {
-	return _Abi.Contract.Symbol(&_Abi.CallOpts)
-}
-
-// TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.
-//
-// Solidity: function totalSupply() view returns(uint256)
-func (_Abi *AbiCaller) TotalSupply(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Abi.contract.Call(opts, &out, "totalSupply")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.
-//
-// Solidity: function totalSupply() view returns(uint256)
-func (_Abi *AbiSession) TotalSupply() (*big.Int, error) {
-	return _Abi.Contract.TotalSupply(&_Abi.CallOpts)
-}
-
-// TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.
-//
-// Solidity: function totalSupply() view returns(uint256)
-func (_Abi *AbiCallerSession) TotalSupply() (*big.Int, error) {
-	return _Abi.Contract.TotalSupply(&_Abi.CallOpts)
-}
-
-// Approve is a paid mutator transaction binding the contract method 0x095ea7b3.
-//
-// Solidity: function approve(address spender, uint256 amount) returns(bool)
-func (_Abi *AbiTransactor) Approve(opts *bind.TransactOpts, spender common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "approve", spender, amount)
-}
-
-// Approve is a paid mutator transaction binding the contract method 0x095ea7b3.
-//
-// Solidity: function approve(address spender, uint256 amount) returns(bool)
-func (_Abi *AbiSession) Approve(spender common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.Approve(&_Abi.TransactOpts, spender, amount)
-}
-
-// Approve is a paid mutator transaction binding the contract method 0x095ea7b3.
-//
-// Solidity: function approve(address spender, uint256 amount) returns(bool)
-func (_Abi *AbiTransactorSession) Approve(spender common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.Approve(&_Abi.TransactOpts, spender, amount)
-}
-
-// Burn is a paid mutator transaction binding the contract method 0x42966c68.
-//
-// Solidity: function burn(uint256 amount) returns()
-func (_Abi *AbiTransactor) Burn(opts *bind.TransactOpts, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "burn", amount)
-}
-
-// Burn is a paid mutator transaction binding the contract method 0x42966c68.
-//
-// Solidity: function burn(uint256 amount) returns()
-func (_Abi *AbiSession) Burn(amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.Burn(&_Abi.TransactOpts, amount)
-}
-
-// Burn is a paid mutator transaction binding the contract method 0x42966c68.
-//
-// Solidity: function burn(uint256 amount) returns()
-func (_Abi *AbiTransactorSession) Burn(amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.Burn(&_Abi.TransactOpts, amount)
-}
-
-// BurnFrom is a paid mutator transaction binding the contract method 0x79cc6790.
-//
-// Solidity: function burnFrom(address account, uint256 amount) returns()
-func (_Abi *AbiTransactor) BurnFrom(opts *bind.TransactOpts, account common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "burnFrom", account, amount)
-}
-
-// BurnFrom is a paid mutator transaction binding the contract method 0x79cc6790.
-//
-// Solidity: function burnFrom(address account, uint256 amount) returns()
-func (_Abi *AbiSession) BurnFrom(account common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.BurnFrom(&_Abi.TransactOpts, account, amount)
-}
-
-// BurnFrom is a paid mutator transaction binding the contract method 0x79cc6790.
-//
-// Solidity: function burnFrom(address account, uint256 amount) returns()
-func (_Abi *AbiTransactorSession) BurnFrom(account common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.BurnFrom(&_Abi.TransactOpts, account, amount)
-}
-
-// DecreaseAllowance is a paid mutator transaction binding the contract method 0xa457c2d7.
-//
-// Solidity: function decreaseAllowance(address spender, uint256 subtractedValue) returns(bool)
-func (_Abi *AbiTransactor) DecreaseAllowance(opts *bind.TransactOpts, spender common.Address, subtractedValue *big.Int) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "decreaseAllowance", spender, subtractedValue)
-}
-
-// DecreaseAllowance is a paid mutator transaction binding the contract method 0xa457c2d7.
-//
-// Solidity: function decreaseAllowance(address spender, uint256 subtractedValue) returns(bool)
-func (_Abi *AbiSession) DecreaseAllowance(spender common.Address, subtractedValue *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.DecreaseAllowance(&_Abi.TransactOpts, spender, subtractedValue)
-}
-
-// DecreaseAllowance is a paid mutator transaction binding the contract method 0xa457c2d7.
-//
-// Solidity: function decreaseAllowance(address spender, uint256 subtractedValue) returns(bool)
-func (_Abi *AbiTransactorSession) DecreaseAllowance(spender common.Address, subtractedValue *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.DecreaseAllowance(&_Abi.TransactOpts, spender, subtractedValue)
-}
-
-// IncreaseAllowance is a paid mutator transaction binding the contract method 0x39509351.
-//
-// Solidity: function increaseAllowance(address spender, uint256 addedValue) returns(bool)
-func (_Abi *AbiTransactor) IncreaseAllowance(opts *bind.TransactOpts, spender common.Address, addedValue *big.Int) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "increaseAllowance", spender, addedValue)
-}
-
-// IncreaseAllowance is a paid mutator transaction binding the contract method 0x39509351.
-//
-// Solidity: function increaseAllowance(address spender, uint256 addedValue) returns(bool)
-func (_Abi *AbiSession) IncreaseAllowance(spender common.Address, addedValue *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.IncreaseAllowance(&_Abi.TransactOpts, spender, addedValue)
-}
-
-// IncreaseAllowance is a paid mutator transaction binding the contract method 0x39509351.
-//
-// Solidity: function increaseAllowance(address spender, uint256 addedValue) returns(bool)
-func (_Abi *AbiTransactorSession) IncreaseAllowance(spender common.Address, addedValue *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.IncreaseAllowance(&_Abi.TransactOpts, spender, addedValue)
-}
-
-// Mint is a paid mutator transaction binding the contract method 0x40c10f19.
-//
-// Solidity: function mint(address to, uint256 amount) returns()
-func (_Abi *AbiTransactor) Mint(opts *bind.TransactOpts, to common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "mint", to, amount)
-}
-
-// Mint is a paid mutator transaction binding the contract method 0x40c10f19.
-//
-// Solidity: function mint(address to, uint256 amount) returns()
-func (_Abi *AbiSession) Mint(to common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.Mint(&_Abi.TransactOpts, to, amount)
-}
-
-// Mint is a paid mutator transaction binding the contract method 0x40c10f19.
-//
-// Solidity: function mint(address to, uint256 amount) returns()
-func (_Abi *AbiTransactorSession) Mint(to common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.Mint(&_Abi.TransactOpts, to, amount)
-}
-
-// Pause is a paid mutator transaction binding the contract method 0x8456cb59.
-//
-// Solidity: function pause() returns()
-func (_Abi *AbiTransactor) Pause(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "pause")
-}
-
-// Pause is a paid mutator transaction binding the contract method 0x8456cb59.
-//
-// Solidity: function pause() returns()
-func (_Abi *AbiSession) Pause() (*types.Transaction, error) {
-	return _Abi.Contract.Pause(&_Abi.TransactOpts)
-}
-
-// Pause is a paid mutator transaction binding the contract method 0x8456cb59.
-//
-// Solidity: function pause() returns()
-func (_Abi *AbiTransactorSession) Pause() (*types.Transaction, error) {
-	return _Abi.Contract.Pause(&_Abi.TransactOpts)
-}
-
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
-//
-// Solidity: function renounceOwnership() returns()
-func (_Abi *AbiTransactor) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "renounceOwnership")
-}
-
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
-//
-// Solidity: function renounceOwnership() returns()
-func (_Abi *AbiSession) RenounceOwnership() (*types.Transaction, error) {
-	return _Abi.Contract.RenounceOwnership(&_Abi.TransactOpts)
-}
-
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
-//
-// Solidity: function renounceOwnership() returns()
-func (_Abi *AbiTransactorSession) RenounceOwnership() (*types.Transaction, error) {
-	return _Abi.Contract.RenounceOwnership(&_Abi.TransactOpts)
-}
-
-// Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
-//
-// Solidity: function transfer(address to, uint256 amount) returns(bool)
-func (_Abi *AbiTransactor) Transfer(opts *bind.TransactOpts, to common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "transfer", to, amount)
+// Solidity: function setOrderInfo((string,string,string,string,string,string,int32,string,string,string,string,string,string,int32,string,string,string,int32,int32,string,string,string,string,string,int32,string,(string,string,int64)[]) x) returns()
+func (_Fvm *FvmTransactor) SetOrderInfo(opts *bind.TransactOpts, x IpcOrderInfo) (*types.Transaction, error) {
+	return _Fvm.contract.Transact(opts, "setOrderInfo", x)
 }
 
-// Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
+// SetOrderInfo is a paid mutator transaction binding the contract method 0x4aa7d79b.
 //
-// Solidity: function transfer(address to, uint256 amount) returns(bool)
-func (_Abi *AbiSession) Transfer(to common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.Transfer(&_Abi.TransactOpts, to, amount)
-}
-
-// Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
-//
-// Solidity: function transfer(address to, uint256 amount) returns(bool)
-func (_Abi *AbiTransactorSession) Transfer(to common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.Transfer(&_Abi.TransactOpts, to, amount)
-}
-
-// TransferFrom is a paid mutator transaction binding the contract method 0x23b872dd.
-//
-// Solidity: function transferFrom(address from, address to, uint256 amount) returns(bool)
-func (_Abi *AbiTransactor) TransferFrom(opts *bind.TransactOpts, from common.Address, to common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "transferFrom", from, to, amount)
-}
-
-// TransferFrom is a paid mutator transaction binding the contract method 0x23b872dd.
-//
-// Solidity: function transferFrom(address from, address to, uint256 amount) returns(bool)
-func (_Abi *AbiSession) TransferFrom(from common.Address, to common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.TransferFrom(&_Abi.TransactOpts, from, to, amount)
-}
-
-// TransferFrom is a paid mutator transaction binding the contract method 0x23b872dd.
-//
-// Solidity: function transferFrom(address from, address to, uint256 amount) returns(bool)
-func (_Abi *AbiTransactorSession) TransferFrom(from common.Address, to common.Address, amount *big.Int) (*types.Transaction, error) {
-	return _Abi.Contract.TransferFrom(&_Abi.TransactOpts, from, to, amount)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_Abi *AbiTransactor) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "transferOwnership", newOwner)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_Abi *AbiSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
-	return _Abi.Contract.TransferOwnership(&_Abi.TransactOpts, newOwner)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_Abi *AbiTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
-	return _Abi.Contract.TransferOwnership(&_Abi.TransactOpts, newOwner)
-}
-
-// Unpause is a paid mutator transaction binding the contract method 0x3f4ba83a.
-//
-// Solidity: function unpause() returns()
-func (_Abi *AbiTransactor) Unpause(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Abi.contract.Transact(opts, "unpause")
-}
-
-// Unpause is a paid mutator transaction binding the contract method 0x3f4ba83a.
-//
-// Solidity: function unpause() returns()
-func (_Abi *AbiSession) Unpause() (*types.Transaction, error) {
-	return _Abi.Contract.Unpause(&_Abi.TransactOpts)
-}
-
-// Unpause is a paid mutator transaction binding the contract method 0x3f4ba83a.
-//
-// Solidity: function unpause() returns()
-func (_Abi *AbiTransactorSession) Unpause() (*types.Transaction, error) {
-	return _Abi.Contract.Unpause(&_Abi.TransactOpts)
-}
-
-// AbiApprovalIterator is returned from FilterApproval and is used to iterate over the raw logs and unpacked data for Approval events raised by the Abi contract.
-type AbiApprovalIterator struct {
-	Event *AbiApproval // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *AbiApprovalIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(AbiApproval)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(AbiApproval)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbiApprovalIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *AbiApprovalIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// AbiApproval represents a Approval event raised by the Abi contract.
-type AbiApproval struct {
-	Owner   common.Address
-	Spender common.Address
-	Value   *big.Int
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// FilterApproval is a free log retrieval operation binding the contract event 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925.
-//
-// Solidity: event Approval(address indexed owner, address indexed spender, uint256 value)
-func (_Abi *AbiFilterer) FilterApproval(opts *bind.FilterOpts, owner []common.Address, spender []common.Address) (*AbiApprovalIterator, error) {
-
-	var ownerRule []interface{}
-	for _, ownerItem := range owner {
-		ownerRule = append(ownerRule, ownerItem)
-	}
-	var spenderRule []interface{}
-	for _, spenderItem := range spender {
-		spenderRule = append(spenderRule, spenderItem)
-	}
-
-	logs, sub, err := _Abi.contract.FilterLogs(opts, "Approval", ownerRule, spenderRule)
-	if err != nil {
-		return nil, err
-	}
-	return &AbiApprovalIterator{contract: _Abi.contract, event: "Approval", logs: logs, sub: sub}, nil
-}
-
-// WatchApproval is a free log subscription operation binding the contract event 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925.
-//
-// Solidity: event Approval(address indexed owner, address indexed spender, uint256 value)
-func (_Abi *AbiFilterer) WatchApproval(opts *bind.WatchOpts, sink chan<- *AbiApproval, owner []common.Address, spender []common.Address) (event.Subscription, error) {
-
-	var ownerRule []interface{}
-	for _, ownerItem := range owner {
-		ownerRule = append(ownerRule, ownerItem)
-	}
-	var spenderRule []interface{}
-	for _, spenderItem := range spender {
-		spenderRule = append(spenderRule, spenderItem)
-	}
-
-	logs, sub, err := _Abi.contract.WatchLogs(opts, "Approval", ownerRule, spenderRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(AbiApproval)
-				if err := _Abi.contract.UnpackLog(event, "Approval", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseApproval is a log parse operation binding the contract event 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925.
-//
-// Solidity: event Approval(address indexed owner, address indexed spender, uint256 value)
-func (_Abi *AbiFilterer) ParseApproval(log types.Log) (*AbiApproval, error) {
-	event := new(AbiApproval)
-	if err := _Abi.contract.UnpackLog(event, "Approval", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// AbiOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the Abi contract.
-type AbiOwnershipTransferredIterator struct {
-	Event *AbiOwnershipTransferred // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *AbiOwnershipTransferredIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(AbiOwnershipTransferred)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(AbiOwnershipTransferred)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbiOwnershipTransferredIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *AbiOwnershipTransferredIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// AbiOwnershipTransferred represents a OwnershipTransferred event raised by the Abi contract.
-type AbiOwnershipTransferred struct {
-	PreviousOwner common.Address
-	NewOwner      common.Address
-	Raw           types.Log // Blockchain specific contextual infos
-}
-
-// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
-//
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_Abi *AbiFilterer) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*AbiOwnershipTransferredIterator, error) {
-
-	var previousOwnerRule []interface{}
-	for _, previousOwnerItem := range previousOwner {
-		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
-	}
-	var newOwnerRule []interface{}
-	for _, newOwnerItem := range newOwner {
-		newOwnerRule = append(newOwnerRule, newOwnerItem)
-	}
-
-	logs, sub, err := _Abi.contract.FilterLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
-	if err != nil {
-		return nil, err
-	}
-	return &AbiOwnershipTransferredIterator{contract: _Abi.contract, event: "OwnershipTransferred", logs: logs, sub: sub}, nil
-}
-
-// WatchOwnershipTransferred is a free log subscription operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
-//
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_Abi *AbiFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *AbiOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
-
-	var previousOwnerRule []interface{}
-	for _, previousOwnerItem := range previousOwner {
-		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
-	}
-	var newOwnerRule []interface{}
-	for _, newOwnerItem := range newOwner {
-		newOwnerRule = append(newOwnerRule, newOwnerItem)
-	}
-
-	logs, sub, err := _Abi.contract.WatchLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(AbiOwnershipTransferred)
-				if err := _Abi.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseOwnershipTransferred is a log parse operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
-//
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_Abi *AbiFilterer) ParseOwnershipTransferred(log types.Log) (*AbiOwnershipTransferred, error) {
-	event := new(AbiOwnershipTransferred)
-	if err := _Abi.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// AbiPausedIterator is returned from FilterPaused and is used to iterate over the raw logs and unpacked data for Paused events raised by the Abi contract.
-type AbiPausedIterator struct {
-	Event *AbiPaused // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *AbiPausedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(AbiPaused)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(AbiPaused)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbiPausedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *AbiPausedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// AbiPaused represents a Paused event raised by the Abi contract.
-type AbiPaused struct {
-	Account common.Address
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// FilterPaused is a free log retrieval operation binding the contract event 0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258.
-//
-// Solidity: event Paused(address account)
-func (_Abi *AbiFilterer) FilterPaused(opts *bind.FilterOpts) (*AbiPausedIterator, error) {
-
-	logs, sub, err := _Abi.contract.FilterLogs(opts, "Paused")
-	if err != nil {
-		return nil, err
-	}
-	return &AbiPausedIterator{contract: _Abi.contract, event: "Paused", logs: logs, sub: sub}, nil
-}
-
-// WatchPaused is a free log subscription operation binding the contract event 0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258.
-//
-// Solidity: event Paused(address account)
-func (_Abi *AbiFilterer) WatchPaused(opts *bind.WatchOpts, sink chan<- *AbiPaused) (event.Subscription, error) {
-
-	logs, sub, err := _Abi.contract.WatchLogs(opts, "Paused")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(AbiPaused)
-				if err := _Abi.contract.UnpackLog(event, "Paused", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParsePaused is a log parse operation binding the contract event 0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258.
-//
-// Solidity: event Paused(address account)
-func (_Abi *AbiFilterer) ParsePaused(log types.Log) (*AbiPaused, error) {
-	event := new(AbiPaused)
-	if err := _Abi.contract.UnpackLog(event, "Paused", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// AbiTransferIterator is returned from FilterTransfer and is used to iterate over the raw logs and unpacked data for Transfer events raised by the Abi contract.
-type AbiTransferIterator struct {
-	Event *AbiTransfer // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *AbiTransferIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(AbiTransfer)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(AbiTransfer)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbiTransferIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *AbiTransferIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// AbiTransfer represents a Transfer event raised by the Abi contract.
-type AbiTransfer struct {
-	From  common.Address
-	To    common.Address
-	Value *big.Int
-	Raw   types.Log // Blockchain specific contextual infos
-}
-
-// FilterTransfer is a free log retrieval operation binding the contract event 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef.
-//
-// Solidity: event Transfer(address indexed from, address indexed to, uint256 value)
-func (_Abi *AbiFilterer) FilterTransfer(opts *bind.FilterOpts, from []common.Address, to []common.Address) (*AbiTransferIterator, error) {
-
-	var fromRule []interface{}
-	for _, fromItem := range from {
-		fromRule = append(fromRule, fromItem)
-	}
-	var toRule []interface{}
-	for _, toItem := range to {
-		toRule = append(toRule, toItem)
-	}
-
-	logs, sub, err := _Abi.contract.FilterLogs(opts, "Transfer", fromRule, toRule)
-	if err != nil {
-		return nil, err
-	}
-	return &AbiTransferIterator{contract: _Abi.contract, event: "Transfer", logs: logs, sub: sub}, nil
-}
-
-// WatchTransfer is a free log subscription operation binding the contract event 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef.
-//
-// Solidity: event Transfer(address indexed from, address indexed to, uint256 value)
-func (_Abi *AbiFilterer) WatchTransfer(opts *bind.WatchOpts, sink chan<- *AbiTransfer, from []common.Address, to []common.Address) (event.Subscription, error) {
-
-	var fromRule []interface{}
-	for _, fromItem := range from {
-		fromRule = append(fromRule, fromItem)
-	}
-	var toRule []interface{}
-	for _, toItem := range to {
-		toRule = append(toRule, toItem)
-	}
-
-	logs, sub, err := _Abi.contract.WatchLogs(opts, "Transfer", fromRule, toRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(AbiTransfer)
-				if err := _Abi.contract.UnpackLog(event, "Transfer", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseTransfer is a log parse operation binding the contract event 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef.
-//
-// Solidity: event Transfer(address indexed from, address indexed to, uint256 value)
-func (_Abi *AbiFilterer) ParseTransfer(log types.Log) (*AbiTransfer, error) {
-	event := new(AbiTransfer)
-	if err := _Abi.contract.UnpackLog(event, "Transfer", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// AbiUnpausedIterator is returned from FilterUnpaused and is used to iterate over the raw logs and unpacked data for Unpaused events raised by the Abi contract.
-type AbiUnpausedIterator struct {
-	Event *AbiUnpaused // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *AbiUnpausedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(AbiUnpaused)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(AbiUnpaused)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *AbiUnpausedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *AbiUnpausedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// AbiUnpaused represents a Unpaused event raised by the Abi contract.
-type AbiUnpaused struct {
-	Account common.Address
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// FilterUnpaused is a free log retrieval operation binding the contract event 0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa.
-//
-// Solidity: event Unpaused(address account)
-func (_Abi *AbiFilterer) FilterUnpaused(opts *bind.FilterOpts) (*AbiUnpausedIterator, error) {
-
-	logs, sub, err := _Abi.contract.FilterLogs(opts, "Unpaused")
-	if err != nil {
-		return nil, err
-	}
-	return &AbiUnpausedIterator{contract: _Abi.contract, event: "Unpaused", logs: logs, sub: sub}, nil
-}
-
-// WatchUnpaused is a free log subscription operation binding the contract event 0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa.
-//
-// Solidity: event Unpaused(address account)
-func (_Abi *AbiFilterer) WatchUnpaused(opts *bind.WatchOpts, sink chan<- *AbiUnpaused) (event.Subscription, error) {
-
-	logs, sub, err := _Abi.contract.WatchLogs(opts, "Unpaused")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(AbiUnpaused)
-				if err := _Abi.contract.UnpackLog(event, "Unpaused", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
+// Solidity: function setOrderInfo((string,string,string,string,string,string,int32,string,string,string,string,string,string,int32,string,string,string,int32,int32,string,string,string,string,string,int32,string,(string,string,int64)[]) x) returns()
+func (_Fvm *FvmSession) SetOrderInfo(x IpcOrderInfo) (*types.Transaction, error) {
+	return _Fvm.Contract.SetOrderInfo(&_Fvm.TransactOpts, x)
 }
 
-// ParseUnpaused is a log parse operation binding the contract event 0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa.
+// SetOrderInfo is a paid mutator transaction binding the contract method 0x4aa7d79b.
 //
-// Solidity: event Unpaused(address account)
-func (_Abi *AbiFilterer) ParseUnpaused(log types.Log) (*AbiUnpaused, error) {
-	event := new(AbiUnpaused)
-	if err := _Abi.contract.UnpackLog(event, "Unpaused", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
+// Solidity: function setOrderInfo((string,string,string,string,string,string,int32,string,string,string,string,string,string,int32,string,string,string,int32,int32,string,string,string,string,string,int32,string,(string,string,int64)[]) x) returns()
+func (_Fvm *FvmTransactorSession) SetOrderInfo(x IpcOrderInfo) (*types.Transaction, error) {
+	return _Fvm.Contract.SetOrderInfo(&_Fvm.TransactOpts, x)
 }
