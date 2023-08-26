@@ -2,9 +2,10 @@ package vps
 
 import (
 	"context"
+	"time"
+
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/terrors"
-	"time"
 
 	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
 
@@ -43,7 +44,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		cfg:       cfg,
 		vpsClient: make(map[string]*ecs20140526.Client),
 	}
-	//go m.cronGetInstanceDefaultInfo()
+	// go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
@@ -379,7 +380,6 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 			}
 		}
 	}
-	reverse(rspDataList)
 	return rspDataList, nil
 }
 
@@ -397,10 +397,4 @@ func (m *Manager) ModifyInstanceRenew(renewReq *types.SetRenewOrderReq) error {
 		return &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *errSDK.Message}
 	}
 	return nil
-}
-
-func reverse(s []*types.AvailableResourceResponse) {
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
-	}
 }
