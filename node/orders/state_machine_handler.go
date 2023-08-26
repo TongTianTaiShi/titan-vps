@@ -96,7 +96,6 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 			return ctx.Send(BuyFailed{Msg: err.Error()})
 		}
 	}
-
 	//// Save To DB
 	//err = m.SaveVpsInstanceDevice(rsp)
 	//if err != nil {

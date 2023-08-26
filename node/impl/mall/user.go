@@ -132,8 +132,8 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 		instanceIds = append(instanceIds, instanceInfo.InstanceId)
 		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.Location, k, s, instanceIds)
 		if err != nil {
-			log.Errorf("DescribeInstanceStatus err: %s", err.Error())
-			return nil, &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: err.Error()}
+			log.Errorf("DescribeInstanceStatus err: %s", *err.Message)
+			return nil, &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: *err.Message}
 		}
 		renewInfo := types.SetRenewOrderReq{
 			RegionID:   instanceInfo.Location,
@@ -150,7 +150,14 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 			continue
 		}
 		instanceInfo.Renew = status
-
+		instanceExpiredTime, err := aliyun.DescribeInstances(instanceInfo.Location, k, s, instanceIds)
+		if err != nil {
+			log.Errorf("DescribeInstances err: %s", *err.Message)
+			continue
+		}
+		if len(instanceExpiredTime.Body.Instances.Instance) > 0 {
+			instanceInfo.ExpiredTime = *instanceExpiredTime.Body.Instances.Instance[0].ExpiredTime
+		}
 	}
 
 	return instanceInfos, nil

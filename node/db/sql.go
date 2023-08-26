@@ -45,7 +45,6 @@ const (
 	withdrawRecordTable    = "withdraw_record"
 	vpsInstanceDeviceTable = "vps_instance_device"
 	instancesDetailsTable  = "instances_details"
-	myInstancesTable       = "my_instances"
 	configTable            = "config"
 	userTable              = "user_info"
 	adminTable             = "admin_info"
@@ -78,7 +77,6 @@ func (n *SQLDB) initTables() error {
 	// Execute table creation statements
 	tx.MustExec(fmt.Sprintf(cOrderRecordTable, orderRecordTable))
 	tx.MustExec(fmt.Sprintf(cInstanceDetailsTable, instancesDetailsTable))
-	tx.MustExec(fmt.Sprintf(cMyInstancesTable, myInstancesTable))
 	tx.MustExec(fmt.Sprintf(cRechargeTable, rechargeRecordTable))
 	tx.MustExec(fmt.Sprintf(cWithdrawTable, withdrawRecordTable))
 	tx.MustExec(fmt.Sprintf(cConfigTable, configTable))

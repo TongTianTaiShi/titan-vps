@@ -105,6 +105,8 @@ type RenewOrderReq struct {
 type SetRenewOrderReq struct {
 	RegionID   string `db:"region_id"`
 	InstanceId string `db:"instance_id"`
+	PeriodUnit string `db:"period_unit"`
+	Period     int32  `db:"period"`
 	Renew      int    `db:"renew"`
 }
 
@@ -137,6 +139,7 @@ type CreateInstanceReq struct {
 	Renew                   int       `db:"renew"`
 	DataDiskString          string    `db:"data_disk"`
 	CreatedTime             time.Time `db:"created_time"`
+	ExpiredTime             string    `db:"expired_time"`
 	DataDisk                []DescribePriceRequestDataDisk
 }
 
@@ -481,20 +484,21 @@ type MyInstanceResponse struct {
 }
 
 type MyInstance struct {
-	ID                 string             `db:"id"`
-	InstanceId         string             `db:"instance_id"`
-	OrderID            string             `db:"order_id"`
-	UserID             string             `db:"user_id"`
-	PrivateKeyStatus   MyInstanceKeyState `db:"private_key_status"`
-	InstanceName       string             `db:"instance_name"`
-	InstanceSystem     string             `db:"instance_system"`
-	Location           string             `db:"location"`
-	Price              float32            `db:"price"`
-	State              string             `db:"state"`
-	Renew              string
-	InternetChargeType string    `db:"internet_charge_type"`
-	BandwidthOut       int32     `db:"bandwidth_out"`
-	CreatedTime        time.Time `db:"created_time"`
+	ID               string             `db:"id"`
+	InstanceId       string             `db:"instance_id"`
+	OrderID          string             `db:"order_id"`
+	UserID           string             `db:"user_id"`
+	PrivateKeyStatus MyInstanceKeyState `db:"private_key_status"`
+	InstanceName     string             `db:"instance_name"`
+	InstanceSystem   string             `db:"os_type"`
+	Location         string             `db:"region_id"`
+	Price            float32            `db:"trade_price"`
+	State            string
+	Renew            string
+	//InternetChargeType string    `db:"internet_charge_type"`
+	BandwidthOut int32     `db:"bandwidth_out"`
+	CreatedTime  time.Time `db:"created_time"`
+	ExpiredTime  string    `db:"expired_time"`
 }
 
 type InstanceDefault struct {

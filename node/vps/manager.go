@@ -2,11 +2,9 @@ package vps
 
 import (
 	"context"
-	"fmt"
-	"time"
-
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/terrors"
+	"time"
 
 	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
 
@@ -45,7 +43,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		cfg:       cfg,
 		vpsClient: make(map[string]*ecs20140526.Client),
 	}
-	// go m.cronGetInstanceDefaultInfo()
+	//go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
@@ -129,38 +127,23 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 		BandwidthOut := instanceInfo.Body.Instances.Instance[0].InternetMaxBandwidthOut
 		Cores := instanceInfo.Body.Instances.Instance[0].Cpu
 		Memory := instanceInfo.Body.Instances.Instance[0].Memory
+		ExpiredTime := instanceInfo.Body.Instances.Instance[0].ExpiredTime
 		instanceDetailsInfo := &types.CreateInstanceReq{
-			IpAddress:       *ip,
-			InstanceId:      result.InstanceID,
-			SecurityGroupId: securityGroupId,
-			OrderID:         vpsInfo.OrderID,
-			UserID:          vpsInfo.UserID,
-			OSType:          *OSType,
-			Cores:           *Cores,
-			Memory:          float32(*Memory),
+			IpAddress:               *ip,
+			InstanceId:              result.InstanceID,
+			SecurityGroupId:         securityGroupId,
+			OrderID:                 vpsInfo.OrderID,
+			UserID:                  vpsInfo.UserID,
+			OSType:                  *OSType,
+			Cores:                   *Cores,
+			Memory:                  float32(*Memory),
+			InstanceName:            *InstanceName,
+			ExpiredTime:             *ExpiredTime,
+			InternetMaxBandwidthOut: *BandwidthOut,
 		}
 		errU := m.UpdateVpsInstance(instanceDetailsInfo)
 		if errU != nil {
 			log.Errorf("UpdateVpsInstance:%v", errU)
-		}
-		instanceName := *InstanceName
-		if *InstanceName == "" {
-			instanceName = result.InstanceID
-		}
-		info := &types.MyInstance{
-			OrderID:            vpsInfo.OrderID,
-			UserID:             vpsInfo.UserID,
-			InstanceId:         result.InstanceID,
-			Price:              vpsInfo.TradePrice,
-			InternetChargeType: vpsInfo.InternetChargeType,
-			Location:           vpsInfo.RegionId,
-			InstanceSystem:     *OSType,
-			InstanceName:       instanceName,
-			BandwidthOut:       *BandwidthOut,
-		}
-		saveErr := m.SaveMyInstancesInfo(info)
-		if err != nil {
-			log.Errorf("SaveMyInstancesInfo:%v", saveErr)
 		}
 	}
 	return result, nil
@@ -196,7 +179,6 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
 	var ctx context.Context
-	var n int
 	regions, err := aliyun.DescribeRegions(k, s)
 	if err != nil {
 		log.Errorf("DescribePrice err:%v", err.Error())
@@ -223,7 +205,6 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 				continue
 			}
 			if ok {
-				fmt.Println(*region.RegionId, ":", instance.InstanceTypeId, "已更新")
 				continue
 			}
 			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
@@ -259,7 +240,6 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 				}
 				price, err := aliyun.DescribePrice(k, s, priceReq)
 				if err != nil {
-					fmt.Println("get price fail")
 					log.Errorf("DescribePrice err:%v", err.Error())
 					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
 					continue
@@ -278,8 +258,6 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 					Price:                  price.USDPrice,
 					Status:                 instance.Status,
 				}
-				n++
-				fmt.Println(*region.RegionId, ":", n)
 				saveErr := m.SaveInstancesInfo(info)
 				if err != nil {
 					log.Errorf("SaveMyInstancesInfo:%v", saveErr)
@@ -418,7 +396,6 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	reverse(rspDataList)
 	return rspDataList, nil
 }
-
 func reverse(s []*types.AvailableResourceResponse) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]

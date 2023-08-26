@@ -1031,12 +1031,21 @@ func ModifyInstanceAutoRenewAttribute(keyID, keySecret string, renewInstanceRequ
 	if err != nil {
 		return err
 	}
-
 	rebootInstanceRequest := &ecs20140526.ModifyInstanceAutoRenewAttributeRequest{
 		InstanceId: tea.String(renewInstanceRequest.InstanceId),
 		RegionId:   tea.String(renewInstanceRequest.RegionID),
-		Duration:   tea.Int32(1),
-		PeriodUnit: tea.String("Month"),
+		PeriodUnit: tea.String(renewInstanceRequest.PeriodUnit),
+		Duration:   tea.Int32(renewInstanceRequest.Period),
+		AutoRenew:  tea.Bool(false),
+	}
+	if renewInstanceRequest.Renew == 1 {
+		rebootInstanceRequest.AutoRenew = tea.Bool(true)
+	}
+	if renewInstanceRequest.PeriodUnit != "" {
+		rebootInstanceRequest.PeriodUnit = tea.String(renewInstanceRequest.PeriodUnit)
+	}
+	if renewInstanceRequest.PeriodUnit != "" {
+		rebootInstanceRequest.Duration = tea.Int32(renewInstanceRequest.Period)
 	}
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (_e error) {

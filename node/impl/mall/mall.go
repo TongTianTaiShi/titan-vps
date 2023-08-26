@@ -137,18 +137,12 @@ func (m *Mall) DescribeImages(ctx context.Context, regionID, instanceType string
 func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
 	return m.VpsMgr.DescribeAvailableResourceForDesk(ctx, desk)
 }
-
 func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	k, s := m.getAccessKeys()
 
 	price, err := aliyun.DescribePrice(k, s, priceReq)
 	if err != nil {
 		log.Errorf("DescribePrice err:%v", err.Error())
-		fmt.Println(priceReq.RegionId)
-		fmt.Println(priceReq.InstanceType)
-		fmt.Println(priceReq.SystemDiskCategory)
-		fmt.Println(priceReq.SystemDiskSize)
-		fmt.Println(priceReq.ImageID)
 		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
 	if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {
@@ -226,12 +220,10 @@ func (m *Mall) RenewInstance(ctx context.Context, renewReq types.SetRenewOrderRe
 		return err
 	}
 	k, s := m.getAccessKeys()
-	if renewReq.Renew == 1 {
-		errSDK := aliyun.ModifyInstanceAutoRenewAttribute(k, s, &renewReq)
-		if err != nil {
-			log.Errorf("RenewInstance err: %s", *errSDK.Message)
-			return &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *errSDK.Message}
-		}
+	errSDK := aliyun.ModifyInstanceAutoRenewAttribute(k, s, &renewReq)
+	if err != nil {
+		log.Errorf("RenewInstance err: %s", *errSDK.Message)
+		return &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *errSDK.Message}
 	}
 
 	return nil
