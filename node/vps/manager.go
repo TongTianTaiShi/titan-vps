@@ -298,12 +298,12 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.
 	rsp, err := aliyun.DescribeInstanceTypes(k, s, instanceType)
 	if err != nil {
 		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
 	AvailableResource, err := aliyun.DescribeAvailableResource(k, s, instanceType)
 	if err != nil {
 		log.Errorf("DescribeAvailableResource err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
 	rspDataList := &types.DescribeInstanceTypeResponse{
 		NextToken: *rsp.Body.NextToken,
@@ -355,7 +355,7 @@ func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType str
 	rsp, err := aliyun.DescribeImages(regionID, k, s, instanceType)
 	if err != nil {
 		log.Errorf("DescribeImages err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
 	var rspDataList []*types.DescribeImageResponse
 	for _, data := range rsp.Body.Images.Image {
@@ -379,7 +379,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	rsp, err := aliyun.DescribeAvailableResourceForDesk(k, s, desk)
 	if err != nil {
 		log.Errorf("DescribeImages err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
 	Category := map[string]int{
 		"cloud":            1,
@@ -391,7 +391,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	var rspDataList []*types.AvailableResourceResponse
 	if rsp.Body.AvailableZones == nil {
 		log.Infoln(desk)
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: err.Error()}
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
 	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
 		AvailableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource

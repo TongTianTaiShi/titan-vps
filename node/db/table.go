@@ -149,8 +149,9 @@ var cInstanceDefaultTable = `
 		available_zone    VARCHAR(128)  DEFAULT 0,
 		instance_type_family    VARCHAR(128)  DEFAULT 0,
 		physical_processor_model    VARCHAR(128)  DEFAULT 0,
-		original_price    float  DEFAULT 0,
 		price    float  DEFAULT 0,
+		original_price    float  DEFAULT 0,
+	    status    VARCHAR(128)  DEFAULT 0,
 	    created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
 	    updated_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		UNIQUE KEY (region_id,instance_type_id)
