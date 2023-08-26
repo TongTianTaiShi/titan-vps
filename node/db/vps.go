@@ -168,7 +168,7 @@ func (n *SQLDB) LoadMyInstancesInfo(userID string, limit, offset int64) (*types.
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
-	err := n.db.Select(&infos, query, userID, limit, offset)
+	err := n.db.Select(&infos, query, userID, limit, offset*limit)
 	if err != nil {
 		return nil, err
 	}
