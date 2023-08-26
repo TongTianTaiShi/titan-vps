@@ -214,19 +214,7 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 }
 
 func (m *Mall) RenewInstance(ctx context.Context, renewReq types.SetRenewOrderReq) error {
-	err := m.UpdateRenewInstanceStatus(&renewReq)
-	if err != nil {
-		log.Errorf("UpdateRenewInstanceStatus:%v", err)
-		return err
-	}
-	k, s := m.getAccessKeys()
-	errSDK := aliyun.ModifyInstanceAutoRenewAttribute(k, s, &renewReq)
-	if err != nil {
-		log.Errorf("RenewInstance err: %s", *errSDK.Message)
-		return &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *errSDK.Message}
-	}
-
-	return nil
+	return m.VpsMgr.ModifyInstanceRenew(&renewReq)
 }
 
 func (m *Mall) GetRenewInstance(ctx context.Context, renewReq types.SetRenewOrderReq) (string, error) {

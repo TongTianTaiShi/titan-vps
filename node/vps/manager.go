@@ -382,6 +382,23 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	reverse(rspDataList)
 	return rspDataList, nil
 }
+
+func (m *Manager) ModifyInstanceRenew(renewReq *types.SetRenewOrderReq) error {
+	k := m.cfg.AliyunAccessKeyID
+	s := m.cfg.AliyunAccessKeySecret
+	err := m.UpdateRenewInstanceStatus(renewReq)
+	if err != nil {
+		log.Errorf("UpdateRenewInstanceStatus:%v", err)
+		return err
+	}
+	errSDK := aliyun.ModifyInstanceAutoRenewAttribute(k, s, renewReq)
+	if err != nil {
+		log.Errorf("ModifyInstanceAutoRenewAttribute err: %s", *errSDK.Message)
+		return &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *errSDK.Message}
+	}
+	return nil
+}
+
 func reverse(s []*types.AvailableResourceResponse) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]

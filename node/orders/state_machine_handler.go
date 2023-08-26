@@ -81,10 +81,11 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	}
 
 	if info.OrderType == int64(types.BuyVPS) {
-		_, err = m.vMgr.CreateAliYunInstance(vInfo)
+		result, err := m.vMgr.CreateAliYunInstance(vInfo)
 		if err != nil {
 			return ctx.Send(BuyFailed{Msg: err.Error()})
 		}
+		vInfo.InstanceId = result.InstanceID
 	} else if info.OrderType == int64(types.RenewVPS) {
 		err = m.vMgr.RenewInstance(&types.RenewInstanceRequest{
 			RegionId:   vInfo.RegionId,
@@ -94,6 +95,19 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 		})
 		if err != nil {
 			return ctx.Send(BuyFailed{Msg: err.Error()})
+		}
+	}
+	if vInfo.Renew == 1 {
+		renewReq := types.SetRenewOrderReq{
+			RegionID:   vInfo.RegionId,
+			InstanceId: vInfo.InstanceId,
+			PeriodUnit: vInfo.PeriodUnit,
+			Period:     vInfo.Period,
+			Renew:      1,
+		}
+		err = m.vMgr.ModifyInstanceRenew(&renewReq)
+		if err != nil {
+			log.Errorf("ModifyInstanceRenew err: %v", err)
 		}
 	}
 	//// Save To DB
