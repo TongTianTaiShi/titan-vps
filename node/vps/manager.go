@@ -3,9 +3,10 @@ package vps
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/terrors"
-	"time"
 
 	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
 
@@ -391,7 +392,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	var rspDataList []*types.AvailableResourceResponse
 	if rsp.Body.AvailableZones == nil {
 		log.Infoln(desk)
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: terrors.AliApiGetFailed.String()}
 	}
 	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
 		AvailableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource
@@ -417,6 +418,7 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 	reverse(rspDataList)
 	return rspDataList, nil
 }
+
 func reverse(s []*types.AvailableResourceResponse) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]
