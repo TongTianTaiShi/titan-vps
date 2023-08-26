@@ -2,9 +2,6 @@ package aliyun
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
@@ -384,7 +381,7 @@ func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*
 		for _, v := range priceReq.DescribePriceRequestDataDisk {
 			DataDiskInfo := &ecs20140526.DescribePriceRequestDataDisk{
 				Category: tea.String(v.Category),
-				//PerformanceLevel: tea.String("PL0"),
+				// PerformanceLevel: tea.String("PL0"),
 				Size: tea.Int64(v.Size),
 			}
 			describePriceRequest.DataDisk = append(describePriceRequest.DataDisk, DataDiskInfo)
@@ -1109,23 +1106,4 @@ func DescribeInstanceAutoRenewAttribute(keyID, keySecret string, renewInstanceRe
 		return nil, errors
 	}
 	return result, nil
-}
-
-func GetExchangeRate() float32 {
-	client := &http.Client{}
-	// todo
-	// resp, err := client.Get("https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD")
-	resp, err := client.Get("https://apis.tianapi.com/fxrate/index?key=af490d21502b58010c7feef4db2cd14a&fromcoin=USD&tocoin=CNY&money=1")
-	if err != nil {
-		return 0
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	var ExchangeRateRsp types.ExchangeRateRsp
-	err = json.Unmarshal(body, &ExchangeRateRsp)
-	if err != nil {
-		return 0
-	}
-	distFloat, _ := strconv.ParseFloat(ExchangeRateRsp.Data.Rate, 32)
-	return float32(distFloat)
 }

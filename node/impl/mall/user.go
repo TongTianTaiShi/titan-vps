@@ -3,7 +3,6 @@ package mall
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
@@ -193,17 +192,11 @@ func (m *Mall) GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTy
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
-	if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {
-		UsdRate := aliyun.GetExchangeRate()
-		USDRateInfo.USDRate = UsdRate
-		USDRateInfo.ET = time.Now().Add(time.Hour)
-	}
-	if USDRateInfo.USDRate == 0 {
-		USDRateInfo.USDRate = 7.2673
-	}
+
+	usdRate := utils.GetUSDRate()
 	for _, info := range instanceInfo.List {
-		info.OriginalPrice = info.OriginalPrice / USDRateInfo.USDRate
-		info.Price = info.Price / USDRateInfo.USDRate
+		info.OriginalPrice = info.OriginalPrice / usdRate
+		info.Price = info.Price / usdRate
 	}
 	return instanceInfo, nil
 }

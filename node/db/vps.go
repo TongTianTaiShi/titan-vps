@@ -92,6 +92,7 @@ func (n *SQLDB) RenewVpsInstance(info *types.CreateInstanceReq) error {
 	}
 	return nil
 }
+
 func (n *SQLDB) UpdateRenewInstanceStatus(info *types.SetRenewOrderReq) error {
 	query := fmt.Sprintf(`UPDATE %s SET renew=? WHERE instance_id=?`, instancesDetailsTable)
 	_, err := n.db.Exec(query, info.Renew, info.InstanceId)
@@ -100,6 +101,7 @@ func (n *SQLDB) UpdateRenewInstanceStatus(info *types.SetRenewOrderReq) error {
 	}
 	return nil
 }
+
 func (n *SQLDB) UpdateVpsInstanceName(instanceID, instanceName, userID string) error {
 	query := fmt.Sprintf(`UPDATE %s SET instance_name=? WHERE instance_id=? and user_id=?`, instancesDetailsTable)
 	_, err := n.db.Exec(query, instanceName, instanceID, userID)
@@ -139,7 +141,7 @@ func (n *SQLDB) SaveInstancesInfo(rInfo *types.DescribeInstanceTypeFromBase) err
 
 func (n *SQLDB) InstancesDefaultExists(instanceTypeID, regionID string) (bool, error) {
 	var total int64
-	timeString := time.Now().Format(time.DateOnly)
+	timeString := time.Now().Format("2006-01-02")
 	countSQL := fmt.Sprintf(`SELECT count(1) FROM %s WHERE instance_type_id=? and region_id=? and updated_time>?`, instanceDefaultTable)
 	if err := n.db.Get(&total, countSQL, instanceTypeID, regionID, timeString); err != nil {
 		return false, err

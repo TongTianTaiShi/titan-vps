@@ -12,6 +12,7 @@ import (
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/exchange"
 	"github.com/LMF709268224/titan-vps/node/user"
+	"github.com/LMF709268224/titan-vps/node/utils"
 	"github.com/LMF709268224/titan-vps/node/vps"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -31,11 +32,6 @@ import (
 )
 
 var log = logging.Logger("mall")
-
-var USDRateInfo struct {
-	USDRate float32
-	ET      time.Time
-}
 
 // Mall represents a base service in a cloud computing system.
 type Mall struct {
@@ -137,6 +133,7 @@ func (m *Mall) DescribeImages(ctx context.Context, regionID, instanceType string
 func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
 	return m.VpsMgr.DescribeAvailableResourceForDesk(ctx, desk)
 }
+
 func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	k, s := m.getAccessKeys()
 
@@ -145,17 +142,9 @@ func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceR
 		log.Errorf("DescribePrice err:%v", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
-	if USDRateInfo.USDRate == 0 || time.Now().After(USDRateInfo.ET) {
-		UsdRate := aliyun.GetExchangeRate()
-		USDRateInfo.USDRate = UsdRate
-		USDRateInfo.ET = time.Now().Add(time.Hour)
-	}
-	// UsdRate := aliyun.GetExchangeRate()
-	if USDRateInfo.USDRate == 0 {
-		USDRateInfo.USDRate = 7.2673
-	}
-	UsdRate := USDRateInfo.USDRate
-	price.USDPrice = price.USDPrice / UsdRate
+
+	usdRate := utils.GetUSDRate()
+	price.USDPrice = price.USDPrice / usdRate
 
 	return price, nil
 }

@@ -27,11 +27,6 @@ type Manager struct {
 	vpsClient map[string]*ecs20140526.Client
 }
 
-var USDRateInfo struct {
-	USDRate float32
-	ET      time.Time
-}
-
 // NewManager returns a new manager instance
 func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error) {
 	cfg, err := getCfg()
