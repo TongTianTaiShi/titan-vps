@@ -465,14 +465,6 @@ type TronTransferWatch struct {
 	UserID string
 }
 
-type ExchangeRateRsp struct {
-	Code int32               `json:"code"`
-	Data ExchangeRateDataRsp `json:"result"`
-}
-type ExchangeRateDataRsp struct {
-	Rate string `json:"money"`
-}
-
 type RechargeAddress struct {
 	Addr   string `db:"addr"`
 	UserID string `db:"user_id"`
@@ -495,7 +487,7 @@ type MyInstance struct {
 	Price            float32            `db:"trade_price"`
 	State            string
 	Renew            string
-	//InternetChargeType string    `db:"internet_charge_type"`
+	// InternetChargeType string    `db:"internet_charge_type"`
 	BandwidthOut int32     `db:"bandwidth_out"`
 	CreatedTime  time.Time `db:"created_time"`
 	ExpiredTime  string    `db:"expired_time"`
