@@ -49,6 +49,8 @@ var cInstanceDetailsTable = `
 	    data_disk 		VARCHAR(1028) NOT NULL DEFAULT '',
 		created_time       DATETIME     DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (id)
+		KEY idx_user (user_id),
+		KEY idx_instance (instance_id)
 	) ENGINE=InnoDB COMMENT='vps instance';`
 
 var cRechargeTable = `

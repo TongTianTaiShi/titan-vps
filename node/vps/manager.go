@@ -88,20 +88,6 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	if err != nil {
 		log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
 	}
-	//randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
-	//keyPairName := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
-	//keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairName)
-	//if err != nil {
-	//	log.Errorf("CreateKeyPair err: %s", err.Error())
-	//} else {
-	//	result.PrivateKey = keyInfo.PrivateKeyBody
-	//}
-	//var instanceIds []string
-	//instanceIds = append(instanceIds, result.InstanceID)
-	//_, err = aliyun.AttachKeyPair(regionID, k, s, keyPairName, instanceIds)
-	//if err != nil {
-	//	log.Errorf("AttachKeyPair err: %s", err.Error())
-	//}
 	go func() {
 		time.Sleep(1 * time.Minute)
 
