@@ -211,7 +211,13 @@ var getDeskCmd = &cli.Command{
 var UpdateDefaultInfoCmd = &cli.Command{
 	Name:  "tdc",
 	Usage: "UpdateDefaultInfo",
-	Flags: []cli.Flag{},
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "r",
+			Usage: "region id",
+			Value: "",
+		},
+	},
 	Before: func(cctx *cli.Context) error {
 		return nil
 	},
@@ -224,7 +230,8 @@ var UpdateDefaultInfoCmd = &cli.Command{
 		}
 
 		defer closer()
-		err = api.UpdateInstanceDefaultInfo(ctx)
+		regionId := cctx.String("r")
+		err = api.UpdateInstanceDefaultInfo(ctx, regionId)
 		if err != nil {
 			return err
 		}

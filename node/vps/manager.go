@@ -151,24 +151,34 @@ func (m *Manager) cronGetInstanceDefaultInfo() {
 	duration := next.Sub(now)
 
 	timer := time.NewTimer(duration)
-	m.UpdateInstanceDefaultInfo()
+	m.UpdateInstanceDefaultInfo("")
 	<-timer.C
 
 	m.cronGetInstanceDefaultInfo()
 }
 
-func (m *Manager) UpdateInstanceDefaultInfo() {
+func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
 	var ctx context.Context
-	regions, err := aliyun.DescribeRegions(k, s)
-	if err != nil {
-		log.Errorf("DescribePrice err:%v", err.Error())
-		return
+
+	var regionIDs []string
+	if regionID != "" {
+		regionIDs = append(regionIDs, regionID)
+	} else {
+		regions, err := aliyun.DescribeRegions(k, s)
+		if err != nil {
+			log.Errorf("DescribePrice err:%v", err.Error())
+			return
+		}
+		for _, region := range regions.Body.Regions.Region {
+			regionIDs = append(regionIDs, *region.RegionId)
+		}
 	}
-	for _, region := range regions.Body.Regions.Region {
+
+	for _, regionId := range regionIDs {
 		instanceType := &types.DescribeInstanceTypeReq{
-			RegionId:     *region.RegionId,
+			RegionId:     regionId,
 			CpuCoreCount: 0,
 			MemorySize:   0,
 		}
@@ -181,7 +191,7 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
-			ok, err := m.InstancesDefaultExists(instance.InstanceTypeId, *region.RegionId)
+			ok, err := m.InstancesDefaultExists(instance.InstanceTypeId, regionId)
 			if err != nil {
 				log.Errorf("InstancesDefaultExists err:%v", err.Error())
 				continue
@@ -189,27 +199,27 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 			if ok {
 				continue
 			}
-			images, err := m.DescribeImages(ctx, *region.RegionId, instance.InstanceTypeId)
+			images, err := m.DescribeImages(ctx, regionId, instance.InstanceTypeId)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
-				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionId)
 				continue
 			}
 			disk := &types.AvailableResourceReq{
 				InstanceType:        instance.InstanceTypeId,
-				RegionId:            *region.RegionId,
+				RegionId:            regionId,
 				DestinationResource: "SystemDisk",
 			}
 
 			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
-				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionId)
 				continue
 			}
 			if len(disks) > 0 {
 				priceReq := &types.DescribePriceReq{
-					RegionId:                *region.RegionId,
+					RegionId:                regionId,
 					InstanceType:            instance.InstanceTypeId,
 					PriceUnit:               "Month",
 					ImageID:                 images[0].ImageId,
@@ -223,11 +233,11 @@ func (m *Manager) UpdateInstanceDefaultInfo() {
 				price, err := aliyun.DescribePrice(k, s, priceReq)
 				if err != nil {
 					log.Errorf("DescribePrice err:%v", err.Error())
-					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, *region.RegionId)
+					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionId)
 					continue
 				}
 				info := &types.DescribeInstanceTypeFromBase{
-					RegionId:               *region.RegionId,
+					RegionId:               regionId,
 					InstanceTypeId:         instance.InstanceTypeId,
 					MemorySize:             instance.MemorySize,
 					CpuArchitecture:        instance.CpuArchitecture,

@@ -221,8 +221,8 @@ func (m *Mall) DescribeInstances(ctx context.Context, regionID, instanceId strin
 	return nil
 }
 
-func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
-	go m.VpsMgr.UpdateInstanceDefaultInfo()
+func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context, regionID string) error {
+	go m.VpsMgr.UpdateInstanceDefaultInfo(regionID)
 	return nil
 }
 

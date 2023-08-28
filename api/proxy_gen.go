@@ -4,7 +4,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -95,9 +94,11 @@ type MallStruct struct {
 
 		GetInstanceMemoryInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) ([]*float32, error) `perm:"default"`
 
+		GetRenewInstance func(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) `perm:"default"`
+
 		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"user"`
 
-		UpdateInstanceDefaultInfo func(p0 context.Context) error `perm:"admin"`
+		UpdateInstanceDefaultInfo func(p0 context.Context, p1 string) error `perm:"admin"`
 	}
 }
 
@@ -116,8 +117,6 @@ type OrderAPIStruct struct {
 		CancelUserOrder func(p0 context.Context, p1 string) error `perm:"user"`
 
 		CreateOrder func(p0 context.Context, p1 types.CreateOrderReq) (string, error) `perm:"user"`
-
-		GetRenewInstance func(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) `perm:"user"`
 
 		GetUseWaitingPaymentOrders func(p0 context.Context, p1 int64, p2 int64) (*types.OrderRecordResponse, error) `perm:"user"`
 
@@ -496,6 +495,17 @@ func (s *MallStub) GetInstanceMemoryInfo(p0 context.Context, p1 *types.InstanceT
 	return *new([]*float32), ErrNotSupported
 }
 
+func (s *MallStruct) GetRenewInstance(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) {
+	if s.Internal.GetRenewInstance == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.GetRenewInstance(p0, p1)
+}
+
+func (s *MallStub) GetRenewInstance(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) {
+	return "", ErrNotSupported
+}
+
 func (s *MallStruct) RebootInstance(p0 context.Context, p1 string, p2 string) error {
 	if s.Internal.RebootInstance == nil {
 		return ErrNotSupported
@@ -507,14 +517,14 @@ func (s *MallStub) RebootInstance(p0 context.Context, p1 string, p2 string) erro
 	return ErrNotSupported
 }
 
-func (s *MallStruct) UpdateInstanceDefaultInfo(p0 context.Context) error {
+func (s *MallStruct) UpdateInstanceDefaultInfo(p0 context.Context, p1 string) error {
 	if s.Internal.UpdateInstanceDefaultInfo == nil {
 		return ErrNotSupported
 	}
-	return s.Internal.UpdateInstanceDefaultInfo(p0)
+	return s.Internal.UpdateInstanceDefaultInfo(p0, p1)
 }
 
-func (s *MallStub) UpdateInstanceDefaultInfo(p0 context.Context) error {
+func (s *MallStub) UpdateInstanceDefaultInfo(p0 context.Context, p1 string) error {
 	return ErrNotSupported
 }
 
@@ -537,17 +547,6 @@ func (s *OrderAPIStruct) CreateOrder(p0 context.Context, p1 types.CreateOrderReq
 }
 
 func (s *OrderAPIStub) CreateOrder(p0 context.Context, p1 types.CreateOrderReq) (string, error) {
-	return "", ErrNotSupported
-}
-
-func (s *OrderAPIStruct) GetRenewInstance(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) {
-	if s.Internal.GetRenewInstance == nil {
-		return "", ErrNotSupported
-	}
-	return s.Internal.GetRenewInstance(p0, p1)
-}
-
-func (s *OrderAPIStub) GetRenewInstance(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) {
 	return "", ErrNotSupported
 }
 
