@@ -25,6 +25,8 @@ type Manager struct {
 	*db.SQLDB
 	cfg       config.MallCfg
 	vpsClient map[string]*ecs20140526.Client
+
+	getInstanceInfoRunning bool
 }
 
 // NewManager returns a new manager instance
@@ -168,6 +170,15 @@ func (m *Manager) cronGetInstanceDefaultInfo() {
 }
 
 func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
+	if m.getInstanceInfoRunning {
+		return
+	}
+
+	m.getInstanceInfoRunning = true
+	defer func() {
+		m.getInstanceInfoRunning = false
+	}()
+
 	k := m.cfg.AliyunAccessKeyID
 	s := m.cfg.AliyunAccessKeySecret
 	var ctx context.Context
