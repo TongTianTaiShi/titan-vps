@@ -101,6 +101,9 @@ func (m *Mall) DescribeRegions(ctx context.Context) (map[string]string, error) {
 }
 
 func (m *Mall) DescribeRecommendInstanceType(ctx context.Context, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
+	startTime := time.Now()
+	defer log.Debugf("DescribeRecommendInstanceType request time:%s", time.Since(startTime))
+
 	k, s := m.getAccessKeys()
 	rsp, err := aliyun.DescribeRecommendInstanceType(k, s, instanceTypeReq)
 	if err != nil {
@@ -123,18 +126,30 @@ func (m *Mall) DescribeRecommendInstanceType(ctx context.Context, instanceTypeRe
 }
 
 func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
+	startTime := time.Now()
+	defer log.Debugf("DescribeInstanceType request time:%s", time.Since(startTime))
+
 	return m.VpsMgr.DescribeInstanceType(ctx, instanceType)
 }
 
 func (m *Mall) DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error) {
+	startTime := time.Now()
+	defer log.Debugf("DescribeImages request time:%s", time.Since(startTime))
+
 	return m.VpsMgr.DescribeImages(ctx, regionID, instanceType)
 }
 
 func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
+	startTime := time.Now()
+	defer log.Debugf("DescribeAvailableResourceForDesk request time:%s", time.Since(startTime))
+
 	return m.VpsMgr.DescribeAvailableResourceForDesk(ctx, desk)
 }
 
 func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
+	startTime := time.Now()
+	defer log.Debugf("DescribePrice request time:%s", time.Since(startTime))
+
 	k, s := m.getAccessKeys()
 
 	price, err := aliyun.DescribePrice(k, s, priceReq)
@@ -150,6 +165,9 @@ func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceR
 }
 
 func (m *Mall) CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error) {
+	startTime := time.Now()
+	defer log.Debugf("CreateKeyPair request time:%s", time.Since(startTime))
+
 	k, s := m.getAccessKeys()
 	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
 	keyPairNameNew := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
@@ -175,6 +193,9 @@ func (m *Mall) CreateKeyPair(ctx context.Context, regionID, instanceID string) (
 }
 
 func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceId string) error {
+	startTime := time.Now()
+	defer log.Debugf("RebootInstance request time:%s", time.Since(startTime))
+
 	k, s := m.getAccessKeys()
 	err := aliyun.RebootInstance(regionID, k, s, instanceId)
 	if err != nil {
@@ -186,6 +207,9 @@ func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceId string) 
 }
 
 func (m *Mall) DescribeInstances(ctx context.Context, regionID, instanceId string) error {
+	startTime := time.Now()
+	defer log.Debugf("DescribeInstances request time:%s", time.Since(startTime))
+
 	k, s := m.getAccessKeys()
 	var instanceIds []string
 	instanceIds = append(instanceIds, instanceId)
@@ -203,6 +227,9 @@ func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context) error {
 }
 
 func (m *Mall) RenewInstance(ctx context.Context, renewReq types.SetRenewOrderReq) error {
+	startTime := time.Now()
+	defer log.Debugf("RenewInstance request time:%s", time.Since(startTime))
+
 	return m.VpsMgr.ModifyInstanceRenew(&renewReq)
 }
 
