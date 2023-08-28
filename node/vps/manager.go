@@ -171,6 +171,7 @@ func (m *Manager) cronGetInstanceDefaultInfo() {
 
 func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 	if m.getInstanceInfoRunning {
+		log.Debugln("task is running")
 		return
 	}
 
