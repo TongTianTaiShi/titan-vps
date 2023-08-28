@@ -39,7 +39,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		cfg:       cfg,
 		vpsClient: make(map[string]*ecs20140526.Client),
 	}
-	// go m.cronGetInstanceDefaultInfo()
+	go m.cronGetInstanceDefaultInfo()
 
 	return m, nil
 }
@@ -146,15 +146,25 @@ func (m *Manager) RenewInstance(renewInstanceRequest *types.RenewInstanceRequest
 func (m *Manager) cronGetInstanceDefaultInfo() {
 	now := time.Now()
 
-	next := time.Date(now.Year(), now.Month(), now.Day(), now.Hour()+12, now.Minute(), 0, 0, now.Location())
+	nextTime := time.Date(now.Year(), now.Month(), now.Day(), 4, 0, 0, 0, now.Location())
+	if now.After(nextTime) {
+		nextTime = nextTime.Add(24 * time.Hour)
+	}
 
-	duration := next.Sub(now)
+	duration := nextTime.Sub(now)
 
 	timer := time.NewTimer(duration)
-	m.UpdateInstanceDefaultInfo("")
-	<-timer.C
+	defer timer.Stop()
 
-	m.cronGetInstanceDefaultInfo()
+	for {
+		<-timer.C
+
+		log.Debugln("start instance check ")
+
+		timer.Reset(24 * time.Hour)
+
+		m.UpdateInstanceDefaultInfo("")
+	}
 }
 
 func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
