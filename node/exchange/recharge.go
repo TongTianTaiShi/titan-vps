@@ -88,7 +88,11 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 		To:      tr.To,
 	}
 
-	value := utils.BigIntAdd(original, tr.Value)
+	value, err := utils.BigIntAdd(original, tr.Value)
+	if err != nil {
+		log.Errorf("%s BigIntAdd err:%s", userID, err.Error())
+		return
+	}
 
 	err = m.SaveRechargeRecordAndUserBalance(info, value, original)
 	if err != nil {

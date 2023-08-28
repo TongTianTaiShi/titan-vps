@@ -49,8 +49,9 @@ func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo)
 		return nil
 	}
 
-	newValue, ok := utils.BigIntReduce(original, info.Value)
-	if !ok {
+	newValue, err := utils.BigIntReduce(original, info.Value)
+	if err != nil {
+		log.Errorf("WaitingPayment BigIntReduce err:%s", err.Error())
 		return nil
 	}
 
@@ -130,7 +131,11 @@ func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
 			return nil
 		}
 
-		newValue := utils.BigIntAdd(original, info.Value)
+		newValue, err := utils.BigIntAdd(original, info.Value)
+		if err != nil {
+			log.Errorf("handleDone BigIntAdd err:%s", err.Error())
+			return nil
+		}
 
 		err = m.UpdateUserBalance(info.User, newValue, original)
 		if err != nil {

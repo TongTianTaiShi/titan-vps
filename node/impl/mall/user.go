@@ -36,7 +36,10 @@ func (m *Mall) GetBalance(ctx context.Context) (*types.UserInfo, error) {
 
 	lockBalance := "0"
 	for _, info := range list {
-		lockBalance = utils.BigIntAdd(info.Value, lockBalance)
+		b, err := utils.BigIntAdd(info.Value, lockBalance)
+		if err == nil {
+			lockBalance = b
+		}
 	}
 
 	uInfo.LockedBalance = lockBalance
@@ -71,9 +74,9 @@ func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 		return &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: terrors.ParametersWrong.String()}
 	}
 
-	_, isOK := utils.BigIntReduce(value, "0")
-	if !isOK {
-		return &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: value}
+	_, err := utils.BigIntReduce(value, "0")
+	if err != nil {
+		return err
 	}
 
 	cfg, err := m.GetMallConfigFunc()

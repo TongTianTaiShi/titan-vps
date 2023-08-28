@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -31,7 +31,7 @@ func getExchangeRateWithTianAPI() float32 {
 		return 0
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	var ExchangeRateRsp tianAPIResponse
 	err = json.Unmarshal(body, &ExchangeRateRsp)
 	if err != nil {
@@ -55,7 +55,7 @@ func getExchangeRateWithExchangeRateAPI() float32 {
 		return 0
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	var r exchangeRateResponse
 	err = json.Unmarshal(body, &r)

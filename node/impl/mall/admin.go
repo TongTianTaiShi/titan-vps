@@ -142,7 +142,10 @@ func (m *Mall) RejectUserWithdrawal(ctx context.Context, orderID string) error {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
-	newValue := utils.BigIntAdd(original, info.Value)
+	newValue, err := utils.BigIntAdd(original, info.Value)
+	if err != nil {
+		return err
+	}
 
 	err = m.UpdateUserBalance(info.UserID, newValue, original)
 	if err != nil {

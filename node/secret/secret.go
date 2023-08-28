@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"io"
-	"io/ioutil"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/node/repo"
@@ -44,7 +43,7 @@ func APISecret(lr repo.LockedRepo) (*jwt.HMACSHA, error) {
 	if errors.Is(err, types.ErrKeyInfoNotFound) {
 		log.Warn("Generating new API secret")
 
-		sk, err := ioutil.ReadAll(io.LimitReader(rand.Reader, 32))
+		sk, err := io.ReadAll(io.LimitReader(rand.Reader, 32))
 		if err != nil {
 			return nil, err
 		}

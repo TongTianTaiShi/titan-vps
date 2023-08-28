@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -144,7 +143,7 @@ func ReaderParamEncoder(addr string) jsonrpc.Option {
 					}
 
 					if resp.StatusCode != http.StatusOK {
-						b, _ := ioutil.ReadAll(resp.Body)
+						b, _ := io.ReadAll(resp.Body)
 						log.Errorf("sending reader param (%s): non-200 status: %s, msg: '%s'", u.String(), resp.Status, string(b))
 						return
 					}
@@ -168,7 +167,7 @@ func ReaderParamEncoder(addr string) jsonrpc.Option {
 				defer resp.Body.Close() //nolint
 
 				if resp.StatusCode != http.StatusOK {
-					b, _ := ioutil.ReadAll(resp.Body)
+					b, _ := io.ReadAll(resp.Body)
 					log.Errorf("sending reader param (%s): non-200 status: %s, msg: '%s'", u.String(), resp.Status, string(b))
 					return
 				}
@@ -210,8 +209,10 @@ type RPCReader struct {
 	closeOnce sync.Once
 }
 
-var ErrHasBody = errors.New("RPCReader has body, either already read from or from a client with no redirect support")
-var ErrMustRedirect = errors.New("reader can't be read directly; marked as MustRedirect")
+var (
+	ErrHasBody      = errors.New("RPCReader has body, either already read from or from a client with no redirect support")
+	ErrMustRedirect = errors.New("reader can't be read directly; marked as MustRedirect")
+)
 
 // MustRedirect marks the reader as required to be redirected. Will make local
 // calls Read fail. MUST be called before this reader is used in any goroutine.

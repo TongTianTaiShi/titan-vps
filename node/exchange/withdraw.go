@@ -49,8 +49,8 @@ func (m *WithdrawManager) CreateWithdrawOrder(userID, withdrawAddr, value string
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
-	newValue, ok := utils.BigIntReduce(original, value)
-	if !ok {
+	newValue, err := utils.BigIntReduce(original, value)
+	if err != nil {
 		return &api.ErrWeb{Code: terrors.InsufficientBalance.Int(), Message: terrors.InsufficientBalance.String()}
 	}
 
