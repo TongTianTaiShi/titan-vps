@@ -19,6 +19,20 @@ import (
 func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
 	userID := handler.GetID(ctx)
 
+	instanceDetails := &types.InstanceDetails{
+		RegionID:           req.RegionID,
+		InstanceType:       req.InstanceType,
+		ImageID:            req.ImageID,
+		SecurityGroupID:    req.SecurityGroupID,
+		PeriodUnit:         req.PeriodUnit,
+		Period:             req.Period,
+		DryRun:             req.DryRun,
+		InternetChargeType: req.InternetChargeType,
+		SystemDiskSize:     req.SystemDiskSize,
+		SystemDiskCategory: req.SystemDiskCategory,
+		BandwidthOut:       req.BandwidthOut,
+	}
+
 	// Marshal DataDisk if it's not empty
 	if len(req.DataDisk) > 0 {
 		dataDisk, err := json.Marshal(req.DataDisk)
@@ -26,18 +40,18 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 			log.Errorf("Marshal DataDisk:%v", err)
 			return "", &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: err.Error()}
 		}
-		req.DataDiskString = string(dataDisk)
+		instanceDetails.DataDiskString = string(dataDisk)
 	}
 
 	priceReq := &types.DescribePriceReq{
-		RegionId:                     req.RegionId,
+		RegionID:                     req.RegionID,
 		InstanceType:                 req.InstanceType,
 		PriceUnit:                    req.PeriodUnit,
 		Period:                       req.Period,
 		Amount:                       req.Amount,
 		InternetChargeType:           req.InternetChargeType,
-		ImageID:                      req.ImageId,
-		InternetMaxBandwidthOut:      req.InternetMaxBandwidthOut,
+		ImageID:                      req.ImageID,
+		InternetMaxBandwidthOut:      req.BandwidthOut,
 		SystemDiskCategory:           req.SystemDiskCategory,
 		SystemDiskSize:               req.SystemDiskSize,
 		DescribePriceRequestDataDisk: req.DataDisk,
@@ -51,10 +65,10 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
-	req.OrderID = orderID
-	req.TradePrice = priceInfo.USDPrice / float32(req.Amount)
+	instanceDetails.OrderID = orderID
+	instanceDetails.TradePrice = priceInfo.USDPrice / float32(req.Amount)
 
-	id, err := m.SaveVpsInstance(&req)
+	id, err := m.SaveInstanceInfoOfUser(instanceDetails)
 	if err != nil {
 		log.Errorf("SaveVpsInstance:%v", err)
 		return "", err
@@ -84,7 +98,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (string, error) {
 	userID := handler.GetID(ctx)
 
-	req, err := m.LoadVpsInfoByInstanceID(renewReq.InstanceId)
+	req, err := m.LoadUserInstanceInfoByInstanceID(renewReq.InstanceID)
 	if err != nil {
 		return "", &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -99,14 +113,14 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 	}
 
 	priceReq := &types.DescribePriceReq{
-		RegionId:                     req.RegionId,
+		RegionID:                     req.RegionID,
 		InstanceType:                 req.InstanceType,
 		PriceUnit:                    renewReq.PeriodUnit,
 		Period:                       renewReq.Period,
 		Amount:                       1,
 		InternetChargeType:           req.InternetChargeType,
-		ImageID:                      req.ImageId,
-		InternetMaxBandwidthOut:      req.InternetMaxBandwidthOut,
+		ImageID:                      req.ImageID,
+		InternetMaxBandwidthOut:      req.BandwidthOut,
 		SystemDiskCategory:           req.SystemDiskCategory,
 		SystemDiskSize:               req.SystemDiskSize,
 		DescribePriceRequestDataDisk: req.DataDisk,
@@ -124,7 +138,7 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 	req.TradePrice = priceInfo.USDPrice
 	req.PeriodUnit = renewReq.PeriodUnit
 	req.Period = renewReq.Period
-	req.Renew = renewReq.Renew
+	req.AutoRenew = renewReq.Renew
 
 	err = m.RenewVpsInstance(req)
 	if err != nil {
@@ -135,7 +149,7 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
 
 	info := &types.OrderRecord{
-		VpsID:     req.Id,
+		VpsID:     req.ID,
 		OrderID:   orderID,
 		UserID:    userID,
 		Value:     newBalanceString,

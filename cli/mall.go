@@ -193,7 +193,7 @@ var getDeskCmd = &cli.Command{
 		sys := cctx.String("sys")
 		desk := &types.AvailableResourceReq{
 			InstanceType:        instanceId,
-			RegionId:            regionID,
+			RegionID:            regionID,
 			DestinationResource: sys,
 		}
 
@@ -275,10 +275,10 @@ var GetInstanceDefaultCmd = &cli.Command{
 		p := cctx.Int64("p")
 		m := float32(cctx.Float64("m"))
 		req := &types.InstanceTypeFromBaseReq{
-			RegionId:         "cn-hangzhou",
+			RegionID:         "cn-hangzhou",
 			MemorySize:       m,
-			CpuCoreCount:     c,
-			CpuArchitecture:  "",
+			CPUCoreCount:     c,
+			CPUArchitecture:  "",
 			InstanceCategory: "",
 			Page:             p,
 			Limit:            100,
@@ -288,9 +288,9 @@ var GetInstanceDefaultCmd = &cli.Command{
 			return err
 		}
 		for _, data := range list.List {
-			fmt.Println(data.CpuCoreCount)
+			fmt.Println(data.CPUCoreCount)
 			fmt.Println(data.MemorySize)
-			fmt.Println(data.InstanceTypeId)
+			fmt.Println(data.InstanceTypeID)
 			fmt.Println(data.Price)
 		}
 
@@ -322,9 +322,9 @@ var GetInstanceCpuCmd = &cli.Command{
 		defer closer()
 		m := float32(cctx.Float64("m"))
 		req := &types.InstanceTypeFromBaseReq{
-			RegionId:         "cn-hangzhou",
+			RegionID:         "cn-hangzhou",
 			MemorySize:       m,
-			CpuArchitecture:  "",
+			CPUArchitecture:  "",
 			InstanceCategory: "",
 		}
 		list, err := api.GetInstanceCpuInfo(ctx, req)
@@ -364,7 +364,7 @@ var GetInstanceRenewStatusCmd = &cli.Command{
 		m := cctx.String("i")
 		req := types.SetRenewOrderReq{
 			RegionID:   "cn-hangzhou",
-			InstanceId: m,
+			InstanceID: m,
 		}
 		list, err := api.GetRenewInstance(ctx, req)
 		if err != nil {
@@ -400,9 +400,9 @@ var GetInstanceMemoryCmd = &cli.Command{
 		defer closer()
 		c := int32(cctx.Int64("c"))
 		req := &types.InstanceTypeFromBaseReq{
-			RegionId:         "cn-hangzhou",
-			CpuCoreCount:     c,
-			CpuArchitecture:  "",
+			RegionID:         "cn-hangzhou",
+			CPUCoreCount:     c,
+			CPUArchitecture:  "",
 			InstanceCategory: "",
 		}
 		list, err := api.GetInstanceMemoryInfo(ctx, req)
@@ -463,7 +463,7 @@ var describePriceCmd = &cli.Command{
 
 		list, err := api.DescribePrice(ctx,
 			&types.DescribePriceReq{
-				RegionId:           "cn-hangzhou",
+				RegionID:           "cn-hangzhou",
 				InstanceType:       "ecs.s2.xlarge",
 				PriceUnit:          "Week",
 				Period:             1,
@@ -511,7 +511,7 @@ var describeInstanceTypeCmd = &cli.Command{
 		regionID := cctx.String("rid")
 		core := int32(cctx.Int("core"))
 		memory := float32(cctx.Float64("memory"))
-		list, err := api.DescribeInstanceType(ctx, &types.DescribeInstanceTypeReq{RegionId: regionID, CpuArchitecture: "X86", CpuCoreCount: core, MemorySize: memory, InstanceCategory: "General-purpose"})
+		list, err := api.DescribeInstanceType(ctx, &types.DescribeInstanceTypeReq{RegionID: regionID, CPUArchitecture: "X86", CPUCoreCount: core, MemorySize: memory, InstanceCategory: "General-purpose"})
 		if err != nil {
 			return err
 		}
@@ -536,16 +536,16 @@ var createOrderCmd = &cli.Command{
 
 		address, err := api.CreateOrder(ctx, types.CreateOrderReq{
 			CreateInstanceReq: types.CreateInstanceReq{
-				RegionId:                "cn-qingdao",
-				ImageId:                 "aliyun_2_1903_x64_20G_alibase_20230731.vhd",
-				PeriodUnit:              "Week",
-				Period:                  1,
-				InstanceType:            "ecs.n4.small",
-				InternetChargeType:      "PayByTraffic",
-				DryRun:                  true,
-				InternetMaxBandwidthOut: 1,
-				SystemDiskCategory:      "cloud_efficiency",
-				SystemDiskSize:          40,
+				RegionID:           "cn-qingdao",
+				ImageID:            "aliyun_2_1903_x64_20G_alibase_20230731.vhd",
+				PeriodUnit:         "Week",
+				Period:             1,
+				InstanceType:       "ecs.n4.small",
+				InternetChargeType: "PayByTraffic",
+				DryRun:             true,
+				BandwidthOut:       1,
+				SystemDiskCategory: "cloud_efficiency",
+				SystemDiskSize:     40,
 			},
 			Amount: 1,
 		})

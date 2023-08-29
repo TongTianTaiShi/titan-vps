@@ -69,7 +69,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	log.Debugf("handle buy goods: %s", info.OrderID)
 
 	// Buy Vps
-	vInfo, err := m.LoadVpsInfo(info.VpsID)
+	vInfo, err := m.LoadInstanceInfoByID(info.VpsID)
 	if err != nil {
 		return ctx.Send(BuyFailed{Msg: err.Error()})
 	}
@@ -84,15 +84,30 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	}
 
 	if info.OrderType == int64(types.BuyVPS) {
-		result, err := m.vpsMgr.CreateAliYunInstance(vInfo)
+		createInfo := &types.CreateInstanceReq{
+			RegionID:           vInfo.RegionID,
+			InstanceType:       vInfo.InstanceType,
+			ImageID:            vInfo.ImageID,
+			SecurityGroupID:    vInfo.SecurityGroupID,
+			PeriodUnit:         vInfo.PeriodUnit,
+			Period:             vInfo.Period,
+			DryRun:             vInfo.DryRun,
+			InternetChargeType: vInfo.InternetChargeType,
+			SystemDiskSize:     vInfo.SystemDiskSize,
+			SystemDiskCategory: vInfo.SystemDiskCategory,
+			BandwidthOut:       vInfo.BandwidthOut,
+			DataDisk:           vInfo.DataDisk,
+		}
+
+		result, err := m.vpsMgr.CreateAliYunInstance(createInfo)
 		if err != nil {
 			return ctx.Send(BuyFailed{Msg: err.Error()})
 		}
-		vInfo.InstanceId = result.InstanceID
+		vInfo.InstanceID = result.InstanceID
 	} else if info.OrderType == int64(types.RenewVPS) {
 		err = m.vpsMgr.RenewInstance(&types.RenewInstanceRequest{
-			RegionId:   vInfo.RegionId,
-			InstanceId: vInfo.InstanceId,
+			RegionID:   vInfo.RegionID,
+			InstanceID: vInfo.InstanceID,
 			PeriodUnit: vInfo.PeriodUnit,
 			Period:     vInfo.Period,
 		})
@@ -102,10 +117,10 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	}
 
 	// if auto renew
-	if vInfo.Renew == 1 {
+	if vInfo.AutoRenew == 1 {
 		renewReq := types.SetRenewOrderReq{
-			RegionID:   vInfo.RegionId,
-			InstanceId: vInfo.InstanceId,
+			RegionID:   vInfo.RegionID,
+			InstanceID: vInfo.InstanceID,
 			PeriodUnit: vInfo.PeriodUnit,
 			Period:     vInfo.Period,
 			Renew:      1,

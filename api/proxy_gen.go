@@ -155,7 +155,7 @@ type UserAPIStruct struct {
 
 		GetSignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
-		GetUserInstanceRecords func(p0 context.Context, p1 int64, p2 int64) (*types.MyInstanceResponse, error) `perm:"user"`
+		GetUserInstanceRecords func(p0 context.Context, p1 int64, p2 int64) (*types.UserInstanceResponse, error) `perm:"user"`
 
 		GetUserRechargeRecords func(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) `perm:"user"`
 
@@ -660,14 +660,14 @@ func (s *UserAPIStub) GetSignCode(p0 context.Context, p1 string) (string, error)
 	return "", ErrNotSupported
 }
 
-func (s *UserAPIStruct) GetUserInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.MyInstanceResponse, error) {
+func (s *UserAPIStruct) GetUserInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.UserInstanceResponse, error) {
 	if s.Internal.GetUserInstanceRecords == nil {
 		return nil, ErrNotSupported
 	}
 	return s.Internal.GetUserInstanceRecords(p0, p1, p2)
 }
 
-func (s *UserAPIStub) GetUserInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.MyInstanceResponse, error) {
+func (s *UserAPIStub) GetUserInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.UserInstanceResponse, error) {
 	return nil, ErrNotSupported
 }
 

@@ -51,16 +51,16 @@ func newClient(regionID, keyID, keySecret string) (*ecs20140526.Client, *tea.SDK
 func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceReq, dryRun bool) (*types.CreateInstanceResponse, *tea.SDKError) {
 	var out *types.CreateInstanceResponse
 
-	client, err := newClient(instanceReq.RegionId, keyID, keySecret)
+	client, err := newClient(instanceReq.RegionID, keyID, keySecret)
 	if err != nil {
 		return out, err
 	}
 	createInstanceRequest := &ecs20140526.CreateInstanceRequest{
-		RegionId:           tea.String(instanceReq.RegionId),
+		RegionId:           tea.String(instanceReq.RegionID),
 		InstanceType:       tea.String(instanceReq.InstanceType),
 		DryRun:             tea.Bool(dryRun),
-		ImageId:            tea.String(instanceReq.ImageId),
-		SecurityGroupId:    tea.String(instanceReq.SecurityGroupId),
+		ImageId:            tea.String(instanceReq.ImageID),
+		SecurityGroupId:    tea.String(instanceReq.SecurityGroupID),
 		InstanceChargeType: tea.String("PrePaid"),
 		PeriodUnit:         tea.String(instanceReq.PeriodUnit),
 		InternetChargeType: tea.String(instanceReq.InternetChargeType),
@@ -100,8 +100,8 @@ func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceRe
 
 		out = &types.CreateInstanceResponse{
 			InstanceID: *result.Body.InstanceId,
-			OrderId:    *result.Body.OrderId,
-			RequestId:  *result.Body.RequestId,
+			OrderID:    *result.Body.OrderId,
+			RequestID:  *result.Body.RequestId,
 			TradePrice: *result.Body.TradePrice,
 			AccessKey:  keyID,
 		}
@@ -160,8 +160,8 @@ func RunInstances(regionID, keyID, keySecret, instanceType, imageID, password, s
 
 		out = &types.CreateInstanceResponse{
 			InstanceID: *result.Body.InstanceIdSets.InstanceIdSet[0],
-			OrderId:    *result.Body.OrderId,
-			RequestId:  *result.Body.RequestId,
+			OrderID:    *result.Body.OrderId,
+			RequestID:  *result.Body.RequestId,
 			TradePrice: *result.Body.TradePrice,
 		}
 
@@ -357,12 +357,12 @@ func AllocatePublicIPAddress(regionID, keyID, keySecret, instanceID string) (str
 func DescribePrice(keyID, keySecret string, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, *tea.SDKError) {
 	var out *types.DescribePriceResponse
 
-	client, err := newClient(priceReq.RegionId, keyID, keySecret)
+	client, err := newClient(priceReq.RegionID, keyID, keySecret)
 	if err != nil {
 		return out, err
 	}
 	describePriceRequest := &ecs20140526.DescribePriceRequest{
-		RegionId:                tea.String(priceReq.RegionId),
+		RegionId:                tea.String(priceReq.RegionID),
 		InstanceType:            tea.String(priceReq.InstanceType),
 		ResourceType:            tea.String("instance"),
 		PriceUnit:               tea.String(priceReq.PriceUnit),
@@ -506,14 +506,14 @@ func DescribeRegions(keyID, keySecret string) (*ecs20140526.DescribeRegionsRespo
 // DescribeRecommendInstanceType Describe Instance Type
 func DescribeRecommendInstanceType(keyID, keySecret string, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) (*ecs20140526.DescribeRecommendInstanceTypeResponse, *tea.SDKError) {
 	var result *ecs20140526.DescribeRecommendInstanceTypeResponse
-	client, err := newClient(instanceTypeReq.RegionId, keyID, keySecret)
+	client, err := newClient(instanceTypeReq.RegionID, keyID, keySecret)
 	if err != nil {
 		return result, err
 	}
 
 	describeRecommendInstanceTypeRequest := &ecs20140526.DescribeRecommendInstanceTypeRequest{
 		NetworkType:        tea.String("vpc"),
-		RegionId:           tea.String(instanceTypeReq.RegionId),
+		RegionId:           tea.String(instanceTypeReq.RegionID),
 		InstanceChargeType: tea.String(instanceTypeReq.InstanceChargeType),
 	}
 	if instanceTypeReq.Cores > 0 {
@@ -550,20 +550,20 @@ func DescribeRecommendInstanceType(keyID, keySecret string, instanceTypeReq *typ
 
 func DescribeInstanceTypes(keyID, keySecret string, instanceType *types.DescribeInstanceTypeReq) (*ecs20140526.DescribeInstanceTypesResponse, *tea.SDKError) {
 	var result *ecs20140526.DescribeInstanceTypesResponse
-	client, err := newClient(instanceType.RegionId, keyID, keySecret)
+	client, err := newClient(instanceType.RegionID, keyID, keySecret)
 	if err != nil {
 		return result, err
 	}
 	describeInstanceTypesRequest := &ecs20140526.DescribeInstanceTypesRequest{}
-	if instanceType.CpuArchitecture != "" {
-		describeInstanceTypesRequest.CpuArchitecture = tea.String(instanceType.CpuArchitecture)
+	if instanceType.CPUArchitecture != "" {
+		describeInstanceTypesRequest.CpuArchitecture = tea.String(instanceType.CPUArchitecture)
 	}
 	if instanceType.InstanceCategory != "" {
 		describeInstanceTypesRequest.InstanceCategory = tea.String(instanceType.InstanceCategory)
 	}
-	if instanceType.CpuCoreCount != 0 {
-		describeInstanceTypesRequest.MinimumCpuCoreCount = tea.Int32(instanceType.CpuCoreCount)
-		describeInstanceTypesRequest.MaximumCpuCoreCount = tea.Int32(instanceType.CpuCoreCount)
+	if instanceType.CPUCoreCount != 0 {
+		describeInstanceTypesRequest.MinimumCpuCoreCount = tea.Int32(instanceType.CPUCoreCount)
+		describeInstanceTypesRequest.MaximumCpuCoreCount = tea.Int32(instanceType.CPUCoreCount)
 	}
 	if instanceType.MemorySize != 0 {
 		describeInstanceTypesRequest.MinimumMemorySize = tea.Float32(instanceType.MemorySize)
@@ -768,7 +768,7 @@ func DescribeInstances(regionID, keyID, keySecret string, InstanceIds []string) 
 func DescribeAvailableResource(keyID, keySecret string, instanceType *types.DescribeInstanceTypeReq) (*ecs20140526.DescribeAvailableResourceResponse, *tea.SDKError) {
 	var result *ecs20140526.DescribeAvailableResourceResponse
 
-	client, err := newClient(instanceType.RegionId, keyID, keySecret)
+	client, err := newClient(instanceType.RegionID, keyID, keySecret)
 	if err != nil {
 		return result, err
 	}
@@ -776,10 +776,10 @@ func DescribeAvailableResource(keyID, keySecret string, instanceType *types.Desc
 	describeAvailableResourceRequest := &ecs20140526.DescribeAvailableResourceRequest{
 		NetworkCategory:     tea.String("vpc"),
 		ResourceType:        tea.String("instance"),
-		RegionId:            tea.String(instanceType.RegionId),
+		RegionId:            tea.String(instanceType.RegionID),
 		DestinationResource: tea.String("InstanceType"),
 		InstanceChargeType:  tea.String("PrePaid"),
-		Cores:               tea.Int32(instanceType.CpuCoreCount),
+		Cores:               tea.Int32(instanceType.CPUCoreCount),
 		Memory:              tea.Float32(instanceType.MemorySize),
 	}
 	runtime := &util.RuntimeOptions{}
@@ -811,13 +811,13 @@ func DescribeAvailableResource(keyID, keySecret string, instanceType *types.Desc
 func DescribeAvailableResourceForDesk(keyID, keySecret string, desk *types.AvailableResourceReq) (*ecs20140526.DescribeAvailableResourceResponse, *tea.SDKError) {
 	var result *ecs20140526.DescribeAvailableResourceResponse
 
-	client, err := newClient(desk.RegionId, keyID, keySecret)
+	client, err := newClient(desk.RegionID, keyID, keySecret)
 	if err != nil {
 		return result, err
 	}
 
 	describeAvailableResourceRequest := &ecs20140526.DescribeAvailableResourceRequest{
-		RegionId:            tea.String(desk.RegionId),
+		RegionId:            tea.String(desk.RegionID),
 		DestinationResource: tea.String(desk.DestinationResource),
 		InstanceChargeType:  tea.String("PrePaid"),
 		InstanceType:        tea.String(desk.InstanceType),
@@ -927,7 +927,7 @@ func AttachKeyPair(regionID, keyID, keySecret, KeyPairName string, instanceIds [
 		for _, i := range result.Body.Results.Result {
 			instanceInfo := &types.AttachKeyPairResponse{
 				Code:       *i.Code,
-				InstanceId: *i.InstanceId,
+				InstanceID: *i.InstanceId,
 				Message:    *i.Message,
 				Success:    *i.Success,
 			}
@@ -987,13 +987,13 @@ func RebootInstance(regionID, keyID, keySecret, instanceId string) *tea.SDKError
 
 // RenewInstance renew instance
 func RenewInstance(keyID, keySecret string, renewInstanceRequest *types.RenewInstanceRequest) *tea.SDKError {
-	client, err := newClient(renewInstanceRequest.RegionId, keyID, keySecret)
+	client, err := newClient(renewInstanceRequest.RegionID, keyID, keySecret)
 	if err != nil {
 		return err
 	}
 
 	rebootInstanceRequest := &ecs20140526.RenewInstanceRequest{
-		InstanceId: tea.String(renewInstanceRequest.InstanceId),
+		InstanceId: tea.String(renewInstanceRequest.InstanceID),
 		Period:     tea.Int32(renewInstanceRequest.Period),
 		PeriodUnit: tea.String(renewInstanceRequest.PeriodUnit),
 	}
@@ -1030,7 +1030,7 @@ func ModifyInstanceAutoRenewAttribute(keyID, keySecret string, renewInstanceRequ
 		return err
 	}
 	rebootInstanceRequest := &ecs20140526.ModifyInstanceAutoRenewAttributeRequest{
-		InstanceId: tea.String(renewInstanceRequest.InstanceId),
+		InstanceId: tea.String(renewInstanceRequest.InstanceID),
 		RegionId:   tea.String(renewInstanceRequest.RegionID),
 		PeriodUnit: tea.String(renewInstanceRequest.PeriodUnit),
 		Duration:   tea.Int32(renewInstanceRequest.Period),
@@ -1079,7 +1079,7 @@ func DescribeInstanceAutoRenewAttribute(keyID, keySecret string, renewInstanceRe
 	}
 	var result *ecs20140526.DescribeInstanceAutoRenewAttributeResponse
 	rebootInstanceRequest := &ecs20140526.DescribeInstanceAutoRenewAttributeRequest{
-		InstanceId: tea.String(renewInstanceRequest.InstanceId),
+		InstanceId: tea.String(renewInstanceRequest.InstanceID),
 		RegionId:   tea.String(renewInstanceRequest.RegionID),
 	}
 	runtime := &util.RuntimeOptions{}

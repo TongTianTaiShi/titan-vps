@@ -7,9 +7,9 @@ import (
 	"github.com/LMF709268224/titan-vps/api/types"
 )
 
-// LoadVpsInfo loads VPS information by VPS ID.
-func (d *SQLDB) LoadVpsInfo(vpsID int64) (*types.CreateInstanceReq, error) {
-	var info types.CreateInstanceReq
+// LoadInstanceInfoByID loads VPS information by VPS ID.
+func (d *SQLDB) LoadInstanceInfoByID(vpsID int64) (*types.InstanceDetails, error) {
+	var info types.InstanceDetails
 	query := fmt.Sprintf("SELECT * FROM %s WHERE id=?", userInstancesTable)
 	err := d.db.Get(&info, query, vpsID)
 	if err != nil {
@@ -19,9 +19,9 @@ func (d *SQLDB) LoadVpsInfo(vpsID int64) (*types.CreateInstanceReq, error) {
 	return &info, nil
 }
 
-// LoadVpsInfoByInstanceID loads VPS information by instance ID.
-func (d *SQLDB) LoadVpsInfoByInstanceID(instanceID string) (*types.CreateInstanceReq, error) {
-	var info types.CreateInstanceReq
+// LoadUserInstanceInfoByInstanceID loads VPS information by instance ID.
+func (d *SQLDB) LoadUserInstanceInfoByInstanceID(instanceID string) (*types.InstanceDetails, error) {
+	var info types.InstanceDetails
 	query := fmt.Sprintf("SELECT * FROM %s WHERE instance_id=?", userInstancesTable)
 	err := d.db.Get(&info, query, instanceID)
 	if err != nil {
@@ -31,30 +31,8 @@ func (d *SQLDB) LoadVpsInfoByInstanceID(instanceID string) (*types.CreateInstanc
 	return &info, nil
 }
 
-// VpsExists checks if VPS info exists in the database.
-func (d *SQLDB) VpsExists(vpsID int64) (bool, error) {
-	var total int64
-	countSQL := fmt.Sprintf(`SELECT count(id) FROM %s WHERE id=? `, userInstancesTable)
-	if err := d.db.Get(&total, countSQL, vpsID); err != nil {
-		return false, err
-	}
-
-	return total > 0, nil
-}
-
-// VpsDeviceExists checks if VPS device info exists in the database.
-func (d *SQLDB) VpsDeviceExists(instanceID int64) (bool, error) {
-	var total int64
-	countSQL := fmt.Sprintf(`SELECT count(instance_id) FROM %s WHERE instance_id=? `, userInstancesTable)
-	if err := d.db.Get(&total, countSQL, instanceID); err != nil {
-		return false, err
-	}
-
-	return total > 0, nil
-}
-
-// SaveVpsInstance saves VPS instance information into the database.
-func (d *SQLDB) SaveVpsInstance(rInfo *types.CreateOrderReq) (int64, error) {
+// SaveInstanceInfoOfUser saves VPS instance information into the database.
+func (d *SQLDB) SaveInstanceInfoOfUser(rInfo *types.InstanceDetails) (int64, error) {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (region_id,instance_id,user_id,order_id, instance_type, dry_run, image_id,
 			    security_group_id, instance_charge_type,internet_charge_type, period_unit, period, bandwidth_out,bandwidth_in,
@@ -71,29 +49,27 @@ func (d *SQLDB) SaveVpsInstance(rInfo *types.CreateOrderReq) (int64, error) {
 	return result.LastInsertId()
 }
 
-// UpdateVpsInstance updates VPS instance information in the database.
-func (d *SQLDB) UpdateVpsInstance(info *types.CreateInstanceReq) error {
+// UpdateInstanceInfoOfUser updates VPS instance information in the database.
+func (d *SQLDB) UpdateInstanceInfoOfUser(info *types.InstanceDetails) error {
 	query := fmt.Sprintf(`UPDATE %s SET ip_address=?, instance_id=?, user_id=?,os_type=?,cores=?,memory=?,expired_time=?,
-	    security_group_id=? WHERE order_id=?`, userInstancesTable)
-	_, err := d.db.Exec(query, info.IpAddress, info.InstanceId, info.UserID, info.OSType, info.Cores, info.Memory, info.ExpiredTime, info.SecurityGroupId, info.OrderID)
+	    security_group_id=?,access_key=? WHERE order_id=?`, userInstancesTable)
+	_, err := d.db.Exec(query, info.IPAddress, info.InstanceID, info.UserID, info.OSType, info.Cores, info.Memory, info.ExpiredTime, info.SecurityGroupID, info.AccessKey, info.OrderID)
 
 	return err
 }
 
 // RenewVpsInstance updates VPS instance renewal information in the database.
-func (d *SQLDB) RenewVpsInstance(info *types.CreateInstanceReq) error {
+func (d *SQLDB) RenewVpsInstance(info *types.InstanceDetails) error {
 	query := fmt.Sprintf(`UPDATE %s SET period_unit=?, period=?, trade_price=?,renew=? WHERE instance_id=?`, userInstancesTable)
-	_, err := d.db.Exec(query, info.PeriodUnit, info.Period, info.TradePrice, info.Renew, info.InstanceId)
-	if err != nil {
-		return err
-	}
-	return nil
+	_, err := d.db.Exec(query, info.PeriodUnit, info.Period, info.TradePrice, info.AutoRenew, info.InstanceID)
+
+	return err
 }
 
 // UpdateRenewInstanceStatus updates VPS instance renewal status in the database.
 func (d *SQLDB) UpdateRenewInstanceStatus(info *types.SetRenewOrderReq) error {
 	query := fmt.Sprintf(`UPDATE %s SET renew=? WHERE instance_id=?`, userInstancesTable)
-	_, err := d.db.Exec(query, info.Renew, info.InstanceId)
+	_, err := d.db.Exec(query, info.Renew, info.InstanceID)
 	if err != nil {
 		return err
 	}
@@ -148,15 +124,16 @@ func (d *SQLDB) UpdateInstanceDefaultStatus(instanceTypeID, regionID string) err
 	return err
 }
 
-// LoadInstancesInfoOfUser loads user server information.
-func (d *SQLDB) LoadInstancesInfoOfUser(userID string, limit, offset int64) (*types.MyInstanceResponse, error) {
-	out := new(types.MyInstanceResponse)
-	var infos []*types.MyInstance
-	query := fmt.Sprintf("SELECT id,instance_id,instance_name,os_type,region_id,trade_price,created_time,bandwidth_out,expired_time FROM %s WHERE user_id=?  order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
-	if limit > loadOrderRecordsDefaultLimit {
-		limit = loadOrderRecordsDefaultLimit
+// LoadInstancesInfoByUser loads user instance information.
+func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*types.UserInstanceResponse, error) {
+	out := new(types.UserInstanceResponse)
+
+	var infos []*types.InstanceDetails
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=?  order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
+	if limit > loadInstancesDefaultLimit {
+		limit = loadInstancesDefaultLimit
 	}
-	err := d.db.Select(&infos, query, userID, limit, offset*limit)
+	err := d.db.Select(&infos, query, userID, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +151,35 @@ func (d *SQLDB) LoadInstancesInfoOfUser(userID string, limit, offset int64) (*ty
 	return out, nil
 }
 
-// LoadInstanceDetailsInfo loads details of a specific instance.
-func (d *SQLDB) LoadInstanceDetailsInfo(userID, instanceID string) (*types.InstanceDetails, error) {
+// LoadInstancesInfo loads instance information.
+func (d *SQLDB) LoadInstancesInfo(limit, page int64) (*types.UserInstanceResponse, error) {
+	out := new(types.UserInstanceResponse)
+
+	var infos []*types.InstanceDetails
+	query := fmt.Sprintf("SELECT * FROM %s order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
+	if limit > loadInstancesDefaultLimit {
+		limit = loadInstancesDefaultLimit
+	}
+	err := d.db.Select(&infos, query, limit, page*limit)
+	if err != nil {
+		return nil, err
+	}
+
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s ", userInstancesTable)
+	var count int
+	err = d.db.Get(&count, countQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	out.Total = count
+	out.List = infos
+
+	return out, nil
+}
+
+// LoadInstanceInfoByUser loads details of a specific instance.
+func (d *SQLDB) LoadInstanceInfoByUser(userID, instanceID string) (*types.InstanceDetails, error) {
 	var info types.InstanceDetails
 	query := fmt.Sprintf("SELECT region_id,instance_id,instance_name,instance_type,image_id,security_group_id,instance_charge_type,internet_charge_type,bandwidth_out,bandwidth_in,system_disk_size,ip_address,system_disk_category,created_time,memory,memory_used,cores,cores_used,os_type,data_disk  FROM %s WHERE user_id=? and instance_id=?", userInstancesTable)
 	err := d.db.Get(&info, query, userID, instanceID)
@@ -194,7 +198,7 @@ func (d *SQLDB) LoadInstanceDefaultInfo(req *types.InstanceTypeFromBaseReq) (*ty
 	var args []interface{}
 
 	query = "region_id=?"
-	args = append(args, req.RegionId)
+	args = append(args, req.RegionID)
 	if req.InstanceCategory != "" {
 		query += " and instance_category=?"
 		args = append(args, req.InstanceCategory)
@@ -203,13 +207,13 @@ func (d *SQLDB) LoadInstanceDefaultInfo(req *types.InstanceTypeFromBaseReq) (*ty
 		query += " and memory_size=?"
 		args = append(args, req.MemorySize)
 	}
-	if req.CpuCoreCount != 0 {
+	if req.CPUCoreCount != 0 {
 		query += " and cpu_core_count=?"
-		args = append(args, req.CpuCoreCount)
+		args = append(args, req.CPUCoreCount)
 	}
-	if req.CpuArchitecture != "" {
+	if req.CPUArchitecture != "" {
 		query += " and cpu_architecture=?"
-		args = append(args, req.CpuArchitecture)
+		args = append(args, req.CPUArchitecture)
 	}
 
 	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE %s and status!=''", instanceBaseInfoTable, query)
@@ -236,18 +240,18 @@ func (d *SQLDB) LoadInstanceCPUInfo(req *types.InstanceTypeFromBaseReq) ([]*int3
 	var query string
 	var args []interface{}
 	query = "region_id=?"
-	args = append(args, req.RegionId)
+	args = append(args, req.RegionID)
 	if req.InstanceCategory != "" {
 		query += " and instance_category=?"
 		args = append(args, req.InstanceCategory)
 	}
-	if req.CpuCoreCount != 0 {
+	if req.CPUCoreCount != 0 {
 		query += " and cpu_core_count=?"
-		args = append(args, req.CpuCoreCount)
+		args = append(args, req.CPUCoreCount)
 	}
-	if req.CpuArchitecture != "" {
+	if req.CPUArchitecture != "" {
 		query += " and cpu_architecture=?"
-		args = append(args, req.CpuArchitecture)
+		args = append(args, req.CPUArchitecture)
 	}
 
 	querySQL := fmt.Sprintf("SELECT distinct cpu_core_count FROM %s WHERE %s order by cpu_core_count asc", instanceBaseInfoTable, query)
@@ -264,18 +268,18 @@ func (d *SQLDB) LoadInstanceMemoryInfo(req *types.InstanceTypeFromBaseReq) ([]*f
 	var query string
 	var args []interface{}
 	query = "region_id=?"
-	args = append(args, req.RegionId)
+	args = append(args, req.RegionID)
 	if req.InstanceCategory != "" {
 		query += " and instance_category=?"
 		args = append(args, req.InstanceCategory)
 	}
-	if req.CpuCoreCount != 0 {
+	if req.CPUCoreCount != 0 {
 		query += " and cpu_core_count=?"
-		args = append(args, req.CpuCoreCount)
+		args = append(args, req.CPUCoreCount)
 	}
-	if req.CpuArchitecture != "" {
+	if req.CPUArchitecture != "" {
 		query += " and cpu_architecture=?"
-		args = append(args, req.CpuArchitecture)
+		args = append(args, req.CPUArchitecture)
 	}
 
 	querySQL := fmt.Sprintf("SELECT distinct memory_size FROM %s WHERE %s order by memory_size asc", instanceBaseInfoTable, query)

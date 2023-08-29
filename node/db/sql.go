@@ -55,7 +55,7 @@ const (
 	loadRechargeRecordsDefaultLimit = 1000
 	loadWithdrawRecordsDefaultLimit = 1000
 	loadAddressesDefaultLimit       = 1000
-	loadInstancesDefaultLimit       = 1000
+	loadInstancesDefaultLimit       = 100
 )
 
 // initTables initializes data tables.

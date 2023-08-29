@@ -6,10 +6,6 @@ import (
 	"github.com/LMF709268224/titan-vps/lib/trxbridge/core"
 )
 
-type Hellos struct {
-	Msg string
-}
-
 // OrderState represents the state of an order in the process .
 type OrderState int64
 
@@ -54,7 +50,7 @@ type User struct {
 }
 
 type DescribePriceReq struct {
-	RegionId                     string
+	RegionID                     string
 	InstanceType                 string
 	PriceUnit                    string
 	ImageID                      string
@@ -81,7 +77,7 @@ type DescribePriceResponse struct {
 }
 
 type DescribeImageResponse struct {
-	ImageId      string
+	ImageID      string
 	ImageName    string
 	ImageFamily  string
 	Platform     string
@@ -96,7 +92,7 @@ type CreateOrderReq struct {
 }
 
 type RenewOrderReq struct {
-	InstanceId string `db:"instance_id"`
+	InstanceID string `db:"instance_id"`
 	PeriodUnit string `db:"period_unit"`
 	Period     int32  `db:"period"`
 	Renew      int    `db:"renew"`
@@ -104,68 +100,34 @@ type RenewOrderReq struct {
 
 type SetRenewOrderReq struct {
 	RegionID   string `db:"region_id"`
-	InstanceId string `db:"instance_id"`
+	InstanceID string `db:"instance_id"`
 	PeriodUnit string `db:"period_unit"`
 	Period     int32  `db:"period"`
 	Renew      int    `db:"renew"`
 }
 
-type CreateInstanceReq struct {
-	Id                      int64     `db:"id"`
-	RegionId                string    `db:"region_id"`
-	InstanceId              string    `db:"instance_id"`
-	InstanceName            string    `db:"instance_name"`
-	UserID                  string    `db:"user_id"`
-	OrderID                 string    `db:"order_id"`
-	InstanceType            string    `db:"instance_type"`
-	DryRun                  bool      `db:"dry_run"`
-	ImageId                 string    `db:"image_id"`
-	Memory                  float32   `db:"memory"`
-	MemoryUsed              float32   `db:"memory_used"`
-	Cores                   int32     `db:"cores"`
-	CoresUsed               float32   `db:"cores_used"`
-	SecurityGroupId         string    `db:"security_group_id"`
-	InstanceChargeType      string    `db:"instance_charge_type"`
-	PeriodUnit              string    `db:"period_unit"`
-	Period                  int32     `db:"period"`
-	InternetMaxBandwidthOut int32     `db:"bandwidth_out"`
-	InternetMaxBandwidthIn  int32     `db:"bandwidth_in"`
-	IpAddress               string    `db:"ip_address"`
-	TradePrice              float32   `db:"trade_price"`
-	SystemDiskCategory      string    `db:"system_disk_category"`
-	OSType                  string    `db:"os_type"`
-	InternetChargeType      string    `db:"internet_charge_type"`
-	SystemDiskSize          int32     `db:"system_disk_size"`
-	Renew                   int       `db:"renew"`
-	DataDiskString          string    `db:"data_disk"`
-	CreatedTime             time.Time `db:"created_time"`
-	ExpiredTime             string    `db:"expired_time"`
-	AccessKey               string    `db:"access_key"`
-	DataDisk                []DescribePriceRequestDataDisk
-}
-
 type CreateInstanceResponse struct {
 	InstanceID       string  `db:"instance_id"`
-	OrderId          string  `db:"order_id"`
-	RequestId        string  `db:"request_id"`
+	OrderID          string  `db:"order_id"`
+	RequestID        string  `db:"request_id"`
 	TradePrice       float32 `db:"trade_price"`
-	PublicIpAddress  string  `db:"public_ip_address"`
+	PublicIPAddress  string  `db:"public_ip_address"`
 	PrivateKeyStatus int     `db:"private_key_status"`
 	PrivateKey       string
 	AccessKey        string
 }
 type DescribeInstanceTypeReq struct {
-	RegionId         string
+	RegionID         string
 	MemorySize       float32
-	CpuArchitecture  string
+	CPUArchitecture  string
 	InstanceCategory string
-	CpuCoreCount     int32
+	CPUCoreCount     int32
 	MaxResults       int64
 	NextToken        string
 }
 
 type AvailableResourceReq struct {
-	RegionId            string
+	RegionID            string
 	DestinationResource string
 	InstanceChargeType  string
 	InstanceType        string
@@ -173,8 +135,8 @@ type AvailableResourceReq struct {
 }
 
 type RenewInstanceRequest struct {
-	RegionId   string
-	InstanceId string
+	RegionID   string
+	InstanceID string
 	PeriodUnit string
 	Period     int32
 }
@@ -187,7 +149,7 @@ type AvailableResourceResponse struct {
 }
 
 type DescribeRecommendInstanceTypeReq struct {
-	RegionId           string
+	RegionID           string
 	Memory             float32
 	Cores              int32
 	InstanceChargeType string
@@ -206,11 +168,11 @@ type DescribeInstanceTypeResponse struct {
 }
 
 type DescribeInstanceType struct {
-	InstanceTypeId         string
+	InstanceTypeID         string
 	MemorySize             float32
-	CpuArchitecture        string
+	CPUArchitecture        string
 	InstanceCategory       string
-	CpuCoreCount           int32
+	CPUCoreCount           int32
 	AvailableZone          int
 	InstanceTypeFamily     string
 	PhysicalProcessorModel string
@@ -219,11 +181,11 @@ type DescribeInstanceType struct {
 }
 
 type InstanceTypeFromBaseReq struct {
-	RegionId            string
+	RegionID            string
 	MemorySize          float32
-	CpuArchitecture     string
+	CPUArchitecture     string
 	InstanceCategory    string
-	CpuCoreCount        int32
+	CPUCoreCount        int32
 	Limit, Page, Offset int64
 }
 
@@ -233,12 +195,12 @@ type InstanceTypeResponse struct {
 }
 
 type DescribeInstanceTypeFromBase struct {
-	RegionId               string    `db:"region_id"`
-	InstanceTypeId         string    `db:"instance_type_id"`
+	RegionID               string    `db:"region_id"`
+	InstanceTypeID         string    `db:"instance_type_id"`
 	MemorySize             float32   `db:"memory_size"`
-	CpuArchitecture        string    `db:"cpu_architecture"`
+	CPUArchitecture        string    `db:"cpu_architecture"`
 	InstanceCategory       string    `db:"instance_category"`
-	CpuCoreCount           int32     `db:"cpu_core_count"`
+	CPUCoreCount           int32     `db:"cpu_core_count"`
 	AvailableZone          int       `db:"available_zone"`
 	InstanceTypeFamily     string    `db:"instance_type_family"`
 	PhysicalProcessorModel string    `db:"physical_processor_model"`
@@ -257,7 +219,7 @@ type CreateKeyPairResponse struct {
 
 type AttachKeyPairResponse struct {
 	Code       string
-	InstanceId string
+	InstanceID string
 	Message    string
 	Success    string
 }
@@ -275,37 +237,6 @@ type OrderRecord struct {
 	Msg         string     `db:"msg"`
 	Expiration  time.Time  `db:"expiration"`
 	OrderType   OrderType  `db:"order_type"`
-}
-
-type IpcOrderInfo struct {
-	OrderID     string
-	UserID      string
-	Value       string
-	CreatedTime string
-	Type        string
-
-	PeriodUnit              string
-	Period                  int32
-	RegionId                string
-	InstanceId              string
-	InstanceType            string
-	ImageId                 string
-	Memory                  string
-	MemoryUsed              string
-	Cores                   int32
-	CoresUsed               string
-	SecurityGroupId         string
-	InstanceChargeType      string
-	InternetMaxBandwidthOut int32
-	InternetMaxBandwidthIn  int32
-	IpAddress               string
-	TradePrice              string
-	SystemDiskCategory      string
-	OSType                  string
-	InternetChargeType      string
-	SystemDiskSize          int32
-	DataDiskString          string
-	DataDisk                []DescribePriceRequestDataDisk
 }
 
 type OrderRecordResponse struct {
@@ -337,22 +268,6 @@ const (
 	WithdrawDone
 	// WithdrawRefund Withdraw Refund
 	WithdrawRefund
-)
-
-type (
-	MyInstanceKeyState int64
-	MyInstanceState    int64
-)
-
-const (
-	KeyNoSet MyInstanceKeyState = iota
-	KeyHaveSet
-)
-
-const (
-	InstanceCreate MyInstanceState = iota
-	InstanceRunning
-	InstanceStop
 )
 
 type LoginType int64
@@ -472,27 +387,9 @@ type RechargeAddress struct {
 	UserID string `db:"user_id"`
 }
 
-type MyInstanceResponse struct {
+type UserInstanceResponse struct {
 	Total int
-	List  []*MyInstance
-}
-
-type MyInstance struct {
-	ID               string             `db:"id"`
-	InstanceId       string             `db:"instance_id"`
-	OrderID          string             `db:"order_id"`
-	UserID           string             `db:"user_id"`
-	PrivateKeyStatus MyInstanceKeyState `db:"private_key_status"`
-	InstanceName     string             `db:"instance_name"`
-	InstanceSystem   string             `db:"os_type"`
-	Location         string             `db:"region_id"`
-	Price            float32            `db:"trade_price"`
-	State            string
-	Renew            string
-	// InternetChargeType string    `db:"internet_charge_type"`
-	BandwidthOut int32     `db:"bandwidth_out"`
-	CreatedTime  time.Time `db:"created_time"`
-	ExpiredTime  string    `db:"expired_time"`
+	List  []*InstanceDetails
 }
 
 type InstanceDefault struct {
@@ -502,29 +399,54 @@ type InstanceDefault struct {
 }
 
 type InstanceDetails struct {
-	ID                 string  `db:"id"`
-	InstanceId         string  `db:"instance_id"`
+	ID                 int64   `db:"id"`
+	InstanceID         string  `db:"instance_id"`
 	InstanceName       string  `db:"instance_name"`
-	RegionId           string  `db:"region_id"`
+	RegionID           string  `db:"region_id"`
+	UserID             string  `db:"user_id"`
 	Memory             float32 `db:"memory"`
 	MemoryUsed         float32 `db:"memory_used"`
 	Cores              int32   `db:"cores"`
 	CoresUsed          float32 `db:"cores_used"`
 	OSType             string  `db:"os_type"`
+	OrderID            string  `db:"order_id"`
 	InstanceType       string  `db:"instance_type"`
 	ImageID            string  `db:"image_id"`
-	SecurityGroupId    string  `db:"security_group_id"`
+	SecurityGroupID    string  `db:"security_group_id"`
 	InstanceChargeType string  `db:"instance_charge_type"`
 	InternetChargeType string  `db:"internet_charge_type"`
 	BandwidthOut       int32   `db:"bandwidth_out"`
 	BandwidthIn        int32   `db:"bandwidth_in"`
-	SystemDiskSize     float32 `db:"system_disk_size"`
-	IpAddress          string  `db:"ip_address"`
+	SystemDiskSize     int32   `db:"system_disk_size"`
+	IPAddress          string  `db:"ip_address"`
 	SystemDiskCategory string  `db:"system_disk_category"`
 	DataDiskString     string  `db:"data_disk"`
-	Renew              int     `db:"renew"`
+	AutoRenew          int     `db:"renew"`
+	DryRun             bool    `db:"dry_run"`
+	PeriodUnit         string  `db:"period_unit"`
+	Period             int32   `db:"period"`
+	TradePrice         float32 `db:"trade_price"`
 	DataDisk           []DescribePriceRequestDataDisk
 	CreatedTime        time.Time `db:"created_time"`
+	ExpiredTime        string    `db:"expired_time"`
+	AccessKey          string    `db:"access_key"`
+	State              string
+	Renew              string
+}
+
+type CreateInstanceReq struct {
+	RegionID           string `db:"region_id"`
+	InstanceType       string `db:"instance_type"`
+	ImageID            string `db:"image_id"`
+	SecurityGroupID    string `db:"security_group_id"`
+	PeriodUnit         string `db:"period_unit"`
+	Period             int32  `db:"period"`
+	DryRun             bool   `db:"dry_run"`
+	InternetChargeType string `db:"internet_charge_type"`
+	SystemDiskSize     int32  `db:"system_disk_size"`
+	SystemDiskCategory string `db:"system_disk_category"`
+	BandwidthOut       int32  `db:"bandwidth_out"`
+	DataDisk           []DescribePriceRequestDataDisk
 }
 
 type GetRechargeAddressResponse struct {

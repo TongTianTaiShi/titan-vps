@@ -126,10 +126,10 @@ func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, page int64) 
 }
 
 // GetUserInstanceRecords retrieves user instance records with pagination.
-func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error) {
+func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*types.UserInstanceResponse, error) {
 	userID := handler.GetID(ctx)
 	k, s := m.getAliAccessKeys()
-	instanceInfos, err := m.LoadInstancesInfoOfUser(userID, limit, offset)
+	instanceInfos, err := m.LoadInstancesInfoByUser(userID, limit, page)
 	if err != nil {
 		log.Errorf("LoadMyInstancesInfo err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
@@ -137,8 +137,8 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 
 	for _, instanceInfo := range instanceInfos.List {
 		var instanceIds []string
-		instanceIds = append(instanceIds, instanceInfo.InstanceId)
-		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.Location, k, s, instanceIds)
+		instanceIds = append(instanceIds, instanceInfo.InstanceID)
+		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.RegionID, k, s, instanceIds)
 		if err != nil {
 			log.Errorf("DescribeInstanceStatus err: %s", *err.Message)
 			continue
@@ -155,8 +155,8 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 		}
 
 		renewInfo := types.SetRenewOrderReq{
-			RegionID:   instanceInfo.Location,
-			InstanceId: instanceInfo.InstanceId,
+			RegionID:   instanceInfo.RegionID,
+			InstanceID: instanceInfo.InstanceID,
 		}
 
 		status, errEk := m.GetRenewInstance(ctx, renewInfo)
@@ -165,7 +165,7 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 			continue
 		}
 		instanceInfo.Renew = status
-		instanceExpiredTime, err := aliyun.DescribeInstances(instanceInfo.Location, k, s, instanceIds)
+		instanceExpiredTime, err := aliyun.DescribeInstances(instanceInfo.RegionID, k, s, instanceIds)
 		if err != nil {
 			log.Errorf("DescribeInstances err: %s", *err.Message)
 			continue
@@ -182,7 +182,7 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 func (m *Mall) GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error) {
 	userID := handler.GetID(ctx)
 
-	info, err := m.LoadInstanceDetailsInfo(userID, instanceID)
+	info, err := m.LoadInstanceInfoByUser(userID, instanceID)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}

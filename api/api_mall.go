@@ -64,7 +64,7 @@ type UserAPI interface {
 	Withdraw(ctx context.Context, withdrawAddr, value string) error                                      //perm:user
 	GetUserRechargeRecords(ctx context.Context, limit, page int64) (*types.RechargeResponse, error)      //perm:user
 	GetUserWithdrawalRecords(ctx context.Context, limit, page int64) (*types.GetWithdrawResponse, error) //perm:user
-	GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error)  //perm:user
+	GetUserInstanceRecords(ctx context.Context, limit, page int64) (*types.UserInstanceResponse, error)  //perm:user
 	GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error)       //perm:user
 	UpdateInstanceName(ctx context.Context, instanceID, instanceName string) error                       //perm:user
 }
