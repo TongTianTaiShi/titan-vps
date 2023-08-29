@@ -15,8 +15,11 @@ import (
 	"github.com/LMF709268224/titan-vps/node/handler"
 )
 
+// CreateOrder creates a new order.
 func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
 	userID := handler.GetID(ctx)
+
+	// Marshal DataDisk if it's not empty
 	if len(req.DataDisk) > 0 {
 		dataDisk, err := json.Marshal(req.DataDisk)
 		if err != nil {
@@ -25,6 +28,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		}
 		req.DataDiskString = string(dataDisk)
 	}
+
 	priceReq := &types.DescribePriceReq{
 		RegionId:                     req.RegionId,
 		InstanceType:                 req.InstanceType,
@@ -38,6 +42,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		SystemDiskSize:               req.SystemDiskSize,
 		DescribePriceRequestDataDisk: req.DataDisk,
 	}
+
 	priceInfo, err := m.DescribePrice(ctx, priceReq)
 	if err != nil {
 		log.Errorf("DescribePrice:%v", err)
@@ -48,19 +53,17 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	orderID := strings.Replace(hash, "-", "", -1)
 	req.OrderID = orderID
 	req.TradePrice = priceInfo.USDPrice / float32(req.Amount)
-	//for i := int32(0); i < req.Amount; i++ {
-	//	id, err = m.SaveVpsInstance(&req)
-	//	if err != nil {
-	//		log.Errorf("SaveVpsInstance:%v", err)
-	//	}
-	//}
+
 	id, err := m.SaveVpsInstance(&req)
 	if err != nil {
 		log.Errorf("SaveVpsInstance:%v", err)
 		return "", err
 	}
+
+	// Calculate new balance
 	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
 
+	// Create an order record
 	info := &types.OrderRecord{
 		VpsID:     id,
 		OrderID:   orderID,
@@ -77,9 +80,15 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	return orderID, nil
 }
 
+// RenewOrder renews an existing order.
 func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (string, error) {
 	userID := handler.GetID(ctx)
+
 	req, err := m.LoadVpsInfoByInstanceId(renewReq.InstanceId)
+	if err != nil {
+		return "", &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
 	if len(req.DataDisk) > 0 {
 		dataDisk, err := json.Marshal(req.DataDisk)
 		if err != nil {
@@ -88,6 +97,7 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 		}
 		req.DataDiskString = string(dataDisk)
 	}
+
 	priceReq := &types.DescribePriceReq{
 		RegionId:                     req.RegionId,
 		InstanceType:                 req.InstanceType,
@@ -101,6 +111,7 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 		SystemDiskSize:               req.SystemDiskSize,
 		DescribePriceRequestDataDisk: req.DataDisk,
 	}
+
 	priceInfo, err := m.DescribePrice(ctx, priceReq)
 	if err != nil {
 		log.Errorf("DescribePrice:%v", err)
@@ -114,11 +125,13 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 	req.PeriodUnit = renewReq.PeriodUnit
 	req.Period = renewReq.Period
 	req.Renew = renewReq.Renew
+
 	err = m.RenewVpsInstance(req)
 	if err != nil {
 		log.Errorf("SaveVpsInstance:%v", err)
 		return "", err
 	}
+
 	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
 
 	info := &types.OrderRecord{
@@ -137,6 +150,7 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 	return orderID, nil
 }
 
+// GetUseWaitingPaymentOrders retrieves user's unpaid orders with pagination.
 func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, page int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
@@ -148,6 +162,7 @@ func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, page int64
 	return info, nil
 }
 
+// GetUserOrderRecords retrieves user's order records with pagination.
 func (m *Mall) GetUserOrderRecords(ctx context.Context, limit, page int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
@@ -159,11 +174,13 @@ func (m *Mall) GetUserOrderRecords(ctx context.Context, limit, page int64) (*typ
 	return info, nil
 }
 
+// CancelUserOrder cancels a user's order.
 func (m *Mall) CancelUserOrder(ctx context.Context, orderID string) error {
 	userID := handler.GetID(ctx)
 	return m.OrderMgr.CancelOrder(orderID, userID)
 }
 
+// PaymentUserOrder marks a user's order as paid.
 func (m *Mall) PaymentUserOrder(ctx context.Context, orderID string) error {
 	userID := handler.GetID(ctx)
 	return m.OrderMgr.PaymentCompleted(orderID, userID)

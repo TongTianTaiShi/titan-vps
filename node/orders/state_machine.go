@@ -29,20 +29,20 @@ func (m *Manager) Plan(events []statemachine.Event, user interface{}) (interface
 // maps order states to their corresponding planner functions
 var planners = map[OrderState]func(events []statemachine.Event, state *OrderInfo) (uint64, error){
 	// external import
-	Created: planOne(
-		on(WaitingPaymentSent{}, WaitingPayment),
+	OrderStateCreated: planOne(
+		on(WaitingPaymentSent{}, OrderStateWaitingPayment),
 	),
-	WaitingPayment: planOne(
-		on(OrderTimeOut{}, Done),
-		on(OrderCancel{}, Done),
-		on(PaymentSucceed{}, BuyGoods),
+	OrderStateWaitingPayment: planOne(
+		on(OrderTimeOut{}, OrderStateDone),
+		on(OrderCancel{}, OrderStateDone),
+		on(PaymentSucceed{}, OrderStateBuyGoods),
 		apply(PaymentResult{}),
 	),
-	BuyGoods: planOne(
-		on(BuyFailed{}, Done),
-		on(BuySucceed{}, Done),
+	OrderStateBuyGoods: planOne(
+		on(BuyFailed{}, OrderStateDone),
+		on(BuySucceed{}, OrderStateDone),
 	),
-	Done: planOne(),
+	OrderStateDone: planOne(),
 }
 
 // plan creates a plan for the next order action based on the given events and order state
@@ -70,14 +70,14 @@ func (m *Manager) plan(events []statemachine.Event, state *OrderInfo) (func(stat
 
 	switch state.State {
 	// Happy path
-	case Created:
-		return m.handleCreated, processed, nil
-	case WaitingPayment:
-		return m.handleWaitingPayment, processed, nil
-	case BuyGoods:
+	case OrderStateCreated:
+		return m.handleOrderCreated, processed, nil
+	case OrderStateWaitingPayment:
+		return m.handleWaitingForPayment, processed, nil
+	case OrderStateBuyGoods:
 		return m.handleBuyGoods, processed, nil
-	case Done:
-		return m.handleDone, processed, nil
+	case OrderStateDone:
+		return m.handleOrderDone, processed, nil
 	// Fatal errors
 	default:
 		log.Errorf("unexpected order update state: %s", state.State)

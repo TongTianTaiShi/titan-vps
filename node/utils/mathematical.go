@@ -8,40 +8,47 @@ import (
 	"github.com/LMF709268224/titan-vps/api/terrors"
 )
 
-// BigIntAdd add
-func BigIntAdd(numstr string, value string) (string, error) {
-	n, _ := new(big.Int).SetString(numstr, 10)
-	m, _ := new(big.Int).SetString(value, 10)
+// AddBigInt adds two big integers represented as strings.
+func AddBigInt(numstr string, value string) (string, error) {
+	// Convert input strings to big.Int
+	n, nOk := new(big.Int).SetString(numstr, 10)
+	m, mOk := new(big.Int).SetString(value, 10)
 
-	if n == nil {
-		return "0", &api.ErrWeb{Code: terrors.EncodingError.Int(), Message: fmt.Sprintf("BigIntReduce err num is %s", numstr)}
+	// Check for conversion errors
+	if !nOk || n == nil {
+		return "0", &api.ErrWeb{Code: terrors.EncodingError.Int(), Message: fmt.Sprintf("AddBigInt error: invalid num %s", numstr)}
 	}
 
-	if m == nil {
-		return "0", &api.ErrWeb{Code: terrors.EncodingError.Int(), Message: fmt.Sprintf("BigIntReduce err num is %s", value)}
+	if !mOk || m == nil {
+		return "0", &api.ErrWeb{Code: terrors.EncodingError.Int(), Message: fmt.Sprintf("AddBigInt error: invalid value %s", value)}
 	}
 
+	// Perform addition
 	m.Add(n, m)
 	return m.String(), nil
 }
 
-// BigIntReduce reduce
-func BigIntReduce(numstr string, value string) (string, error) {
-	n, _ := new(big.Int).SetString(numstr, 10)
-	m, _ := new(big.Int).SetString(value, 10)
+// ReduceBigInt subtracts one big integer represented as a string from another.
+func ReduceBigInt(numstr string, value string) (string, error) {
+	// Convert input strings to big.Int
+	n, nOk := new(big.Int).SetString(numstr, 10)
+	m, mOk := new(big.Int).SetString(value, 10)
 
-	if n == nil {
-		return "0", &api.ErrWeb{Code: terrors.EncodingError.Int(), Message: fmt.Sprintf("BigIntReduce err num is %s", numstr)}
+	// Check for conversion errors
+	if !nOk || n == nil {
+		return "0", &api.ErrWeb{Code: terrors.EncodingError.Int(), Message: fmt.Sprintf("ReduceBigInt error: invalid num %s", numstr)}
 	}
 
-	if m == nil {
-		return "0", &api.ErrWeb{Code: terrors.EncodingError.Int(), Message: fmt.Sprintf("BigIntReduce err num is %s", value)}
+	if !mOk || m == nil {
+		return "0", &api.ErrWeb{Code: terrors.EncodingError.Int(), Message: fmt.Sprintf("ReduceBigInt error: invalid value %s", value)}
 	}
 
+	// Check if n is less than m
 	if n.Cmp(m) < 0 {
 		return "0", &api.ErrWeb{Code: terrors.InsufficientBalance.Int(), Message: terrors.InsufficientBalance.String()}
 	}
-	z := new(big.Int).Sub(n, m)
 
-	return z.String(), nil
+	// Perform subtraction
+	result := new(big.Int).Sub(n, m)
+	return result.String(), nil
 }

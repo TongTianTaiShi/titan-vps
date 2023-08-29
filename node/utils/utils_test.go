@@ -11,7 +11,7 @@ func TestRate(t *testing.T) {
 }
 
 func TestBigIntReduce(t *testing.T) {
-	s, e := BigIntReduce("123456", "548955.52")
+	s, e := ReduceBigInt("123456", "548955.52")
 	fmt.Println("BigIntReduce :", s)
 	fmt.Println("BigIntReduce :", e)
 }

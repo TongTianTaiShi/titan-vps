@@ -14,6 +14,7 @@ import (
 	"github.com/gbrlsnchs/jwt/v3"
 )
 
+// GetAdminSignCode generates a sign code for an admin user.
 func (m *Mall) GetAdminSignCode(ctx context.Context, userID string) (string, error) {
 	exist, err := m.AdminExists(userID)
 	if err != nil {
@@ -27,10 +28,22 @@ func (m *Mall) GetAdminSignCode(ctx context.Context, userID string) (string, err
 	return m.UserMgr.GenerateSignCode(userID), nil
 }
 
+// LoginAdmin authenticates an admin user and generates a JWT token.
 func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error) {
 	userID := user.UserId
 
-	exist, err := m.AdminExists(userID)
+	code, err := m.UserMgr.GetSignCode(userID)
+	if err != nil {
+		return nil, &api.ErrWeb{Code: terrors.NotFoundSignCode.Int(), Message: terrors.NotFoundSignCode.String()}
+	}
+
+	signature := user.Signature
+	address, err := verifyEthMessage(code, signature)
+	if err != nil {
+		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
+	}
+
+	exist, err := m.AdminExists(address)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -39,32 +52,25 @@ func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.Logi
 		return nil, &api.ErrWeb{Code: terrors.NotAdministrator.Int(), Message: terrors.NotAdministrator.String()}
 	}
 
-	code, err := m.UserMgr.GetSignCode(userID)
-	if err != nil {
-		return nil, &api.ErrWeb{Code: terrors.NotFoundSignCode.Int(), Message: terrors.NotFoundSignCode.String()}
-	}
-	signature := user.Signature
-	address, err := verifyEthMessage(code, signature)
-	if err != nil {
-		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
-	}
-
 	p := types.JWTPayload{
 		ID:        address,
 		LoginType: int64(user.Type),
 		Allow:     []auth.Permission{api.RoleAdmin},
 	}
-	rsp := &types.LoginResponse{}
+
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
-		return rsp, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
+		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
+
+	rsp := &types.LoginResponse{}
 	rsp.UserId = address
 	rsp.Token = string(tk)
 
 	return rsp, nil
 }
 
+// GetRechargeAddresses retrieves recharge addresses with pagination.
 func (m *Mall) GetRechargeAddresses(ctx context.Context, limit, page int64) (*types.GetRechargeAddressResponse, error) {
 	info, err := m.LoadRechargeAddresses(limit, page)
 	if err != nil {
@@ -74,6 +80,7 @@ func (m *Mall) GetRechargeAddresses(ctx context.Context, limit, page int64) (*ty
 	return info, nil
 }
 
+// GetWithdrawalRecords retrieves withdrawal records with optional filtering.
 func (m *Mall) GetWithdrawalRecords(ctx context.Context, req *types.GetWithdrawRequest) (*types.GetWithdrawResponse, error) {
 	statuses := make([]types.WithdrawState, 0)
 	if req.State == "" {
@@ -95,6 +102,7 @@ func (m *Mall) GetWithdrawalRecords(ctx context.Context, req *types.GetWithdrawR
 	return info, nil
 }
 
+// ApproveUserWithdrawal approves a user withdrawal request.
 func (m *Mall) ApproveUserWithdrawal(ctx context.Context, orderID, withdrawHash string) error {
 	userID := handler.GetID(ctx)
 
@@ -118,6 +126,7 @@ func (m *Mall) ApproveUserWithdrawal(ctx context.Context, orderID, withdrawHash 
 	return nil
 }
 
+// RejectUserWithdrawal rejects a user withdrawal request.
 func (m *Mall) RejectUserWithdrawal(ctx context.Context, orderID string) error {
 	userID := handler.GetID(ctx)
 
@@ -142,7 +151,7 @@ func (m *Mall) RejectUserWithdrawal(ctx context.Context, orderID string) error {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
-	newValue, err := utils.BigIntAdd(original, info.Value)
+	newValue, err := utils.AddBigInt(original, info.Value)
 	if err != nil {
 		return err
 	}
@@ -155,6 +164,7 @@ func (m *Mall) RejectUserWithdrawal(ctx context.Context, orderID string) error {
 	return nil
 }
 
+// AddAdminUser adds an admin user with a userID and nickname.
 func (m *Mall) AddAdminUser(ctx context.Context, userID, nickName string) error {
 	err := m.SaveAdminInfo(userID, nickName)
 	if err != nil {
@@ -164,6 +174,7 @@ func (m *Mall) AddAdminUser(ctx context.Context, userID, nickName string) error 
 	return nil
 }
 
+// SupplementRechargeOrder supplements a recharge order.
 func (m *Mall) SupplementRechargeOrder(ctx context.Context, hash string) error {
 	return m.TransactionMgr.SupplementOrder(hash)
 }

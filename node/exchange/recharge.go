@@ -14,16 +14,15 @@ import (
 
 var log = logging.Logger("exchange")
 
-// RechargeManager manager recharge order
+// RechargeManager manages recharge orders
 type RechargeManager struct {
 	*db.SQLDB
 	cfg          config.MallCfg
 	notification *pubsub.PubSub
-
-	tMgr *transaction.Manager
+	tMgr         *transaction.Manager
 }
 
-// NewRechargeManager returns a new manager instance
+// NewRechargeManager creates a new manager instance for handling recharge orders
 func NewRechargeManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, fm *transaction.Manager) (*RechargeManager, error) {
 	cfg, err := getCfg()
 	if err != nil {
@@ -34,8 +33,7 @@ func NewRechargeManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallC
 		SQLDB:        sdb,
 		notification: pb,
 		cfg:          cfg,
-
-		tMgr: fm,
+		tMgr:         fm,
 	}
 
 	go m.subscribeEvents()
@@ -43,6 +41,7 @@ func NewRechargeManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallC
 	return m, nil
 }
 
+// subscribeEvents subscribes to Tron transfer events and processes them
 func (m *RechargeManager) subscribeEvents() {
 	subTransfer := m.notification.Sub(types.EventTronTransferWatch.String())
 	defer m.notification.Unsub(subTransfer)
@@ -57,25 +56,31 @@ func (m *RechargeManager) subscribeEvents() {
 	}
 }
 
+// handleTronTransfer handles Tron transfer events and updates user balances
 func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 	if tr.State != core.Transaction_Result_SUCCESS {
+		// If the transaction state is not successful, skip processing.
 		return
 	}
 
+	// Check if the recharge record already exists for this transaction.
 	exist, err := m.RechargeRecordExists(tr.TxHash)
 	if err != nil {
-		log.Errorf("RechargeRecordExists:%v", err)
+		log.Errorf("RechargeRecordExists error: %v", err)
 		return
 	}
 
 	if exist {
+		// If the recharge record already exists, skip processing.
 		return
 	}
 
 	userID := tr.UserID
+
+	// Load the original user balance.
 	original, err := m.LoadUserBalance(userID)
 	if err != nil {
-		log.Errorf("%s LoadUserToken err:%s", userID, err.Error())
+		log.Errorf("%s LoadUserBalance error: %s", userID, err.Error())
 		return
 	}
 
@@ -88,14 +93,16 @@ func (m *RechargeManager) handleTronTransfer(tr *types.TronTransferWatch) {
 		To:      tr.To,
 	}
 
-	value, err := utils.BigIntAdd(original, tr.Value)
+	// Calculate the new user balance.
+	value, err := utils.AddBigInt(original, tr.Value)
 	if err != nil {
-		log.Errorf("%s BigIntAdd err:%s", userID, err.Error())
+		log.Errorf("%s BigIntAdd error: %s", userID, err.Error())
 		return
 	}
 
+	// Save the recharge record and update the user balance.
 	err = m.SaveRechargeRecordAndUserBalance(info, value, original)
 	if err != nil {
-		log.Errorf("%s SaveRechargeRecordAndUserBalance err:%s", info.OrderID, err.Error())
+		log.Errorf("%s SaveRechargeRecordAndUserBalance error: %s", info.OrderID, err.Error())
 	}
 }

@@ -29,7 +29,7 @@ const (
 	orderTimeoutTime   = orderTimeoutMinute * time.Minute
 )
 
-// OrderManager manages order processing.
+// Manager manages order processing.
 type Manager struct {
 	stateMachineWait   sync.WaitGroup
 	orderStateMachines *statemachine.StateGroup
@@ -44,7 +44,7 @@ type Manager struct {
 	vpsMgr *vps.Manager
 }
 
-// NewOrderManager creates a new order manager instance.
+// NewManager creates a new order manager instance.
 func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, fm *transaction.Manager, vm *vps.Manager) (*Manager, error) {
 	cfg, err := getCfg()
 	if err != nil {
@@ -93,9 +93,9 @@ func (m *Manager) checkOrdersTimeout() {
 				return true
 			}
 
-			log.Debugf("checkout  %s ", orderID)
+			// log.Debugf("checkout  %s ", orderID)
 
-			if info.State.Int() != Done.Int() && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
+			if info.State.Int() != OrderStateDone.Int() && info.CreatedTime.Add(orderTimeoutTime).Before(time.Now()) {
 
 				err = m.orderStateMachines.Send(OrderHash(orderID), OrderTimeOut{})
 				if err != nil {

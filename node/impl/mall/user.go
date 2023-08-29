@@ -16,7 +16,7 @@ import (
 	"github.com/LMF709268224/titan-vps/node/utils"
 )
 
-// GetBalance Get user balance
+// GetBalance retrieves user balance.
 func (m *Mall) GetBalance(ctx context.Context) (*types.UserInfo, error) {
 	userID := handler.GetID(ctx)
 
@@ -36,7 +36,7 @@ func (m *Mall) GetBalance(ctx context.Context) (*types.UserInfo, error) {
 
 	lockBalance := "0"
 	for _, info := range list {
-		b, err := utils.BigIntAdd(info.Value, lockBalance)
+		b, err := utils.AddBigInt(info.Value, lockBalance)
 		if err == nil {
 			lockBalance = b
 		}
@@ -47,7 +47,7 @@ func (m *Mall) GetBalance(ctx context.Context) (*types.UserInfo, error) {
 	return uInfo, nil
 }
 
-// GetRechargeAddress  Get user recharge address
+// GetRechargeAddress retrieves user recharge address.
 func (m *Mall) GetRechargeAddress(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
 
@@ -66,7 +66,7 @@ func (m *Mall) GetRechargeAddress(ctx context.Context) (string, error) {
 	return address, nil
 }
 
-// Withdraw user Withdraw
+// Withdraw allows users to initiate a withdrawal.
 func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 	userID := handler.GetID(ctx)
 
@@ -74,7 +74,7 @@ func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 		return &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: terrors.ParametersWrong.String()}
 	}
 
-	_, err := utils.BigIntReduce(value, "0")
+	_, err := utils.ReduceBigInt(value, "0")
 	if err != nil {
 		return err
 	}
@@ -99,6 +99,7 @@ func (m *Mall) Withdraw(ctx context.Context, withdrawAddr, value string) error {
 	return m.WithdrawManager.CreateWithdrawOrder(userID, withdrawAddr, value)
 }
 
+// GetUserRechargeRecords retrieves user recharge records with pagination.
 func (m *Mall) GetUserRechargeRecords(ctx context.Context, limit, page int64) (*types.RechargeResponse, error) {
 	userID := handler.GetID(ctx)
 
@@ -110,6 +111,7 @@ func (m *Mall) GetUserRechargeRecords(ctx context.Context, limit, page int64) (*
 	return info, nil
 }
 
+// GetUserWithdrawalRecords retrieves user withdrawal records with pagination.
 func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, page int64) (*types.GetWithdrawResponse, error) {
 	userID := handler.GetID(ctx)
 
@@ -121,6 +123,7 @@ func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, page int64) 
 	return info, nil
 }
 
+// GetUserInstanceRecords retrieves user instance records with pagination.
 func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error) {
 	userID := handler.GetID(ctx)
 	k, s := m.getAccessKeys()
@@ -129,6 +132,7 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 		log.Errorf("LoadMyInstancesInfo err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
+
 	for _, instanceInfo := range instanceInfos.List {
 		var instanceIds []string
 		instanceIds = append(instanceIds, instanceInfo.InstanceId)
@@ -172,6 +176,7 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 	return instanceInfos, nil
 }
 
+// GetInstanceDetailsInfo retrieves details of a specific instance.
 func (m *Mall) GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error) {
 	userID := handler.GetID(ctx)
 
@@ -187,15 +192,18 @@ func (m *Mall) GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*
 	return info, nil
 }
 
+// UpdateInstanceName updates the name of a specific instance.
 func (m *Mall) UpdateInstanceName(ctx context.Context, instanceID, instanceName string) error {
 	userID := handler.GetID(ctx)
 	err := m.UpdateVpsInstanceName(instanceID, instanceName, userID)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
+
 	return nil
 }
 
+// GetInstanceDefaultInfo retrieves default instance information with pagination.
 func (m *Mall) GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) {
 	req.Offset = req.Limit * (req.Page - 1)
 	instanceInfo, err := m.LoadInstanceDefaultInfo(req)
@@ -211,18 +219,22 @@ func (m *Mall) GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTy
 	return instanceInfo, nil
 }
 
+// GetInstanceCpuInfo retrieves CPU information for instances.
 func (m *Mall) GetInstanceCpuInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*int32, error) {
 	return m.LoadInstanceCpuInfo(req)
 }
 
+// GetInstanceMemoryInfo retrieves memory information for instances.
 func (m *Mall) GetInstanceMemoryInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*float32, error) {
 	return m.LoadInstanceMemoryInfo(req)
 }
 
+// GetSignCode generates a sign code for a user.
 func (m *Mall) GetSignCode(ctx context.Context, userID string) (string, error) {
 	return m.UserMgr.GenerateSignCode(userID), nil
 }
 
+// Login authenticates a user and generates a JWT token.
 func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error) {
 	userID := user.UserId
 	log.Debugf("login user:%s", userID)
@@ -231,6 +243,7 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.NotFoundSignCode.Int(), Message: terrors.NotFoundSignCode.String()}
 	}
+
 	signature := user.Signature
 	address, err := verifyEthMessage(code, signature)
 	if err != nil {
@@ -244,20 +257,23 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 		LoginType: int64(user.Type),
 		Allow:     []auth.Permission{api.RoleUser},
 	}
-	rsp := &types.LoginResponse{}
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
-		return rsp, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
+		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
+
+	rsp := &types.LoginResponse{}
 	rsp.UserId = address
 	rsp.Token = string(tk)
 	err = m.initUser(address)
 	if err != nil {
 		return nil, err
 	}
+
 	return rsp, nil
 }
 
+// initUser initializes a user's data if it doesn't exist.
 func (m *Mall) initUser(userID string) error {
 	exist, err := m.UserExists(userID)
 	if err != nil {
@@ -283,6 +299,7 @@ func (m *Mall) initUser(userID string) error {
 	return nil
 }
 
+// Logout logs out a user.
 func (m *Mall) Logout(ctx context.Context, user *types.UserReq) error {
 	userID := handler.GetID(ctx)
 	log.Warnf("user id : %s", userID)

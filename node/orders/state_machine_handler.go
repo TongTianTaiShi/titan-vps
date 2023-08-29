@@ -32,32 +32,32 @@ func failedCoolDown(ctx statemachine.Context, info OrderInfo) error {
 	return nil
 }
 
-// handleCreated handles the order create
-func (m *Manager) handleCreated(ctx statemachine.Context, info OrderInfo) error {
+// handleOrderCreated handles the order creati
+func (m *Manager) handleOrderCreated(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle order created , %s", info.OrderID)
 
 	return ctx.Send(WaitingPaymentSent{})
 }
 
-// handleWaitingPayment handles the order wait for user payment
-func (m *Manager) handleWaitingPayment(ctx statemachine.Context, info OrderInfo) error {
+// handleWaitingForPayment handles the order waiting for user payment
+func (m *Manager) handleWaitingForPayment(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle wait payment, %s ", info.OrderID)
 
 	original, err := m.LoadUserBalance(info.User)
 	if err != nil {
-		log.Errorf("WaitingPayment LoadUserBalance err:%s", err.Error())
+		log.Errorf("handleWaitingForPayment LoadUserBalance err:%s", err.Error())
 		return nil
 	}
 
-	newValue, err := utils.BigIntReduce(original, info.Value)
+	newValue, err := utils.ReduceBigInt(original, info.Value)
 	if err != nil {
-		log.Errorf("WaitingPayment BigIntReduce err:%s", err.Error())
+		log.Errorf("handleWaitingForPayment BigIntReduce err:%s", err.Error())
 		return nil
 	}
 
 	err = m.UpdateUserBalance(info.User, newValue, original)
 	if err != nil {
-		log.Errorf("WaitingPayment UpdateUserBalance err:%s", err.Error())
+		log.Errorf("handleWaitingForPayment UpdateUserBalance err:%s", err.Error())
 		return nil
 	}
 
@@ -73,8 +73,10 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	if err != nil {
 		return ctx.Send(BuyFailed{Msg: err.Error()})
 	}
+
 	vInfo.UserID = info.User
 	vInfo.OrderID = info.OrderID.String()
+
 	if vInfo.DataDiskString != "" {
 		if err := json.Unmarshal([]byte(vInfo.DataDiskString), &vInfo.DataDisk); err != nil {
 			return ctx.Send(BuyFailed{Msg: err.Error()})
@@ -98,6 +100,8 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 			return ctx.Send(BuyFailed{Msg: err.Error()})
 		}
 	}
+
+	// if auto renew
 	if vInfo.Renew == 1 {
 		renewReq := types.SetRenewOrderReq{
 			RegionID:   vInfo.RegionId,
@@ -120,26 +124,26 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	return ctx.Send(BuySucceed{GoodsInfo: &GoodsInfo{ID: "vps_id", Password: "abc"}})
 }
 
-// handleDone handles the order done
-func (m *Manager) handleDone(ctx statemachine.Context, info OrderInfo) error {
+// handleOrderDone handles the order completion
+func (m *Manager) handleOrderDone(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle done, %s, goods info:%v", info.OrderID, info.GoodsInfo)
 
-	if info.DoneState == PurchaseFailed {
+	if info.DoneState == OrderDoneStatePurchaseFailed {
 		original, err := m.LoadUserBalance(info.User)
 		if err != nil {
-			log.Errorf("handleDone LoadUserBalance err:%s", err.Error())
+			log.Errorf("handleOrderDone LoadUserBalance err:%s", err.Error())
 			return nil
 		}
 
-		newValue, err := utils.BigIntAdd(original, info.Value)
+		newValue, err := utils.AddBigInt(original, info.Value)
 		if err != nil {
-			log.Errorf("handleDone BigIntAdd err:%s", err.Error())
+			log.Errorf("handleOrderDone BigIntAdd err:%s", err.Error())
 			return nil
 		}
 
 		err = m.UpdateUserBalance(info.User, newValue, original)
 		if err != nil {
-			log.Errorf("handleDone UpdateUserBalance err:%s", err.Error())
+			log.Errorf("handleOrderDone UpdateUserBalance err:%s", err.Error())
 			return nil
 		}
 	}

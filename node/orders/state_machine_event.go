@@ -25,7 +25,7 @@ func (evt OrderRestart) applyGlobal(state *OrderInfo) bool {
 	return false
 }
 
-// PaymentResult User payment result
+// PaymentResult represents the result of a user payment.
 type PaymentResult struct{}
 
 func (evt PaymentResult) apply(state *OrderInfo) {
@@ -35,7 +35,7 @@ func (evt PaymentResult) apply(state *OrderInfo) {
 func (evt PaymentResult) Ignore() {
 }
 
-// CreateOrder create a goods order
+// CreateOrder represents the creation of a goods order.
 type CreateOrder struct {
 	*OrderInfo
 }
@@ -52,26 +52,26 @@ func (evt CreateOrder) applyGlobal(state *OrderInfo) bool {
 	return true
 }
 
-// WaitingPaymentSent Waiting for user to pay
+// WaitingPaymentSent indicates that the order is waiting for the user to make a payment.
 type WaitingPaymentSent struct{}
 
 func (evt WaitingPaymentSent) apply(state *OrderInfo) {}
 
-// OrderTimeOut order timeout
+// OrderTimeOut represents an order timeout event.
 type OrderTimeOut struct{}
 
 func (evt OrderTimeOut) apply(state *OrderInfo) {
-	state.DoneState = Timeout
+	state.DoneState = OrderDoneStateTimeout
 }
 
-// OrderCancel cancel the order
+// OrderCancel represents an order cancellation event.
 type OrderCancel struct{}
 
 func (evt OrderCancel) apply(state *OrderInfo) {
-	state.DoneState = Cancel
+	state.DoneState = OrderDoneStateCancel
 }
 
-// PaymentSucceed Order paid successfully
+// PaymentSucceed indicates a successful payment for the order.
 type PaymentSucceed struct{}
 
 func (evt PaymentSucceed) apply(state *OrderInfo) {
@@ -79,22 +79,22 @@ func (evt PaymentSucceed) apply(state *OrderInfo) {
 	// state.TxHash = evt.TxHash
 }
 
-// BuySucceed Successful purchase
+// BuySucceed represents a successful purchase event.
 type BuySucceed struct {
 	*GoodsInfo
 }
 
 func (evt BuySucceed) apply(state *OrderInfo) {
 	state.GoodsInfo = evt.GoodsInfo
-	state.DoneState = Success
+	state.DoneState = OrderDoneStateSuccess
 }
 
-// BuyFailed buy vps failed
+// BuyFailed indicates a failed VPS purchase event.
 type BuyFailed struct {
 	Msg string
 }
 
 func (evt BuyFailed) apply(state *OrderInfo) {
-	state.DoneState = PurchaseFailed
+	state.DoneState = OrderDoneStatePurchaseFailed
 	state.Msg = evt.Msg
 }

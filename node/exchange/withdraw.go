@@ -1,8 +1,6 @@
 package exchange
 
 import (
-	"strings"
-
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
@@ -15,16 +13,15 @@ import (
 	"github.com/google/uuid"
 )
 
-// WithdrawManager manager withdraw order
+// WithdrawManager manages withdrawal orders
 type WithdrawManager struct {
 	*db.SQLDB
 	cfg          config.MallCfg
 	notification *pubsub.PubSub
-
-	tMgr *transaction.Manager
+	tMgr         *transaction.Manager
 }
 
-// NewWithdrawManager returns a new manager instance
+// NewWithdrawManager creates a new manager instance for handling withdrawal orders
 func NewWithdrawManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, fm *transaction.Manager) (*WithdrawManager, error) {
 	cfg, err := getCfg()
 	if err != nil {
@@ -35,28 +32,30 @@ func NewWithdrawManager(sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallC
 		SQLDB:        sdb,
 		notification: pb,
 		cfg:          cfg,
-
-		tMgr: fm,
+		tMgr:         fm,
 	}
 
 	return m, nil
 }
 
-// CreateWithdrawOrder create a withdraw order
-func (m *WithdrawManager) CreateWithdrawOrder(userID, withdrawAddr, value string) (err error) {
+// CreateWithdrawOrder creates a withdrawal order for a user
+func (m *WithdrawManager) CreateWithdrawOrder(userID, withdrawAddr, value string) error {
+	// Load the original user balance.
 	original, err := m.LoadUserBalance(userID)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
 
-	newValue, err := utils.BigIntReduce(original, value)
+	// Reduce the user's balance to cover the withdrawal amount.
+	newValue, err := utils.ReduceBigInt(original, value)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.InsufficientBalance.Int(), Message: terrors.InsufficientBalance.String()}
 	}
 
-	hash := uuid.NewString()
-	orderID := strings.Replace(hash, "-", "", -1)
+	// Generate a unique order ID.
+	orderID := uuid.NewString()
 
+	// Create a WithdrawRecord to store withdrawal information.
 	info := &types.WithdrawRecord{
 		OrderID:      orderID,
 		UserID:       userID,
@@ -65,6 +64,7 @@ func (m *WithdrawManager) CreateWithdrawOrder(userID, withdrawAddr, value string
 		State:        types.WithdrawCreate,
 	}
 
+	// Save the withdrawal record and update the user balance.
 	err = m.SaveWithdrawInfoAndUserBalance(info, newValue, original)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
