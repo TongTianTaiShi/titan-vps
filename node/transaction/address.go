@@ -1,7 +1,7 @@
 package transaction
 
 func (m *Manager) initTronAddress(as []string) {
-	err := m.SaveRechargeAddress(as)
+	err := m.SaveRechargeAddresses(as)
 	if err != nil {
 		log.Errorf("SaveRechargeAddress err:%s", err.Error())
 	}

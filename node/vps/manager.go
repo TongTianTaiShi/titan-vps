@@ -46,9 +46,11 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 	return m, nil
 }
 
+// CreateAliYunInstance creates an Alibaba Cloud instance.
 func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
-	k := m.cfg.AliyunAccessKeyID
-	s := m.cfg.AliyunAccessKeySecret
+	accessKeyID := m.cfg.AliyunAccessKeyID
+	accessKeySecret := m.cfg.AliyunAccessKeySecret
+
 	priceUnit := vpsInfo.PeriodUnit
 	period := vpsInfo.Period
 	regionID := vpsInfo.RegionId
@@ -59,44 +61,50 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 
 	var securityGroupID string
 
-	group, err := aliyun.DescribeSecurityGroups(regionID, k, s)
-	if err == nil && len(group) > 0 {
-		securityGroupID = group[0]
+	securityGroups, err := aliyun.DescribeSecurityGroups(regionID, accessKeyID, accessKeySecret)
+	if err == nil && len(securityGroups) > 0 {
+		securityGroupID = securityGroups[0]
 	} else {
-		securityGroupID, err = aliyun.CreateSecurityGroup(regionID, k, s)
+		securityGroupID, err = aliyun.CreateSecurityGroup(regionID, accessKeyID, accessKeySecret)
 		if err != nil {
 			log.Errorf("CreateSecurityGroup err: %s", err.Error())
 			return nil, xerrors.New(err.Error())
 		}
 	}
+
 	log.Debugln("securityGroupID:", securityGroupID, " , DryRun:", vpsInfo.DryRun)
-	result, err := aliyun.CreateInstance(k, s, vpsInfo, vpsInfo.DryRun)
+
+	result, err := aliyun.CreateInstance(accessKeyID, accessKeySecret, vpsInfo, vpsInfo.DryRun)
 	if err != nil {
 		log.Errorf("CreateInstance err: %s", err.Error())
 		return nil, xerrors.New(err.Error())
 	}
-	address, err := aliyun.AllocatePublicIPAddress(regionID, k, s, result.InstanceID)
+
+	address, err := aliyun.AllocatePublicIPAddress(regionID, accessKeyID, accessKeySecret, result.InstanceID)
 	if err != nil {
 		log.Errorf("AllocatePublicIpAddress err: %s", err.Error())
 	} else {
 		result.PublicIpAddress = address
 	}
 
-	err = aliyun.AuthorizeSecurityGroup(regionID, k, s, securityGroupID)
-	if err != nil {
-		log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
-	}
+	// 设置安全端口
+	// err = aliyun.AuthorizeSecurityGroup(regionID, k, s, securityGroupID)
+	// if err != nil {
+	// 	log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
+	// }
+
 	go func() {
 		time.Sleep(1 * time.Minute)
 
-		err = aliyun.StartInstance(regionID, k, s, result.InstanceID)
+		err = aliyun.StartInstance(regionID, accessKeyID, accessKeySecret, result.InstanceID)
 		if err != nil {
 			log.Infoln("StartInstance err:", err)
 		}
 	}()
+
 	var instanceIds []string
 	instanceIds = append(instanceIds, result.InstanceID)
-	instanceInfo, err := aliyun.DescribeInstances(regionID, k, s, instanceIds)
+	instanceInfo, err := aliyun.DescribeInstances(regionID, accessKeyID, accessKeySecret, instanceIds)
 	if err != nil {
 		log.Errorf("DescribeInstances err: %s", err.Error())
 	} else {
@@ -124,6 +132,7 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 				InstanceName:            *InstanceName,
 				ExpiredTime:             *ExpiredTime,
 				InternetMaxBandwidthOut: *BandwidthOut,
+				AccessKey:               result.AccessKey,
 			}
 			errU := m.UpdateVpsInstance(instanceDetailsInfo)
 			if errU != nil {
@@ -135,11 +144,12 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	return result, nil
 }
 
+// RenewInstance renews an instance.
 func (m *Manager) RenewInstance(renewInstanceRequest *types.RenewInstanceRequest) error {
-	k := m.cfg.AliyunAccessKeyID
-	s := m.cfg.AliyunAccessKeySecret
+	accessKeyID := m.cfg.AliyunAccessKeyID
+	accessKeySecret := m.cfg.AliyunAccessKeySecret
 
-	err := aliyun.RenewInstance(k, s, renewInstanceRequest)
+	err := aliyun.RenewInstance(accessKeyID, accessKeySecret, renewInstanceRequest)
 	if err != nil {
 		log.Errorf("RenewInstance err: %s", err.Error())
 		return xerrors.New(err.Error())
@@ -147,6 +157,7 @@ func (m *Manager) RenewInstance(renewInstanceRequest *types.RenewInstanceRequest
 	return nil
 }
 
+// cronFetchInstanceDefaultInfo fetches default instance information periodically.
 func (m *Manager) cronGetInstanceDefaultInfo() {
 	now := time.Now()
 
@@ -171,6 +182,7 @@ func (m *Manager) cronGetInstanceDefaultInfo() {
 	}
 }
 
+// UpdateInstanceDefaultInfo updates default instance information.
 func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 	if m.getInstanceInfoRunning {
 		log.Debugln("task is running")
@@ -182,15 +194,15 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 		m.getInstanceInfoRunning = false
 	}()
 
-	k := m.cfg.AliyunAccessKeyID
-	s := m.cfg.AliyunAccessKeySecret
+	accessKeyID := m.cfg.AliyunAccessKeyID
+	accessKeySecret := m.cfg.AliyunAccessKeySecret
 	var ctx context.Context
 
 	var regionIDs []string
 	if regionID != "" {
 		regionIDs = append(regionIDs, regionID)
 	} else {
-		regions, err := aliyun.DescribeRegions(k, s)
+		regions, err := aliyun.DescribeRegions(accessKeyID, accessKeySecret)
 		if err != nil {
 			log.Errorf("DescribePrice err:%v", err.Error())
 			return
@@ -200,22 +212,20 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 		}
 	}
 
-	for _, regionId := range regionIDs {
+	for _, regionID := range regionIDs {
 		instanceType := &types.DescribeInstanceTypeReq{
-			RegionId:     regionId,
+			RegionId:     regionID,
 			CpuCoreCount: 0,
 			MemorySize:   0,
 		}
-		//if *region.RegionId != "eu-central-1" {
-		//	continue
-		//}
+
 		instances, err := m.DescribeInstanceType(ctx, instanceType)
 		if err != nil {
 			log.Errorf("DescribeInstanceType err:%v", err.Error())
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
-			ok, err := m.InstancesDefaultExists(instance.InstanceTypeId, regionId)
+			ok, err := m.InstancesDefaultExists(instance.InstanceTypeId, regionID)
 			if err != nil {
 				log.Errorf("InstancesDefaultExists err:%v", err.Error())
 				continue
@@ -223,27 +233,27 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 			if ok {
 				continue
 			}
-			images, err := m.DescribeImages(ctx, regionId, instance.InstanceTypeId)
+			images, err := m.DescribeImages(ctx, regionID, instance.InstanceTypeId)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
-				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionId)
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
 				continue
 			}
 			disk := &types.AvailableResourceReq{
 				InstanceType:        instance.InstanceTypeId,
-				RegionId:            regionId,
+				RegionId:            regionID,
 				DestinationResource: "SystemDisk",
 			}
 
 			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
-				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionId)
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
 				continue
 			}
 			if len(disks) > 0 {
 				priceReq := &types.DescribePriceReq{
-					RegionId:                regionId,
+					RegionId:                regionID,
 					InstanceType:            instance.InstanceTypeId,
 					PriceUnit:               "Month",
 					ImageID:                 images[0].ImageId,
@@ -254,14 +264,14 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 					Amount:                  1,
 					InternetMaxBandwidthOut: 10,
 				}
-				price, err := aliyun.DescribePrice(k, s, priceReq)
+				price, err := aliyun.DescribePrice(accessKeyID, accessKeySecret, priceReq)
 				if err != nil {
 					log.Errorf("DescribePrice err:%v", err.Error())
-					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionId)
+					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
 					continue
 				}
 				info := &types.DescribeInstanceTypeFromBase{
-					RegionId:               regionId,
+					RegionId:               regionID,
 					InstanceTypeId:         instance.InstanceTypeId,
 					MemorySize:             instance.MemorySize,
 					CpuArchitecture:        instance.CpuArchitecture,
@@ -287,31 +297,37 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 	return
 }
 
+// DescribeInstanceType fetches instance type information.
 func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
-	k := m.cfg.AliyunAccessKeyID
-	s := m.cfg.AliyunAccessKeySecret
-	rsp, err := aliyun.DescribeInstanceTypes(k, s, instanceType)
+	accessKeyID := m.cfg.AliyunAccessKeyID
+	accessKeySecret := m.cfg.AliyunAccessKeySecret
+	rsp, err := aliyun.DescribeInstanceTypes(accessKeyID, accessKeySecret, instanceType)
 	if err != nil {
 		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
-	AvailableResource, err := aliyun.DescribeAvailableResource(k, s, instanceType)
+
+	availableResource, err := aliyun.DescribeAvailableResource(accessKeyID, accessKeySecret, instanceType)
 	if err != nil {
 		log.Errorf("DescribeAvailableResource err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
+
+	if availableResource.Body.AvailableZones == nil {
+		return nil, xerrors.New("parameter error")
+	}
+
 	rspDataList := &types.DescribeInstanceTypeResponse{
 		NextToken: *rsp.Body.NextToken,
 	}
-	instanceTypes := make(map[string]string)
-	if AvailableResource.Body.AvailableZones == nil {
-		return nil, xerrors.New("parameter error")
-	}
-	AvailableZone := len(AvailableResource.Body.AvailableZones.AvailableZone)
-	if AvailableZone < 0 {
+
+	availableZone := len(availableResource.Body.AvailableZones.AvailableZone)
+	if availableZone < 0 {
 		return rspDataList, nil
 	}
-	for _, data := range AvailableResource.Body.AvailableZones.AvailableZone {
+
+	instanceTypes := make(map[string]string)
+	for _, data := range availableResource.Body.AvailableZones.AvailableZone {
 		availableTypes := data.AvailableResources.AvailableResource
 		if len(availableTypes) > 0 {
 			for _, instanceTypeResource := range availableTypes {
@@ -324,6 +340,7 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.
 			}
 		}
 	}
+
 	for _, data := range rsp.Body.InstanceTypes.InstanceType {
 		if v, ok := instanceTypes[*data.InstanceTypeId]; ok {
 			rspData := &types.DescribeInstanceType{
@@ -333,25 +350,28 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.
 				CpuArchitecture:        *data.CpuArchitecture,
 				InstanceTypeFamily:     *data.InstanceTypeFamily,
 				CpuCoreCount:           *data.CpuCoreCount,
-				AvailableZone:          AvailableZone,
+				AvailableZone:          availableZone,
 				PhysicalProcessorModel: *data.PhysicalProcessorModel,
 				Status:                 v,
 			}
 			rspDataList.InstanceTypes = append(rspDataList.InstanceTypes, rspData)
 		}
 	}
+
 	return rspDataList, nil
 }
 
+// DescribeImages fetches image information.
 func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error) {
-	k := m.cfg.AliyunAccessKeyID
-	s := m.cfg.AliyunAccessKeySecret
+	accessKeyID := m.cfg.AliyunAccessKeyID
+	accessKeySecret := m.cfg.AliyunAccessKeySecret
 
-	rsp, err := aliyun.DescribeImages(regionID, k, s, instanceType)
+	rsp, err := aliyun.DescribeImages(regionID, accessKeyID, accessKeySecret, instanceType)
 	if err != nil {
 		log.Errorf("DescribeImages err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
+
 	var rspDataList []*types.DescribeImageResponse
 	for _, data := range rsp.Body.Images.Image {
 		rspData := &types.DescribeImageResponse{
@@ -365,37 +385,41 @@ func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType str
 		}
 		rspDataList = append(rspDataList, rspData)
 	}
+
 	return rspDataList, nil
 }
 
+// DescribeAvailableResourceForDesk fetches available resources for the system disk.
 func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
-	k := m.cfg.AliyunAccessKeyID
-	s := m.cfg.AliyunAccessKeySecret
-	rsp, err := aliyun.DescribeAvailableResourceForDesk(k, s, desk)
+	accessKeyID := m.cfg.AliyunAccessKeyID
+	accessKeySecret := m.cfg.AliyunAccessKeySecret
+	rsp, err := aliyun.DescribeAvailableResourceForDesk(accessKeyID, accessKeySecret, desk)
 	if err != nil {
 		log.Errorf("DescribeImages err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
-	Category := map[string]int{
+
+	category := map[string]int{
 		"cloud":            1,
 		"cloud_essd":       1,
 		"cloud_ssd":        1,
 		"cloud_efficiency": 1,
 		"ephemeral_ssd":    1,
 	}
+
 	var rspDataList []*types.AvailableResourceResponse
 	if rsp.Body.AvailableZones == nil {
-		log.Infoln(desk)
 		return rspDataList, nil
 	}
+
 	if len(rsp.Body.AvailableZones.AvailableZone) > 0 {
-		AvailableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource
-		if len(AvailableResources) > 0 {
-			systemDesk := AvailableResources[0].SupportedResources.SupportedResource
+		availableResources := rsp.Body.AvailableZones.AvailableZone[0].AvailableResources.AvailableResource
+		if len(availableResources) > 0 {
+			systemDesk := availableResources[0].SupportedResources.SupportedResource
 			if len(systemDesk) > 0 {
 				for _, data := range systemDesk {
 					if *data.Status == "Available" {
-						if _, ok := Category[*data.Value]; ok {
+						if _, ok := category[*data.Value]; ok {
 							desk := &types.AvailableResourceResponse{
 								Min:   *data.Min,
 								Max:   *data.Max,
@@ -409,21 +433,25 @@ func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *ty
 			}
 		}
 	}
+
 	return rspDataList, nil
 }
 
+// ModifyInstanceRenew modifies instance renewal settings.
 func (m *Manager) ModifyInstanceRenew(renewReq *types.SetRenewOrderReq) error {
-	k := m.cfg.AliyunAccessKeyID
-	s := m.cfg.AliyunAccessKeySecret
+	accessKeyID := m.cfg.AliyunAccessKeyID
+	accessKeySecret := m.cfg.AliyunAccessKeySecret
 	err := m.UpdateRenewInstanceStatus(renewReq)
 	if err != nil {
 		log.Errorf("UpdateRenewInstanceStatus:%v", err)
 		return err
 	}
-	errSDK := aliyun.ModifyInstanceAutoRenewAttribute(k, s, renewReq)
+
+	errSDK := aliyun.ModifyInstanceAutoRenewAttribute(accessKeyID, accessKeySecret, renewReq)
 	if err != nil {
 		log.Errorf("ModifyInstanceAutoRenewAttribute err: %s", *errSDK.Message)
 		return &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *errSDK.Message}
 	}
+
 	return nil
 }

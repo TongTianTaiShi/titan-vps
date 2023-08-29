@@ -40,15 +40,15 @@ func NewSQLDB(path string) (*SQLDB, error) {
 
 const (
 	// Database table names.
-	orderRecordTable     = "order_record"
-	rechargeRecordTable  = "recharge_record"
-	withdrawRecordTable  = "withdraw_record"
-	userInstancesTable   = "instances_details"
-	configTable          = "config"
-	userTable            = "user_info"
-	adminTable           = "admin_info"
-	rechargeAddressTable = "recharge_address"
-	instanceDefaultTable = "instance_default"
+	orderRecordTable      = "order_record"
+	rechargeRecordTable   = "recharge_record"
+	withdrawRecordTable   = "withdraw_record"
+	userInstancesTable    = "user_instances_details"
+	configTable           = "config"
+	userTable             = "user_info"
+	adminTable            = "admin_info"
+	rechargeAddressTable  = "recharge_address"
+	instanceBaseInfoTable = "instance_base_info"
 
 	// Default limits for loading table entries.
 	loadOrderRecordsDefaultLimit    = 1000
@@ -59,9 +59,9 @@ const (
 )
 
 // initTables initializes data tables.
-func (n *SQLDB) initTables() error {
+func (d *SQLDB) initTables() error {
 	// init table
-	tx, err := n.db.Beginx()
+	tx, err := d.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -82,8 +82,7 @@ func (n *SQLDB) initTables() error {
 	tx.MustExec(fmt.Sprintf(cUserTable, userTable))
 	tx.MustExec(fmt.Sprintf(cRechargeAddressTable, rechargeAddressTable))
 	tx.MustExec(fmt.Sprintf(cAdminTable, adminTable))
-	tx.MustExec(fmt.Sprintf(cInstanceDefaultTable, instanceDefaultTable))
-	// tx.MustExec(fmt.Sprintf(cMyServersTable, myServers))
+	tx.MustExec(fmt.Sprintf(cInstanceDefaultTable, instanceBaseInfoTable))
 
 	return tx.Commit()
 }

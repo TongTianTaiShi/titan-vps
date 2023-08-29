@@ -48,6 +48,7 @@ var cInstanceDetailsTable = `
 	    expired_time 		 VARCHAR(128)  DEFAULT '',
 	    data_disk 		     VARCHAR(1028) DEFAULT '',
 		created_time         DATETIME      DEFAULT CURRENT_TIMESTAMP,
+		access_key           VARCHAR(32)   DEFAULT '',
 		PRIMARY KEY (id),
 		KEY idx_user (user_id),
 		KEY idx_instance (instance_id)

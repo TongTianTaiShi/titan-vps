@@ -48,7 +48,8 @@ type Mall struct {
 	VpsMgr  *vps.Manager
 }
 
-func (m *Mall) getAccessKeys() (string, string) {
+// getAliAccessKeys retrieves Aliyun access keys from the configuration.
+func (m *Mall) getAliAccessKeys() (string, string) {
 	cfg, err := m.GetMallConfigFunc()
 	if err != nil {
 		log.Errorf("get config err:%s", err.Error())
@@ -58,8 +59,9 @@ func (m *Mall) getAccessKeys() (string, string) {
 	return cfg.AliyunAccessKeyID, cfg.AliyunAccessKeySecret
 }
 
+// DescribeRegions retrieves and describes cloud regions.
 func (m *Mall) DescribeRegions(ctx context.Context) (map[string]string, error) {
-	rsp, err := aliyun.DescribeRegions(m.getAccessKeys())
+	rsp, err := aliyun.DescribeRegions(m.getAliAccessKeys())
 	if err != nil {
 		log.Errorf("DescribeRegions err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
@@ -71,27 +73,9 @@ func (m *Mall) DescribeRegions(ctx context.Context) (map[string]string, error) {
 		// fmt.Printf("Region ID: %s\n", region.RegionId)
 		// rpsData = append(rpsData, *region.RegionId)
 		switch *region.RegionId {
-		case "ap-northeast-2":
-			continue
-		case "ap-south-1":
-			continue
-		case "eu-west-1":
-			continue
-		case "ap-southeast-5":
-			continue
-		case "ap-southeast-3":
-			continue
-		case "s-east-1":
-			continue
-		case "me-east-1":
-			continue
-		case "us-east-1":
-			continue
-		case "eu-central-1":
-			continue
-		case "ap-northeast-1":
-			continue
-		case "ap-southeast-2":
+		// Exclude specific regions
+		case "ap-northeast-2", "ap-south-1", "eu-west-1", "ap-southeast-5", "ap-southeast-3",
+			"s-east-1", "me-east-1", "us-east-1", "eu-central-1", "ap-northeast-1", "ap-southeast-2":
 			continue
 		}
 		rpsData[*region.RegionId] = *region.LocalName
@@ -100,11 +84,12 @@ func (m *Mall) DescribeRegions(ctx context.Context) (map[string]string, error) {
 	return rpsData, nil
 }
 
+// DescribeRecommendInstanceType retrieves recommended instance types.
 func (m *Mall) DescribeRecommendInstanceType(ctx context.Context, instanceTypeReq *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) {
 	startTime := time.Now()
 	defer log.Debugf("DescribeRecommendInstanceType request time:%s", time.Since(startTime))
 
-	k, s := m.getAccessKeys()
+	k, s := m.getAliAccessKeys()
 	rsp, err := aliyun.DescribeRecommendInstanceType(k, s, instanceTypeReq)
 	if err != nil {
 		log.Errorf("DescribeRecommendInstanceType err: %s", err.Error())
@@ -125,6 +110,7 @@ func (m *Mall) DescribeRecommendInstanceType(ctx context.Context, instanceTypeRe
 	return rspDataList, nil
 }
 
+// DescribeInstanceType retrieves information about a specific instance type.
 func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
 	startTime := time.Now()
 	defer log.Debugf("DescribeInstanceType request time:%s", time.Since(startTime))
@@ -132,6 +118,7 @@ func (m *Mall) DescribeInstanceType(ctx context.Context, instanceType *types.Des
 	return m.VpsMgr.DescribeInstanceType(ctx, instanceType)
 }
 
+// DescribeImages retrieves images for a specific region and instance type.
 func (m *Mall) DescribeImages(ctx context.Context, regionID, instanceType string) ([]*types.DescribeImageResponse, error) {
 	startTime := time.Now()
 	defer log.Debugf("DescribeImages request time:%s", time.Since(startTime))
@@ -139,6 +126,7 @@ func (m *Mall) DescribeImages(ctx context.Context, regionID, instanceType string
 	return m.VpsMgr.DescribeImages(ctx, regionID, instanceType)
 }
 
+// DescribeAvailableResourceForDesk retrieves available resources for a desk.
 func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
 	startTime := time.Now()
 	defer log.Debugf("DescribeAvailableResourceForDesk request time:%s", time.Since(startTime))
@@ -146,11 +134,12 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 	return m.VpsMgr.DescribeAvailableResourceForDesk(ctx, desk)
 }
 
+// DescribePrice calculates the price for a specific configuration.
 func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	startTime := time.Now()
 	defer log.Debugf("DescribePrice request time:%s", time.Since(startTime))
 
-	k, s := m.getAccessKeys()
+	k, s := m.getAliAccessKeys()
 
 	price, err := aliyun.DescribePrice(k, s, priceReq)
 	if err != nil {
@@ -164,12 +153,14 @@ func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceR
 	return price, nil
 }
 
+// CreateKeyPair creates a key pair for a region and instance.
 func (m *Mall) CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error) {
 	startTime := time.Now()
 	defer log.Debugf("CreateKeyPair request time:%s", time.Since(startTime))
 
-	k, s := m.getAccessKeys()
+	k, s := m.getAliAccessKeys()
 	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	// TODO 密钥对有上限 不能无限创建
 	keyPairNameNew := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
 	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairNameNew)
@@ -177,12 +168,14 @@ func (m *Mall) CreateKeyPair(ctx context.Context, regionID, instanceID string) (
 		log.Errorf("CreateKeyPair err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
 	}
+
 	var instanceIds []string
 	instanceIds = append(instanceIds, instanceID)
 	_, err = aliyun.AttachKeyPair(regionID, k, s, keyPairNameNew, instanceIds)
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
 	}
+
 	go func() {
 		time.Sleep(1 * time.Minute)
 		err = aliyun.RebootInstance(regionID, k, s, instanceID)
@@ -190,15 +183,17 @@ func (m *Mall) CreateKeyPair(ctx context.Context, regionID, instanceID string) (
 			log.Infoln("RebootInstance err:", err)
 		}
 	}()
+
 	return keyInfo, nil
 }
 
-func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceId string) error {
+// RebootInstance reboots a specific instance.
+func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceID string) error {
 	startTime := time.Now()
 	defer log.Debugf("RebootInstance request time:%s", time.Since(startTime))
 
-	k, s := m.getAccessKeys()
-	err := aliyun.RebootInstance(regionID, k, s, instanceId)
+	k, s := m.getAliAccessKeys()
+	err := aliyun.RebootInstance(regionID, k, s, instanceID)
 	if err != nil {
 		log.Errorf("AttachKeyPair err: %s", err.Error())
 		return &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
@@ -207,11 +202,12 @@ func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceId string) 
 	return nil
 }
 
+// DescribeInstances retrieves information about a specific instance.
 func (m *Mall) DescribeInstances(ctx context.Context, regionID, instanceId string) error {
 	startTime := time.Now()
 	defer log.Debugf("DescribeInstances request time:%s", time.Since(startTime))
 
-	k, s := m.getAccessKeys()
+	k, s := m.getAliAccessKeys()
 	var instanceIds []string
 	instanceIds = append(instanceIds, instanceId)
 	_, err := aliyun.DescribeInstances(regionID, k, s, instanceIds)
@@ -222,11 +218,13 @@ func (m *Mall) DescribeInstances(ctx context.Context, regionID, instanceId strin
 	return nil
 }
 
+// UpdateInstanceDefaultInfo updates default instance information for a region.
 func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context, regionID string) error {
 	go m.VpsMgr.UpdateInstanceDefaultInfo(regionID)
 	return nil
 }
 
+// RenewInstance renews an instance with the provided renewal information.
 func (m *Mall) RenewInstance(ctx context.Context, renewReq types.SetRenewOrderReq) error {
 	startTime := time.Now()
 	defer log.Debugf("RenewInstance request time:%s", time.Since(startTime))
@@ -234,8 +232,9 @@ func (m *Mall) RenewInstance(ctx context.Context, renewReq types.SetRenewOrderRe
 	return m.VpsMgr.ModifyInstanceRenew(&renewReq)
 }
 
+// GetRenewInstance retrieves the renewal status for an instance.
 func (m *Mall) GetRenewInstance(ctx context.Context, renewReq types.SetRenewOrderReq) (string, error) {
-	k, s := m.getAccessKeys()
+	k, s := m.getAliAccessKeys()
 	info, err := aliyun.DescribeInstanceAutoRenewAttribute(k, s, &renewReq)
 	if err != nil {
 		log.Errorf("DescribeInstanceAutoRenewAttribute err: %s", err.Error())
@@ -245,6 +244,7 @@ func (m *Mall) GetRenewInstance(ctx context.Context, renewReq types.SetRenewOrde
 	return out, nil
 }
 
+// verifyEthMessage verifies an Ethereum message signature.
 func verifyEthMessage(code string, signedMessage string) (string, error) {
 	// Hash the unsigned message using EIP-191
 	hashedMessage := []byte("\x19Ethereum Signed Message:\n" + strconv.Itoa(len(code)) + code)

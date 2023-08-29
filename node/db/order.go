@@ -8,23 +8,23 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// SaveOrderInfo save order information
-func (n *SQLDB) SaveOrderInfo(rInfo *types.OrderRecord) error {
+// SaveOrderInfo saves order information.
+func (d *SQLDB) SaveOrderInfo(rInfo *types.OrderRecord) error {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (order_id, value, state, done_state, vps_id, msg, user_id, order_type) 
 		        VALUES (:order_id, :value, :state, :done_state, :vps_id, :msg, :user_id, :order_type)
 				ON DUPLICATE KEY UPDATE state=:state, done_state=:done_state, done_time=NOW(), user_id=:user_id,
 				value=:value, vps_id=:vps_id, msg=:msg, order_type=:order_type`, orderRecordTable)
-	_, err := n.db.NamedExec(query, rInfo)
+	_, err := d.db.NamedExec(query, rInfo)
 
 	return err
 }
 
-// LoadOrderRecord load order record information
-func (n *SQLDB) LoadOrderRecord(orderID string, minute int64) (*types.OrderRecord, error) {
+// LoadOrderRecord loads order record information.
+func (d *SQLDB) LoadOrderRecord(orderID string, minute int64) (*types.OrderRecord, error) {
 	var info types.OrderRecord
 	query := fmt.Sprintf("SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE order_id=?", minute, orderRecordTable)
-	err := n.db.Get(&info, query, orderID)
+	err := d.db.Get(&info, query, orderID)
 	if err != nil {
 		return nil, err
 	}
@@ -32,21 +32,22 @@ func (n *SQLDB) LoadOrderRecord(orderID string, minute int64) (*types.OrderRecor
 	return &info, nil
 }
 
-func (n *SQLDB) LoadOrderRecordByUserUndone(userID string, limit, page int64, minute int) (*types.OrderRecordResponse, error) {
+// LoadOrderRecordByUserUndone loads undone order records for a specific user with pagination.
+func (d *SQLDB) LoadOrderRecordByUserUndone(userID string, limit, page int64, minute int) (*types.OrderRecordResponse, error) {
 	out := new(types.OrderRecordResponse)
 	var infos []*types.OrderRecord
 	query := fmt.Sprintf("SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE user_id=? and state!=3  order by created_time desc LIMIT ? OFFSET ?", minute, orderRecordTable)
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
-	err := n.db.Select(&infos, query, userID, limit, page*limit)
+	err := d.db.Select(&infos, query, userID, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}
 
 	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=? and state!=3", orderRecordTable)
 	var count int
-	err = n.db.Get(&count, countQuery, userID)
+	err = d.db.Get(&count, countQuery, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -57,21 +58,22 @@ func (n *SQLDB) LoadOrderRecordByUserUndone(userID string, limit, page int64, mi
 	return out, nil
 }
 
-func (n *SQLDB) LoadOrderRecordsByUser(userID string, limit, page int64, minute int) (*types.OrderRecordResponse, error) {
+// LoadOrderRecordsByUser loads order records for a specific user with pagination.
+func (d *SQLDB) LoadOrderRecordsByUser(userID string, limit, page int64, minute int) (*types.OrderRecordResponse, error) {
 	out := new(types.OrderRecordResponse)
 	var infos []*types.OrderRecord
 	query := fmt.Sprintf("SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE user_id=?  order by created_time desc LIMIT ? OFFSET ?", minute, orderRecordTable)
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
-	err := n.db.Select(&infos, query, userID, limit, page*limit)
+	err := d.db.Select(&infos, query, userID, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}
 
 	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=?", orderRecordTable)
 	var count int
-	err = n.db.Get(&count, countQuery, userID)
+	err = d.db.Get(&count, countQuery, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -82,19 +84,19 @@ func (n *SQLDB) LoadOrderRecordsByUser(userID string, limit, page int64, minute 
 	return out, nil
 }
 
-// OrderExists checks if an order exists in the state machine table of the specified server.
-func (n *SQLDB) OrderExists(orderID string) (bool, error) {
+// OrderExists checks if an order exists.
+func (d *SQLDB) OrderExists(orderID string) (bool, error) {
 	var total int64
 	countSQL := fmt.Sprintf(`SELECT count(order_id) FROM %s WHERE order_id=? `, orderRecordTable)
-	if err := n.db.Get(&total, countSQL, orderID); err != nil {
+	if err := d.db.Get(&total, countSQL, orderID); err != nil {
 		return false, err
 	}
 
 	return total > 0, nil
 }
 
-// LoadOrderRecords load the order records from the incoming scheduler
-func (n *SQLDB) LoadOrderRecords(statuses []int64, limit, page, minute int) (*sqlx.Rows, error) {
+// LoadOrderRecords loads order records with specified statuses, pagination, and minute interval.
+func (d *SQLDB) LoadOrderRecords(statuses []int64, limit, page, minute int) (*sqlx.Rows, error) {
 	if limit > loadOrderRecordsDefaultLimit {
 		limit = loadOrderRecordsDefaultLimit
 	}
@@ -104,29 +106,29 @@ func (n *SQLDB) LoadOrderRecords(statuses []int64, limit, page, minute int) (*sq
 		return nil, err
 	}
 
-	query = n.db.Rebind(query)
-	return n.db.QueryxContext(context.Background(), query, args...)
+	query = d.db.Rebind(query)
+	return d.db.QueryxContext(context.Background(), query, args...)
 }
 
-// LoadOrderCount count order
-func (n *SQLDB) LoadOrderCount() (int, error) {
+// LoadOrderCount counts the number of orders.
+func (d *SQLDB) LoadOrderCount() (int, error) {
 	var size int
 	cmd := fmt.Sprintf("SELECT count(order_id) FROM %s", orderRecordTable)
-	err := n.db.Get(&size, cmd)
+	err := d.db.Get(&size, cmd)
 	if err != nil {
 		return 0, err
 	}
 	return size, nil
 }
 
-// LoadAllOrderRecords loads all order records
-func (n *SQLDB) LoadAllOrderRecords(statuses []int64, minute int64) (*sqlx.Rows, error) {
+// LoadAllOrderRecords loads all order records with specified statuses and minute interval.
+func (d *SQLDB) LoadAllOrderRecords(statuses []int64, minute int64) (*sqlx.Rows, error) {
 	sQuery := fmt.Sprintf(`SELECT *,DATE_ADD(created_time,INTERVAL %d MINUTE) AS expiration FROM %s WHERE state in (?) `, minute, orderRecordTable)
 	query, args, err := sqlx.In(sQuery, statuses)
 	if err != nil {
 		return nil, err
 	}
 
-	query = n.db.Rebind(query)
-	return n.db.QueryxContext(context.Background(), query, args...)
+	query = d.db.Rebind(query)
+	return d.db.QueryxContext(context.Background(), query, args...)
 }

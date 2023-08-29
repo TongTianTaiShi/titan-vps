@@ -10,9 +10,9 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// SaveRechargeRecordAndUserBalance save recharge information
-func (n *SQLDB) SaveRechargeRecordAndUserBalance(rInfo *types.RechargeRecord, balance, oldBalance string) error {
-	tx, err := n.db.Beginx()
+// SaveRechargeRecordAndUserBalance saves recharge information and updates user balance.
+func (d *SQLDB) SaveRechargeRecordAndUserBalance(rInfo *types.RechargeRecord, balance, oldBalance string) error {
+	tx, err := d.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -41,22 +41,22 @@ func (n *SQLDB) SaveRechargeRecordAndUserBalance(rInfo *types.RechargeRecord, ba
 	return tx.Commit()
 }
 
-// RechargeRecordExists checks if an order exists
-func (n *SQLDB) RechargeRecordExists(orderID string) (bool, error) {
+// RechargeRecordExists checks if a recharge order exists.
+func (d *SQLDB) RechargeRecordExists(orderID string) (bool, error) {
 	var total int64
 	countSQL := fmt.Sprintf(`SELECT count(order_id) FROM %s WHERE order_id=? `, rechargeRecordTable)
-	if err := n.db.Get(&total, countSQL, orderID); err != nil {
+	if err := d.db.Get(&total, countSQL, orderID); err != nil {
 		return false, err
 	}
 
 	return total > 0, nil
 }
 
-// LoadRechargeRecord load recharge record information
-func (n *SQLDB) LoadRechargeRecord(orderID string) (*types.RechargeRecord, error) {
+// LoadRechargeRecord loads recharge record information.
+func (d *SQLDB) LoadRechargeRecord(orderID string) (*types.RechargeRecord, error) {
 	var info types.RechargeRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE order_id=?", rechargeRecordTable)
-	err := n.db.Get(&info, query, orderID)
+	err := d.db.Get(&info, query, orderID)
 	if err != nil {
 		return nil, err
 	}
@@ -64,12 +64,12 @@ func (n *SQLDB) LoadRechargeRecord(orderID string) (*types.RechargeRecord, error
 	return &info, nil
 }
 
-// LoadRechargeRecords load the recharge records from the incoming scheduler
-func (n *SQLDB) LoadRechargeRecords(state types.RechargeState) ([]*types.RechargeRecord, error) {
+// LoadRechargeRecords loads recharge records with a specific state.
+func (d *SQLDB) LoadRechargeRecords(state types.RechargeState) ([]*types.RechargeRecord, error) {
 	var infos []*types.RechargeRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE state=? ", rechargeRecordTable)
 
-	err := n.db.Select(&infos, query, state)
+	err := d.db.Select(&infos, query, state)
 	if err != nil {
 		return nil, err
 	}
@@ -77,9 +77,9 @@ func (n *SQLDB) LoadRechargeRecords(state types.RechargeState) ([]*types.Recharg
 	return infos, nil
 }
 
-// SaveWithdrawInfoAndUserBalance save withdraw information
-func (n *SQLDB) SaveWithdrawInfoAndUserBalance(rInfo *types.WithdrawRecord, balance, oldBalance string) error {
-	tx, err := n.db.Beginx()
+// SaveWithdrawInfoAndUserBalance saves withdraw information and updates user balance.
+func (d *SQLDB) SaveWithdrawInfoAndUserBalance(rInfo *types.WithdrawRecord, balance, oldBalance string) error {
+	tx, err := d.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -108,11 +108,11 @@ func (n *SQLDB) SaveWithdrawInfoAndUserBalance(rInfo *types.WithdrawRecord, bala
 	return tx.Commit()
 }
 
-// LoadWithdrawRecord load withdraw record information
-func (n *SQLDB) LoadWithdrawRecord(orderID string) (*types.WithdrawRecord, error) {
+// LoadWithdrawRecord loads withdraw record information.
+func (d *SQLDB) LoadWithdrawRecord(orderID string) (*types.WithdrawRecord, error) {
 	var info types.WithdrawRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE order_id=?", withdrawRecordTable)
-	err := n.db.Get(&info, query, orderID)
+	err := d.db.Get(&info, query, orderID)
 	if err != nil {
 		return nil, err
 	}
@@ -120,17 +120,17 @@ func (n *SQLDB) LoadWithdrawRecord(orderID string) (*types.WithdrawRecord, error
 	return &info, nil
 }
 
-// UpdateWithdrawRecord update withdraw record information
-func (n *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.WithdrawState) error {
+// UpdateWithdrawRecord updates withdraw record information.
+func (d *SQLDB) UpdateWithdrawRecord(info *types.WithdrawRecord, newState types.WithdrawState) error {
 	query := fmt.Sprintf(`UPDATE %s SET state=?, value=?, done_time=NOW(), 
 	     withdraw_hash=?, executor=? WHERE order_id=? AND state=?`, withdrawRecordTable)
-	_, err := n.db.Exec(query, newState, info.Value, info.WithdrawHash, info.Executor, info.OrderID, info.State)
+	_, err := d.db.Exec(query, newState, info.Value, info.WithdrawHash, info.Executor, info.OrderID, info.State)
 
 	return err
 }
 
-// LoadWithdrawRecords load the withdraw records from the incoming scheduler
-func (n *SQLDB) LoadWithdrawRecords(limit, page int64, statuses []types.WithdrawState, userID, startDate, endDate string) (*types.GetWithdrawResponse, error) {
+// LoadWithdrawRecords loads withdraw records with optional filters.
+func (d *SQLDB) LoadWithdrawRecords(limit, page int64, statuses []types.WithdrawState, userID, startDate, endDate string) (*types.GetWithdrawResponse, error) {
 	out := new(types.GetWithdrawResponse)
 
 	whereStr := ""
@@ -165,9 +165,9 @@ func (n *SQLDB) LoadWithdrawRecords(limit, page int64, statuses []types.Withdraw
 	if err != nil {
 		return nil, err
 	}
-	lQuery = n.db.Rebind(lQuery)
+	lQuery = d.db.Rebind(lQuery)
 
-	err = n.db.Select(&infos, lQuery, lArgs...)
+	err = d.db.Select(&infos, lQuery, lArgs...)
 	if err != nil {
 		return nil, err
 	}
@@ -179,9 +179,9 @@ func (n *SQLDB) LoadWithdrawRecords(limit, page int64, statuses []types.Withdraw
 	if err != nil {
 		return nil, err
 	}
-	cQuery = n.db.Rebind(cQuery)
+	cQuery = d.db.Rebind(cQuery)
 
-	err = n.db.Get(&count, cQuery, cArgs...)
+	err = d.db.Get(&count, cQuery, cArgs...)
 	if err != nil {
 		return nil, err
 	}
@@ -192,8 +192,8 @@ func (n *SQLDB) LoadWithdrawRecords(limit, page int64, statuses []types.Withdraw
 	return out, nil
 }
 
-// LoadWithdrawRecordRows load the withdraw record rows
-func (n *SQLDB) LoadWithdrawRecordRows(statuses []types.WithdrawState, userID, startDate, endDate string) (*sqlx.Rows, error) {
+// LoadWithdrawRecordRows loads withdraw record rows with optional filters.
+func (d *SQLDB) LoadWithdrawRecordRows(statuses []types.WithdrawState, userID, startDate, endDate string) (*sqlx.Rows, error) {
 	whereStr := ""
 	if userID != "" {
 		whereStr = "AND user_id='" + userID + "'"
@@ -223,12 +223,12 @@ func (n *SQLDB) LoadWithdrawRecordRows(statuses []types.WithdrawState, userID, s
 		return nil, err
 	}
 
-	query = n.db.Rebind(query)
-	return n.db.QueryxContext(context.Background(), query, args...)
+	query = d.db.Rebind(query)
+	return d.db.QueryxContext(context.Background(), query, args...)
 }
 
-// LoadWithdrawRecordsByUser load records
-func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, page int64) (*types.GetWithdrawResponse, error) {
+// LoadWithdrawRecordsByUser loads withdraw records for a specific user with pagination.
+func (d *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, page int64) (*types.GetWithdrawResponse, error) {
 	out := new(types.GetWithdrawResponse)
 
 	var infos []*types.WithdrawRecord
@@ -237,14 +237,14 @@ func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, page int64) (*ty
 		limit = loadWithdrawRecordsDefaultLimit
 	}
 
-	err := n.db.Select(&infos, query, userID, limit, page*limit)
+	err := d.db.Select(&infos, query, userID, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}
 
 	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=?", withdrawRecordTable)
 	var count int
-	err = n.db.Get(&count, countQuery, userID)
+	err = d.db.Get(&count, countQuery, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -255,8 +255,8 @@ func (n *SQLDB) LoadWithdrawRecordsByUser(userID string, limit, page int64) (*ty
 	return out, nil
 }
 
-// LoadRechargeRecordsByUser load records
-func (n *SQLDB) LoadRechargeRecordsByUser(userID string, limit, page int64) (*types.RechargeResponse, error) {
+// LoadRechargeRecordsByUser loads recharge records for a specific user with pagination.
+func (d *SQLDB) LoadRechargeRecordsByUser(userID string, limit, page int64) (*types.RechargeResponse, error) {
 	out := new(types.RechargeResponse)
 
 	var infos []*types.RechargeRecord
@@ -265,14 +265,14 @@ func (n *SQLDB) LoadRechargeRecordsByUser(userID string, limit, page int64) (*ty
 		limit = loadRechargeRecordsDefaultLimit
 	}
 
-	err := n.db.Select(&infos, query, userID, limit, page*limit)
+	err := d.db.Select(&infos, query, userID, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}
 
 	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=?", rechargeRecordTable)
 	var count int
-	err = n.db.Get(&count, countQuery, userID)
+	err = d.db.Get(&count, countQuery, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -283,12 +283,12 @@ func (n *SQLDB) LoadRechargeRecordsByUser(userID string, limit, page int64) (*ty
 	return out, nil
 }
 
-// LoadWithdrawRecordsByUserAndState load records
-func (n *SQLDB) LoadWithdrawRecordsByUserAndState(userID string, state types.WithdrawState) ([]*types.WithdrawRecord, error) {
+// LoadWithdrawRecordsByUserAndState loads withdraw records for a specific user and state.
+func (d *SQLDB) LoadWithdrawRecordsByUserAndState(userID string, state types.WithdrawState) ([]*types.WithdrawRecord, error) {
 	var infos []*types.WithdrawRecord
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? AND state=?", withdrawRecordTable)
 
-	err := n.db.Select(&infos, query, userID, state)
+	err := d.db.Select(&infos, query, userID, state)
 	if err != nil {
 		return nil, err
 	}

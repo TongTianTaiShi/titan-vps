@@ -3,6 +3,8 @@ package mall
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
@@ -51,7 +53,7 @@ func (m *Mall) GetBalance(ctx context.Context) (*types.UserInfo, error) {
 func (m *Mall) GetRechargeAddress(ctx context.Context) (string, error) {
 	userID := handler.GetID(ctx)
 
-	address, err := m.LoadRechargeAddressOfUser(userID)
+	address, err := m.LoadRechargeAddressByUser(userID)
 	if err != nil {
 		return address, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -126,7 +128,7 @@ func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, page int64) 
 // GetUserInstanceRecords retrieves user instance records with pagination.
 func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error) {
 	userID := handler.GetID(ctx)
-	k, s := m.getAccessKeys()
+	k, s := m.getAliAccessKeys()
 	instanceInfos, err := m.LoadInstancesInfoOfUser(userID, limit, offset)
 	if err != nil {
 		log.Errorf("LoadMyInstancesInfo err: %s", err.Error())
@@ -221,7 +223,7 @@ func (m *Mall) GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTy
 
 // GetInstanceCpuInfo retrieves CPU information for instances.
 func (m *Mall) GetInstanceCpuInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*int32, error) {
-	return m.LoadInstanceCpuInfo(req)
+	return m.LoadInstanceCPUInfo(req)
 }
 
 // GetInstanceMemoryInfo retrieves memory information for instances.
@@ -248,6 +250,10 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 	address, err := verifyEthMessage(code, signature)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
+	}
+
+	if strings.ToLower(userID) != strings.ToLower(address) {
+		return nil, &api.ErrWeb{Code: terrors.UserMismatch.Int(), Message: fmt.Sprintf("%s,%s", userID, address)}
 	}
 
 	log.Debugf("login address:%s , %s", address, code)
@@ -286,7 +292,7 @@ func (m *Mall) initUser(userID string) error {
 		}
 	}
 	// init recharge address
-	addr, err := m.LoadRechargeAddressOfUser(userID)
+	addr, err := m.LoadRechargeAddressByUser(userID)
 	if err != nil {
 		return &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}

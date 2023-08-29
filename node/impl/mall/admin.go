@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/terrors"
@@ -41,6 +42,10 @@ func (m *Mall) LoginAdmin(ctx context.Context, user *types.UserReq) (*types.Logi
 	address, err := verifyEthMessage(code, signature)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
+	}
+
+	if strings.ToLower(userID) != strings.ToLower(address) {
+		return nil, &api.ErrWeb{Code: terrors.UserMismatch.Int(), Message: fmt.Sprintf("%s,%s", userID, address)}
 	}
 
 	exist, err := m.AdminExists(address)

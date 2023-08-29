@@ -84,7 +84,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (string, error) {
 	userID := handler.GetID(ctx)
 
-	req, err := m.LoadVpsInfoByInstanceId(renewReq.InstanceId)
+	req, err := m.LoadVpsInfoByInstanceID(renewReq.InstanceId)
 	if err != nil {
 		return "", &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}

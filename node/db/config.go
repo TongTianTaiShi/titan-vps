@@ -8,22 +8,22 @@ import (
 type ConfigType string
 
 const (
-	// ConfigTronHeight scanning blocks height
+	// ConfigTronHeight is used for storing the height of scanned blocks.
 	ConfigTronHeight ConfigType = "tron_height"
 )
 
-// SaveConfigValue save config value
-func (n *SQLDB) SaveConfigValue(key ConfigType, value string) error {
+// SaveConfigValue saves a configuration value.
+func (d *SQLDB) SaveConfigValue(key ConfigType, value string) error {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (name, value) VALUES (?, ?)
 				ON DUPLICATE KEY UPDATE value=?`, configTable)
-	_, err := n.db.Exec(query, key, value, value)
+	_, err := d.db.Exec(query, key, value, value)
 
 	return err
 }
 
-// LoadConfigValue load config value
-func (n *SQLDB) LoadConfigValue(key ConfigType, out interface{}) error {
+// LoadConfigValue loads a configuration value.
+func (d *SQLDB) LoadConfigValue(key ConfigType, out interface{}) error {
 	query := fmt.Sprintf("SELECT value FROM %s WHERE name=?", configTable)
-	return n.db.Get(out, query, key)
+	return d.db.Get(out, query, key)
 }

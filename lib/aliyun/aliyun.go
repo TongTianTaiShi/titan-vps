@@ -103,6 +103,7 @@ func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceRe
 			OrderId:    *result.Body.OrderId,
 			RequestId:  *result.Body.RequestId,
 			TradePrice: *result.Body.TradePrice,
+			AccessKey:  keyID,
 		}
 
 		return nil

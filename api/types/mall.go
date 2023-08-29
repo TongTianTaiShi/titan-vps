@@ -140,6 +140,7 @@ type CreateInstanceReq struct {
 	DataDiskString          string    `db:"data_disk"`
 	CreatedTime             time.Time `db:"created_time"`
 	ExpiredTime             string    `db:"expired_time"`
+	AccessKey               string    `db:"access_key"`
 	DataDisk                []DescribePriceRequestDataDisk
 }
 
@@ -149,8 +150,9 @@ type CreateInstanceResponse struct {
 	RequestId        string  `db:"request_id"`
 	TradePrice       float32 `db:"trade_price"`
 	PublicIpAddress  string  `db:"public_ip_address"`
+	PrivateKeyStatus int     `db:"private_key_status"`
 	PrivateKey       string
-	PrivateKeyStatus int `db:"private_key_status"`
+	AccessKey        string
 }
 type DescribeInstanceTypeReq struct {
 	RegionId         string

@@ -54,7 +54,7 @@ func (m *Manager) AllocateTronAddress(userID string) (string, error) {
 		return "", &api.ErrWeb{Code: terrors.NotFoundAddress.Int(), Message: terrors.NotFoundAddress.String()}
 	}
 
-	err = m.UpdateRechargeAddressOfUser(addr, userID)
+	err = m.AssignUserToRechargeAddress(addr, userID)
 	if err != nil {
 		return "", &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
