@@ -402,7 +402,7 @@ type InstanceDetails struct {
 	ID                 int64   `db:"id"`
 	InstanceId         string  `db:"instance_id"`
 	InstanceName       string  `db:"instance_name"`
-	RegionID           string  `db:"region_id"`
+	RegionId           string  `db:"region_id"`
 	UserID             string  `db:"user_id"`
 	Memory             float32 `db:"memory"`
 	MemoryUsed         float32 `db:"memory_used"`

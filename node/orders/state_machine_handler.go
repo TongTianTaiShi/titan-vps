@@ -85,7 +85,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 
 	if info.OrderType == int64(types.BuyVPS) {
 		createInfo := &types.CreateInstanceReq{
-			RegionID:           vInfo.RegionID,
+			RegionID:           vInfo.RegionId,
 			InstanceType:       vInfo.InstanceType,
 			ImageID:            vInfo.ImageID,
 			SecurityGroupID:    vInfo.SecurityGroupId,
@@ -106,7 +106,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 		vInfo.InstanceId = result.InstanceID
 	} else if info.OrderType == int64(types.RenewVPS) {
 		err = m.vpsMgr.RenewInstance(&types.RenewInstanceRequest{
-			RegionId:   vInfo.RegionID,
+			RegionId:   vInfo.RegionId,
 			InstanceId: vInfo.InstanceId,
 			PeriodUnit: vInfo.PeriodUnit,
 			Period:     vInfo.Period,
@@ -119,7 +119,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	// if auto renew
 	if vInfo.AutoRenew == 1 {
 		renewReq := types.SetRenewOrderReq{
-			RegionID:   vInfo.RegionID,
+			RegionID:   vInfo.RegionId,
 			InstanceId: vInfo.InstanceId,
 			PeriodUnit: vInfo.PeriodUnit,
 			Period:     vInfo.Period,

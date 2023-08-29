@@ -20,7 +20,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	userID := handler.GetID(ctx)
 
 	instanceDetails := &types.InstanceDetails{
-		RegionID:           req.RegionID,
+		RegionId:           req.RegionID,
 		InstanceType:       req.InstanceType,
 		ImageID:            req.ImageID,
 		SecurityGroupId:    req.SecurityGroupID,
@@ -116,7 +116,7 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 	}
 
 	priceReq := &types.DescribePriceReq{
-		RegionId:                     req.RegionID,
+		RegionId:                     req.RegionId,
 		InstanceType:                 req.InstanceType,
 		PriceUnit:                    renewReq.PeriodUnit,
 		Period:                       renewReq.Period,
