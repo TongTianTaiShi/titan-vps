@@ -225,6 +225,8 @@ func (m *Mall) GetSignCode(ctx context.Context, userID string) (string, error) {
 
 func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error) {
 	userID := user.UserId
+	log.Debugf("login user:%s", userID)
+
 	code, err := m.UserMgr.GetSignCode(userID)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.NotFoundSignCode.Int(), Message: terrors.NotFoundSignCode.String()}
@@ -234,6 +236,9 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
+
+	log.Debugf("login address:%s", address)
+
 	p := types.JWTPayload{
 		ID:        address,
 		LoginType: int64(user.Type),
