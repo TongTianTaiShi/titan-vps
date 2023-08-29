@@ -19,7 +19,7 @@ import (
 
 const checkBlockInterval = 3 * time.Second
 
-// GetGrpcClient
+// getGrpcClient returns a new gRPC client for Tron communication.
 func (m *Manager) getGrpcClient() (*trxbridge.GrpcClient, error) {
 	node := trxbridge.NewGrpcClient(m.cfg.TrxHTTPSAddr)
 	err := node.Start()
@@ -30,6 +30,7 @@ func (m *Manager) getGrpcClient() (*trxbridge.GrpcClient, error) {
 	return node, nil
 }
 
+// watchTronTransactions continuously monitors Tron transactions.
 func (m *Manager) watchTronTransactions() {
 	ticker := time.NewTicker(checkBlockInterval)
 	defer ticker.Stop()
@@ -92,6 +93,7 @@ func (m *Manager) watchTronTransactions() {
 	}
 }
 
+// handleBlocks processes blocks in the Tron blockchain.
 func (m *Manager) handleBlocks(blockInfo *api.BlockListExtention) {
 	for _, v := range blockInfo.Block {
 		err := m.handleBlock(v)
@@ -101,6 +103,7 @@ func (m *Manager) handleBlocks(blockInfo *api.BlockListExtention) {
 	}
 }
 
+// handleBlock processes an individual block in the Tron blockchain.
 func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 	if blockExtention == nil || blockExtention.BlockHeader == nil {
 		return xerrors.New("block is nil")
@@ -124,6 +127,7 @@ func (m *Manager) handleBlock(blockExtention *api.BlockExtention) error {
 	return nil
 }
 
+// filterTransaction filters and processes Tron transactions.
 func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txID string, state core.Transaction_ResultContractResult) {
 	if contract.Type == core.Transaction_Contract_TriggerSmartContract {
 		// trc20
@@ -154,6 +158,7 @@ func (m *Manager) filterTransaction(contract *core.Transaction_Contract, txID st
 	}
 }
 
+// decodeData decodes Tron transaction data for TRC20 tokens.
 func (m *Manager) decodeData(trc20 []byte) (to string, amount string, flag bool) {
 	if len(trc20) >= 68 {
 		if hexutil.Encode(trc20[:4]) != "a9059cbb" {
@@ -171,6 +176,7 @@ func (m *Manager) decodeData(trc20 []byte) (to string, amount string, flag bool)
 	return
 }
 
+// handleTransfer handles Tron token transfers.
 func (m *Manager) handleTransfer(txID, from, to string, amount string, state core.Transaction_ResultContractResult) {
 	// log.Debugf("Transfer :%s,%s,%s,%s,%s", txID, to, from, amount, state)
 
@@ -189,6 +195,7 @@ func (m *Manager) handleTransfer(txID, from, to string, amount string, state cor
 	}
 }
 
+// SupplementOrder supplements Tron orders.
 func (m *Manager) SupplementOrder(hash string) error {
 	client, err := m.getGrpcClient()
 	if err != nil {

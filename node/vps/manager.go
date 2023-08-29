@@ -99,37 +99,39 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	instanceInfo, err := aliyun.DescribeInstances(regionID, k, s, instanceIds)
 	if err != nil {
 		log.Errorf("DescribeInstances err: %s", err.Error())
-	}
-	if len(instanceInfo.Body.Instances.Instance) > 0 {
-		ip := instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0]
-		securityGroupId := ""
+	} else {
 		if len(instanceInfo.Body.Instances.Instance) > 0 {
-			securityGroupId = *instanceInfo.Body.Instances.Instance[0].SecurityGroupIds.SecurityGroupId[0]
-		}
-		OSType := instanceInfo.Body.Instances.Instance[0].OSType
-		InstanceName := instanceInfo.Body.Instances.Instance[0].InstanceName
-		BandwidthOut := instanceInfo.Body.Instances.Instance[0].InternetMaxBandwidthOut
-		Cores := instanceInfo.Body.Instances.Instance[0].Cpu
-		Memory := instanceInfo.Body.Instances.Instance[0].Memory
-		ExpiredTime := instanceInfo.Body.Instances.Instance[0].ExpiredTime
-		instanceDetailsInfo := &types.CreateInstanceReq{
-			IpAddress:               *ip,
-			InstanceId:              result.InstanceID,
-			SecurityGroupId:         securityGroupId,
-			OrderID:                 vpsInfo.OrderID,
-			UserID:                  vpsInfo.UserID,
-			OSType:                  *OSType,
-			Cores:                   *Cores,
-			Memory:                  float32(*Memory),
-			InstanceName:            *InstanceName,
-			ExpiredTime:             *ExpiredTime,
-			InternetMaxBandwidthOut: *BandwidthOut,
-		}
-		errU := m.UpdateVpsInstance(instanceDetailsInfo)
-		if errU != nil {
-			log.Errorf("UpdateVpsInstance:%v", errU)
+			ip := instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0]
+			securityGroupId := ""
+			if len(instanceInfo.Body.Instances.Instance) > 0 {
+				securityGroupId = *instanceInfo.Body.Instances.Instance[0].SecurityGroupIds.SecurityGroupId[0]
+			}
+			OSType := instanceInfo.Body.Instances.Instance[0].OSType
+			InstanceName := instanceInfo.Body.Instances.Instance[0].InstanceName
+			BandwidthOut := instanceInfo.Body.Instances.Instance[0].InternetMaxBandwidthOut
+			Cores := instanceInfo.Body.Instances.Instance[0].Cpu
+			Memory := instanceInfo.Body.Instances.Instance[0].Memory
+			ExpiredTime := instanceInfo.Body.Instances.Instance[0].ExpiredTime
+			instanceDetailsInfo := &types.CreateInstanceReq{
+				IpAddress:               *ip,
+				InstanceId:              result.InstanceID,
+				SecurityGroupId:         securityGroupId,
+				OrderID:                 vpsInfo.OrderID,
+				UserID:                  vpsInfo.UserID,
+				OSType:                  *OSType,
+				Cores:                   *Cores,
+				Memory:                  float32(*Memory),
+				InstanceName:            *InstanceName,
+				ExpiredTime:             *ExpiredTime,
+				InternetMaxBandwidthOut: *BandwidthOut,
+			}
+			errU := m.UpdateVpsInstance(instanceDetailsInfo)
+			if errU != nil {
+				log.Errorf("UpdateVpsInstance:%v", errU)
+			}
 		}
 	}
+
 	return result, nil
 }
 

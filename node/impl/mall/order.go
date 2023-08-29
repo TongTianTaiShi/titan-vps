@@ -140,7 +140,7 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, page int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
-	info, err := m.LoadOrderRecordByUserUndone(userID, limit, page, m.OrderMgr.GetOrderTimeoutMinute())
+	info, err := m.LoadOrderRecordByUserUndone(userID, limit, page, m.OrderMgr.GetOrderTimeoutDurationMinutes())
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -151,7 +151,7 @@ func (m *Mall) GetUseWaitingPaymentOrders(ctx context.Context, limit, page int64
 func (m *Mall) GetUserOrderRecords(ctx context.Context, limit, page int64) (*types.OrderRecordResponse, error) {
 	userID := handler.GetID(ctx)
 
-	info, err := m.LoadOrderRecordsByUser(userID, limit, page, m.OrderMgr.GetOrderTimeoutMinute())
+	info, err := m.LoadOrderRecordsByUser(userID, limit, page, m.OrderMgr.GetOrderTimeoutDurationMinutes())
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}

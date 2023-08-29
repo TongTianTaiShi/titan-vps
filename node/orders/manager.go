@@ -29,7 +29,7 @@ const (
 	orderTimeoutTime   = orderTimeoutMinute * time.Minute
 )
 
-// Manager manager order
+// OrderManager manages order processing.
 type Manager struct {
 	stateMachineWait   sync.WaitGroup
 	orderStateMachines *statemachine.StateGroup
@@ -37,14 +37,14 @@ type Manager struct {
 
 	notification *pubsub.PubSub
 
-	ongoingOrders sync.Map // map[string]*types.OrderRecord
+	activeOrders sync.Map // map[string]*types.OrderRecord
 
-	cfg  config.MallCfg
-	tMgr *transaction.Manager
-	vMgr *vps.Manager
+	cfg    config.MallCfg
+	txMgr  *transaction.Manager
+	vpsMgr *vps.Manager
 }
 
-// NewManager returns a new manager instance
+// NewOrderManager creates a new order manager instance.
 func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, fm *transaction.Manager, vm *vps.Manager) (*Manager, error) {
 	cfg, err := getCfg()
 	if err != nil {
@@ -55,8 +55,8 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg 
 		SQLDB:        sdb,
 		notification: pb,
 		cfg:          cfg,
-		tMgr:         fm,
-		vMgr:         vm,
+		txMgr:        fm,
+		vpsMgr:       vm,
 	}
 
 	// state machine initialization
@@ -66,7 +66,7 @@ func NewManager(ds datastore.Batching, sdb *db.SQLDB, pb *pubsub.PubSub, getCfg 
 	return m, nil
 }
 
-// Start initializes and starts the order state machine and associated tickers
+// Start initializes and starts the order state machine and related processes.
 func (m *Manager) Start(ctx context.Context) {
 	if err := m.initStateMachines(ctx); err != nil {
 		log.Errorf("restartStateMachines err: %s", err.Error())
@@ -83,7 +83,7 @@ func (m *Manager) checkOrdersTimeout() {
 	for {
 		<-ticker.C
 
-		m.ongoingOrders.Range(func(key, value interface{}) bool {
+		m.activeOrders.Range(func(key, value interface{}) bool {
 			orderRecord := value.(*types.OrderRecord)
 			orderID := orderRecord.OrderID
 
@@ -114,7 +114,7 @@ func (m *Manager) Terminate(ctx context.Context) error {
 	return m.orderStateMachines.Stop(ctx)
 }
 
-// CancelOrder cancel vps order
+// CancelOrder cancels a VPS order.
 func (m *Manager) CancelOrder(orderID, userID string) error {
 	order, err := m.LoadOrderRecord(orderID, orderTimeoutMinute)
 	if err != nil {
@@ -133,7 +133,7 @@ func (m *Manager) CancelOrder(orderID, userID string) error {
 	return nil
 }
 
-// PaymentCompleted cancel vps order
+// PaymentCompleted marks a VPS order as completed.
 func (m *Manager) PaymentCompleted(orderID, userID string) error {
 	order, err := m.LoadOrderRecord(orderID, orderTimeoutMinute)
 	if err != nil {
@@ -152,7 +152,7 @@ func (m *Manager) PaymentCompleted(orderID, userID string) error {
 	return nil
 }
 
-// CreatedOrder create vps order
+// CreatedOrder creates a new VPS order.
 func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 	m.stateMachineWait.Wait()
 
@@ -168,11 +168,11 @@ func (m *Manager) CreatedOrder(req *types.OrderRecord) error {
 }
 
 func (m *Manager) addOrder(req *types.OrderRecord) {
-	m.ongoingOrders.Store(req.OrderID, req)
+	m.activeOrders.Store(req.OrderID, req)
 }
 
 func (m *Manager) removeOrder(orderID string) {
-	m.ongoingOrders.Delete(orderID)
+	m.activeOrders.Delete(orderID)
 }
 
 func (m *Manager) getHeight() int64 {
@@ -186,6 +186,7 @@ func (m *Manager) getHeight() int64 {
 	return msg.Height
 }
 
-func (m *Manager) GetOrderTimeoutMinute() int {
+// GetOrderTimeoutDurationMinutes returns the duration in minutes after which an order times out.
+func (m *Manager) GetOrderTimeoutDurationMinutes() int {
 	return orderTimeoutMinute
 }

@@ -40,16 +40,15 @@ func NewSQLDB(path string) (*SQLDB, error) {
 
 const (
 	// Database table names.
-	orderRecordTable       = "order_record"
-	rechargeRecordTable    = "recharge_record"
-	withdrawRecordTable    = "withdraw_record"
-	vpsInstanceDeviceTable = "vps_instance_device"
-	instancesDetailsTable  = "instances_details"
-	configTable            = "config"
-	userTable              = "user_info"
-	adminTable             = "admin_info"
-	rechargeAddressTable   = "recharge_address"
-	instanceDefaultTable   = "instance_default"
+	orderRecordTable     = "order_record"
+	rechargeRecordTable  = "recharge_record"
+	withdrawRecordTable  = "withdraw_record"
+	userInstancesTable   = "instances_details"
+	configTable          = "config"
+	userTable            = "user_info"
+	adminTable           = "admin_info"
+	rechargeAddressTable = "recharge_address"
+	instanceDefaultTable = "instance_default"
 
 	// Default limits for loading table entries.
 	loadOrderRecordsDefaultLimit    = 1000
@@ -76,7 +75,7 @@ func (n *SQLDB) initTables() error {
 
 	// Execute table creation statements
 	tx.MustExec(fmt.Sprintf(cOrderRecordTable, orderRecordTable))
-	tx.MustExec(fmt.Sprintf(cInstanceDetailsTable, instancesDetailsTable))
+	tx.MustExec(fmt.Sprintf(cInstanceDetailsTable, userInstancesTable))
 	tx.MustExec(fmt.Sprintf(cRechargeTable, rechargeRecordTable))
 	tx.MustExec(fmt.Sprintf(cWithdrawTable, withdrawRecordTable))
 	tx.MustExec(fmt.Sprintf(cConfigTable, configTable))

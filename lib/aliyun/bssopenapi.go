@@ -66,6 +66,52 @@ func DescribeInstanceBill(keyID, keySecret string) (*types.CreateInstanceRespons
 	return out, nil
 }
 
+// RefundInstance refund instance
+func RefundInstance(keyID, keySecret, instanceID string) (*types.CreateInstanceResponse, error) {
+	var out *types.CreateInstanceResponse
+
+	client, err := newBssopen(keyID, keySecret)
+	if err != nil {
+		return out, err
+	}
+
+	refundInstanceRequest := &bssopenapi20171214.RefundInstanceRequest{
+		ImmediatelyRelease: tea.String("1"),
+		ProductCode:        tea.String("ecs"),
+		InstanceId:         tea.String(instanceID),
+		ProductType:        tea.String(""),
+	}
+
+	runtime := &util.RuntimeOptions{}
+	tryErr := func() (_e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+
+		result, err := client.RefundInstanceWithOptions(refundInstanceRequest, runtime)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("result :", result)
+
+		return nil
+	}()
+
+	if tryErr != nil {
+		errors := &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			errors = _t
+		} else {
+			errors.Message = tea.String(tryErr.Error())
+		}
+		return out, errors
+	}
+	return out, nil
+}
+
 // QueryProductList crate an instance
 func QueryProductList(keyID, keySecret string) (*types.CreateInstanceResponse, error) {
 	var out *types.CreateInstanceResponse

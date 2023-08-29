@@ -170,6 +170,7 @@ func (m *Mall) CreateKeyPair(ctx context.Context, regionID, instanceID string) (
 
 	k, s := m.getAccessKeys()
 	randNew := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// TODO 密钥对有上限 不能无限创建
 	keyPairNameNew := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
 	keyInfo, err := aliyun.CreateKeyPair(regionID, k, s, keyPairNameNew)
 	if err != nil {

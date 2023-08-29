@@ -124,7 +124,7 @@ func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, page int64) 
 func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) (*types.MyInstanceResponse, error) {
 	userID := handler.GetID(ctx)
 	k, s := m.getAccessKeys()
-	instanceInfos, err := m.LoadMyInstancesInfo(userID, limit, offset)
+	instanceInfos, err := m.LoadInstancesInfoOfUser(userID, limit, offset)
 	if err != nil {
 		log.Errorf("LoadMyInstancesInfo err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
@@ -135,17 +135,24 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, offset int64) 
 		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.Location, k, s, instanceIds)
 		if err != nil {
 			log.Errorf("DescribeInstanceStatus err: %s", *err.Message)
-			return nil, &api.ErrWeb{Code: terrors.ParametersWrong.Int(), Message: *err.Message}
+			continue
 		}
-		renewInfo := types.SetRenewOrderReq{
-			RegionID:   instanceInfo.Location,
-			InstanceId: instanceInfo.InstanceId,
+
+		if len(rsp.Body.InstanceStatuses.InstanceStatus) == 0 {
+			continue
 		}
+
 		instanceInfo.State = *rsp.Body.InstanceStatuses.InstanceStatus[0].Status
 		instanceInfo.Renew = ""
 		if instanceInfo.State == "Stopped" {
 			continue
 		}
+
+		renewInfo := types.SetRenewOrderReq{
+			RegionID:   instanceInfo.Location,
+			InstanceId: instanceInfo.InstanceId,
+		}
+
 		status, errEk := m.GetRenewInstance(ctx, renewInfo)
 		if errEk != nil {
 			log.Errorf("GetRenewInstance err: %s", errEk.Error())

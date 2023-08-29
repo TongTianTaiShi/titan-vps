@@ -14,7 +14,7 @@ import (
 
 var log = logging.Logger("transaction")
 
-// Manager is the node manager responsible for managing the online nodes
+// Manager is responsible for managing tron addresses.
 type Manager struct {
 	notification *pubsub.PubSub
 	*db.SQLDB
@@ -24,7 +24,7 @@ type Manager struct {
 	tronAddrs sync.Map
 }
 
-// NewManager creates a new instance of the node manager
+// NewManager creates a new instance of the transaction manager
 func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, db *db.SQLDB) (*Manager, error) {
 	cfg, err := getCfg()
 	if err != nil {
@@ -44,7 +44,7 @@ func NewManager(pb *pubsub.PubSub, getCfg dtypes.GetMallConfigFunc, db *db.SQLDB
 	return manager, nil
 }
 
-// AllocateTronAddress get a fvm address
+// AllocateTronAddress allocates a Tron address for a user.
 func (m *Manager) AllocateTronAddress(userID string) (string, error) {
 	addr, err := m.LoadUnusedRechargeAddress()
 	if err != nil {
