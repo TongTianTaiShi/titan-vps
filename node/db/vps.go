@@ -181,7 +181,7 @@ func (d *SQLDB) LoadInstancesInfo(limit, page int64) (*types.UserInstanceRespons
 // LoadInstanceInfoByUser loads details of a specific instance.
 func (d *SQLDB) LoadInstanceInfoByUser(userID, instanceID string) (*types.InstanceDetails, error) {
 	var info types.InstanceDetails
-	query := fmt.Sprintf("SELECT region_id,instance_id,instance_name,instance_type,image_id,security_group_id,instance_charge_type,internet_charge_type,bandwidth_out,bandwidth_in,system_disk_size,ip_address,system_disk_category,created_time,memory,memory_used,cores,cores_used,os_type,data_disk  FROM %s WHERE user_id=? and instance_id=?", userInstancesTable)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? and instance_id=?", userInstancesTable)
 	err := d.db.Get(&info, query, userID, instanceID)
 	if err != nil {
 		return nil, err

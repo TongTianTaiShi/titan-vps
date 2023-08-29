@@ -138,6 +138,7 @@ func (m *Mall) DescribeAvailableResourceForDesk(ctx context.Context, desk *types
 func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	startTime := time.Now()
 	defer log.Debugf("DescribePrice request time:%s", time.Since(startTime))
+	log.Infof("DescribePrice :%v", priceReq)
 
 	k, s := m.getAliAccessKeys()
 
