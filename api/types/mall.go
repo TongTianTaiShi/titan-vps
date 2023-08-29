@@ -445,7 +445,9 @@ type CreateInstanceReq struct {
 	InternetChargeType string `db:"internet_charge_type"`
 	SystemDiskSize     int32  `db:"system_disk_size"`
 	SystemDiskCategory string `db:"system_disk_category"`
+	InstanceChargeType string `db:"instance_charge_type"`
 	BandwidthOut       int32  `db:"bandwidth_out"`
+	BandwidthIn        int32  `db:"bandwidth_in"`
 	DataDisk           []DescribePriceRequestDataDisk
 }
 

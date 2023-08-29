@@ -31,6 +31,9 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		SystemDiskSize:     req.SystemDiskSize,
 		SystemDiskCategory: req.SystemDiskCategory,
 		BandwidthOut:       req.BandwidthOut,
+		UserID:             userID,
+		InstanceChargeType: req.InstanceChargeType,
+		BandwidthIn:        req.BandwidthIn,
 	}
 
 	// Marshal DataDisk if it's not empty
