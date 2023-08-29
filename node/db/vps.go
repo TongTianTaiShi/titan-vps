@@ -51,9 +51,9 @@ func (d *SQLDB) SaveInstanceInfoOfUser(rInfo *types.InstanceDetails) (int64, err
 
 // UpdateInstanceInfoOfUser updates VPS instance information in the database.
 func (d *SQLDB) UpdateInstanceInfoOfUser(info *types.InstanceDetails) error {
-	query := fmt.Sprintf(`UPDATE %s SET ip_address=?, instance_id=?, user_id=?,os_type=?,cores=?,memory=?,expired_time=?,
-	    security_group_id=?,access_key=? WHERE order_id=?`, userInstancesTable)
-	_, err := d.db.Exec(query, info.IpAddress, info.InstanceId, info.UserID, info.OSType, info.Cores, info.Memory, info.ExpiredTime, info.SecurityGroupId, info.AccessKey, info.OrderID)
+	query := fmt.Sprintf(`UPDATE %s SET ip_address=?, instance_id=?, os_type=?,cores=?,memory=?,expired_time=?,
+	    security_group_id=?,access_key=?,bandwidth_out=?,instance_name=? WHERE order_id=?`, userInstancesTable)
+	_, err := d.db.Exec(query, info.IpAddress, info.InstanceId, info.OSType, info.Cores, info.Memory, info.ExpiredTime, info.SecurityGroupId, info.AccessKey, info.BandwidthOut, info.InstanceName, info.OrderID)
 
 	return err
 }
