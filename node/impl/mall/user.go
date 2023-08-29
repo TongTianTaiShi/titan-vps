@@ -237,7 +237,7 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 
-	log.Debugf("login address:%s", address)
+	log.Debugf("login address:%s , %s", address, code)
 
 	p := types.JWTPayload{
 		ID:        address,

@@ -255,6 +255,7 @@ func verifyEthMessage(code string, signedMessage string) (string, error) {
 	if decodedMessage[64] == 27 || decodedMessage[64] == 28 {
 		decodedMessage[64] -= 27
 	}
+
 	// Recover a public key from the signed message
 	sigPublicKeyECDSA, err := crypto.SigToPub(hash.Bytes(), decodedMessage)
 	if err != nil {
