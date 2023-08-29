@@ -88,7 +88,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 			RegionID:           vInfo.RegionID,
 			InstanceType:       vInfo.InstanceType,
 			ImageID:            vInfo.ImageID,
-			SecurityGroupID:    vInfo.SecurityGroupID,
+			SecurityGroupID:    vInfo.SecurityGroupId,
 			PeriodUnit:         vInfo.PeriodUnit,
 			Period:             vInfo.Period,
 			DryRun:             vInfo.DryRun,
@@ -103,11 +103,11 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 		if err != nil {
 			return ctx.Send(BuyFailed{Msg: err.Error()})
 		}
-		vInfo.InstanceID = result.InstanceID
+		vInfo.InstanceId = result.InstanceID
 	} else if info.OrderType == int64(types.RenewVPS) {
 		err = m.vpsMgr.RenewInstance(&types.RenewInstanceRequest{
-			RegionID:   vInfo.RegionID,
-			InstanceID: vInfo.InstanceID,
+			RegionId:   vInfo.RegionID,
+			InstanceId: vInfo.InstanceId,
 			PeriodUnit: vInfo.PeriodUnit,
 			Period:     vInfo.Period,
 		})
@@ -120,7 +120,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	if vInfo.AutoRenew == 1 {
 		renewReq := types.SetRenewOrderReq{
 			RegionID:   vInfo.RegionID,
-			InstanceID: vInfo.InstanceID,
+			InstanceId: vInfo.InstanceId,
 			PeriodUnit: vInfo.PeriodUnit,
 			Period:     vInfo.Period,
 			Renew:      1,

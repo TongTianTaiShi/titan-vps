@@ -137,7 +137,7 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*
 
 	for _, instanceInfo := range instanceInfos.List {
 		var instanceIds []string
-		instanceIds = append(instanceIds, instanceInfo.InstanceID)
+		instanceIds = append(instanceIds, instanceInfo.InstanceId)
 		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.RegionID, k, s, instanceIds)
 		if err != nil {
 			log.Errorf("DescribeInstanceStatus err: %s", *err.Message)
@@ -156,7 +156,7 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*
 
 		renewInfo := types.SetRenewOrderReq{
 			RegionID:   instanceInfo.RegionID,
-			InstanceID: instanceInfo.InstanceID,
+			InstanceId: instanceInfo.InstanceId,
 		}
 
 		status, errEk := m.GetRenewInstance(ctx, renewInfo)

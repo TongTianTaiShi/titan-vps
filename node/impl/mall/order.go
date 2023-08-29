@@ -23,7 +23,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		RegionID:           req.RegionID,
 		InstanceType:       req.InstanceType,
 		ImageID:            req.ImageID,
-		SecurityGroupID:    req.SecurityGroupID,
+		SecurityGroupId:    req.SecurityGroupID,
 		PeriodUnit:         req.PeriodUnit,
 		Period:             req.Period,
 		DryRun:             req.DryRun,
@@ -44,7 +44,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	}
 
 	priceReq := &types.DescribePriceReq{
-		RegionID:                     req.RegionID,
+		RegionId:                     req.RegionID,
 		InstanceType:                 req.InstanceType,
 		PriceUnit:                    req.PeriodUnit,
 		Period:                       req.Period,
@@ -98,7 +98,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (string, error) {
 	userID := handler.GetID(ctx)
 
-	req, err := m.LoadUserInstanceInfoByInstanceID(renewReq.InstanceID)
+	req, err := m.LoadUserInstanceInfoByInstanceID(renewReq.InstanceId)
 	if err != nil {
 		return "", &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
@@ -113,7 +113,7 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 	}
 
 	priceReq := &types.DescribePriceReq{
-		RegionID:                     req.RegionID,
+		RegionId:                     req.RegionID,
 		InstanceType:                 req.InstanceType,
 		PriceUnit:                    renewReq.PeriodUnit,
 		Period:                       renewReq.Period,

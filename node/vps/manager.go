@@ -84,7 +84,7 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 	if err != nil {
 		log.Errorf("AllocatePublicIpAddress err: %s", err.Error())
 	} else {
-		result.PublicIPAddress = address
+		result.PublicIpAddress = address
 	}
 
 	// 设置安全端口 (使用账密的时候必须用)
@@ -121,9 +121,9 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 			Memory := instanceInfo.Body.Instances.Instance[0].Memory
 			ExpiredTime := instanceInfo.Body.Instances.Instance[0].ExpiredTime
 			instanceDetailsInfo := &types.InstanceDetails{
-				IPAddress:       *ip,
-				InstanceID:      result.InstanceID,
-				SecurityGroupID: securityGroupId,
+				IpAddress:       *ip,
+				InstanceId:      result.InstanceID,
+				SecurityGroupId: securityGroupId,
 				OSType:          *OSType,
 				Cores:           *Cores,
 				Memory:          float32(*Memory),
@@ -212,8 +212,8 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 
 	for _, regionID := range regionIDs {
 		instanceType := &types.DescribeInstanceTypeReq{
-			RegionID:     regionID,
-			CPUCoreCount: 0,
+			RegionId:     regionID,
+			CpuCoreCount: 0,
 			MemorySize:   0,
 		}
 
@@ -223,7 +223,7 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
-			ok, err := m.InstancesDefaultExists(instance.InstanceTypeID, regionID)
+			ok, err := m.InstancesDefaultExists(instance.InstanceTypeId, regionID)
 			if err != nil {
 				log.Errorf("InstancesDefaultExists err:%v", err.Error())
 				continue
@@ -231,30 +231,30 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 			if ok {
 				continue
 			}
-			images, err := m.DescribeImages(ctx, regionID, instance.InstanceTypeID)
+			images, err := m.DescribeImages(ctx, regionID, instance.InstanceTypeId)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
-				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeID, regionID)
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
 				continue
 			}
 			disk := &types.AvailableResourceReq{
-				InstanceType:        instance.InstanceTypeID,
-				RegionID:            regionID,
+				InstanceType:        instance.InstanceTypeId,
+				RegionId:            regionID,
 				DestinationResource: "SystemDisk",
 			}
 
 			disks, err := m.DescribeAvailableResourceForDesk(ctx, disk)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())
-				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeID, regionID)
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
 				continue
 			}
 			if len(disks) > 0 {
 				priceReq := &types.DescribePriceReq{
-					RegionID:                regionID,
-					InstanceType:            instance.InstanceTypeID,
+					RegionId:                regionID,
+					InstanceType:            instance.InstanceTypeId,
 					PriceUnit:               "Month",
-					ImageID:                 images[0].ImageID,
+					ImageID:                 images[0].ImageId,
 					InternetChargeType:      "PayByTraffic",
 					SystemDiskCategory:      disks[0].Value,
 					SystemDiskSize:          40,
@@ -265,16 +265,16 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 				price, err := aliyun.DescribePrice(accessKeyID, accessKeySecret, priceReq)
 				if err != nil {
 					log.Errorf("DescribePrice err:%v", err.Error())
-					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeID, regionID)
+					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
 					continue
 				}
 				info := &types.DescribeInstanceTypeFromBase{
-					RegionID:               regionID,
-					InstanceTypeID:         instance.InstanceTypeID,
+					RegionId:               regionID,
+					InstanceTypeId:         instance.InstanceTypeId,
 					MemorySize:             instance.MemorySize,
-					CPUArchitecture:        instance.CPUArchitecture,
+					CpuArchitecture:        instance.CpuArchitecture,
 					InstanceCategory:       instance.InstanceCategory,
-					CPUCoreCount:           instance.CPUCoreCount,
+					CpuCoreCount:           instance.CpuCoreCount,
 					AvailableZone:          instance.AvailableZone,
 					InstanceTypeFamily:     instance.InstanceTypeFamily,
 					PhysicalProcessorModel: instance.PhysicalProcessorModel,
@@ -343,11 +343,11 @@ func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.
 		if v, ok := instanceTypes[*data.InstanceTypeId]; ok {
 			rspData := &types.DescribeInstanceType{
 				InstanceCategory:       *data.InstanceCategory,
-				InstanceTypeID:         *data.InstanceTypeId,
+				InstanceTypeId:         *data.InstanceTypeId,
 				MemorySize:             *data.MemorySize,
-				CPUArchitecture:        *data.CpuArchitecture,
+				CpuArchitecture:        *data.CpuArchitecture,
 				InstanceTypeFamily:     *data.InstanceTypeFamily,
-				CPUCoreCount:           *data.CpuCoreCount,
+				CpuCoreCount:           *data.CpuCoreCount,
 				AvailableZone:          availableZone,
 				PhysicalProcessorModel: *data.PhysicalProcessorModel,
 				Status:                 v,
@@ -373,7 +373,7 @@ func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType str
 	var rspDataList []*types.DescribeImageResponse
 	for _, data := range rsp.Body.Images.Image {
 		rspData := &types.DescribeImageResponse{
-			ImageID:      *data.ImageId,
+			ImageId:      *data.ImageId,
 			ImageFamily:  *data.ImageFamily,
 			ImageName:    *data.ImageName,
 			Architecture: *data.Architecture,

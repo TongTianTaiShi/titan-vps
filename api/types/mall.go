@@ -50,7 +50,7 @@ type User struct {
 }
 
 type DescribePriceReq struct {
-	RegionID                     string
+	RegionId                     string
 	InstanceType                 string
 	PriceUnit                    string
 	ImageID                      string
@@ -77,7 +77,7 @@ type DescribePriceResponse struct {
 }
 
 type DescribeImageResponse struct {
-	ImageID      string
+	ImageId      string
 	ImageName    string
 	ImageFamily  string
 	Platform     string
@@ -92,7 +92,7 @@ type CreateOrderReq struct {
 }
 
 type RenewOrderReq struct {
-	InstanceID string `db:"instance_id"`
+	InstanceId string `db:"instance_id"`
 	PeriodUnit string `db:"period_unit"`
 	Period     int32  `db:"period"`
 	Renew      int    `db:"renew"`
@@ -100,7 +100,7 @@ type RenewOrderReq struct {
 
 type SetRenewOrderReq struct {
 	RegionID   string `db:"region_id"`
-	InstanceID string `db:"instance_id"`
+	InstanceId string `db:"instance_id"`
 	PeriodUnit string `db:"period_unit"`
 	Period     int32  `db:"period"`
 	Renew      int    `db:"renew"`
@@ -108,26 +108,26 @@ type SetRenewOrderReq struct {
 
 type CreateInstanceResponse struct {
 	InstanceID       string  `db:"instance_id"`
-	OrderID          string  `db:"order_id"`
-	RequestID        string  `db:"request_id"`
+	OrderId          string  `db:"order_id"`
+	RequestId        string  `db:"request_id"`
 	TradePrice       float32 `db:"trade_price"`
-	PublicIPAddress  string  `db:"public_ip_address"`
+	PublicIpAddress  string  `db:"public_ip_address"`
 	PrivateKeyStatus int     `db:"private_key_status"`
 	PrivateKey       string
 	AccessKey        string
 }
 type DescribeInstanceTypeReq struct {
-	RegionID         string
+	RegionId         string
 	MemorySize       float32
-	CPUArchitecture  string
+	CpuArchitecture  string
 	InstanceCategory string
-	CPUCoreCount     int32
+	CpuCoreCount     int32
 	MaxResults       int64
 	NextToken        string
 }
 
 type AvailableResourceReq struct {
-	RegionID            string
+	RegionId            string
 	DestinationResource string
 	InstanceChargeType  string
 	InstanceType        string
@@ -135,8 +135,8 @@ type AvailableResourceReq struct {
 }
 
 type RenewInstanceRequest struct {
-	RegionID   string
-	InstanceID string
+	RegionId   string
+	InstanceId string
 	PeriodUnit string
 	Period     int32
 }
@@ -149,7 +149,7 @@ type AvailableResourceResponse struct {
 }
 
 type DescribeRecommendInstanceTypeReq struct {
-	RegionID           string
+	RegionId           string
 	Memory             float32
 	Cores              int32
 	InstanceChargeType string
@@ -168,11 +168,11 @@ type DescribeInstanceTypeResponse struct {
 }
 
 type DescribeInstanceType struct {
-	InstanceTypeID         string
+	InstanceTypeId         string
 	MemorySize             float32
-	CPUArchitecture        string
+	CpuArchitecture        string
 	InstanceCategory       string
-	CPUCoreCount           int32
+	CpuCoreCount           int32
 	AvailableZone          int
 	InstanceTypeFamily     string
 	PhysicalProcessorModel string
@@ -181,11 +181,11 @@ type DescribeInstanceType struct {
 }
 
 type InstanceTypeFromBaseReq struct {
-	RegionID            string
+	RegionId            string
 	MemorySize          float32
-	CPUArchitecture     string
+	CpuArchitecture     string
 	InstanceCategory    string
-	CPUCoreCount        int32
+	CpuCoreCount        int32
 	Limit, Page, Offset int64
 }
 
@@ -195,12 +195,12 @@ type InstanceTypeResponse struct {
 }
 
 type DescribeInstanceTypeFromBase struct {
-	RegionID               string    `db:"region_id"`
-	InstanceTypeID         string    `db:"instance_type_id"`
+	RegionId               string    `db:"region_id"`
+	InstanceTypeId         string    `db:"instance_type_id"`
 	MemorySize             float32   `db:"memory_size"`
-	CPUArchitecture        string    `db:"cpu_architecture"`
+	CpuArchitecture        string    `db:"cpu_architecture"`
 	InstanceCategory       string    `db:"instance_category"`
-	CPUCoreCount           int32     `db:"cpu_core_count"`
+	CpuCoreCount           int32     `db:"cpu_core_count"`
 	AvailableZone          int       `db:"available_zone"`
 	InstanceTypeFamily     string    `db:"instance_type_family"`
 	PhysicalProcessorModel string    `db:"physical_processor_model"`
@@ -219,7 +219,7 @@ type CreateKeyPairResponse struct {
 
 type AttachKeyPairResponse struct {
 	Code       string
-	InstanceID string
+	InstanceId string
 	Message    string
 	Success    string
 }
@@ -400,7 +400,7 @@ type InstanceDefault struct {
 
 type InstanceDetails struct {
 	ID                 int64   `db:"id"`
-	InstanceID         string  `db:"instance_id"`
+	InstanceId         string  `db:"instance_id"`
 	InstanceName       string  `db:"instance_name"`
 	RegionID           string  `db:"region_id"`
 	UserID             string  `db:"user_id"`
@@ -412,13 +412,13 @@ type InstanceDetails struct {
 	OrderID            string  `db:"order_id"`
 	InstanceType       string  `db:"instance_type"`
 	ImageID            string  `db:"image_id"`
-	SecurityGroupID    string  `db:"security_group_id"`
+	SecurityGroupId    string  `db:"security_group_id"`
 	InstanceChargeType string  `db:"instance_charge_type"`
 	InternetChargeType string  `db:"internet_charge_type"`
 	BandwidthOut       int32   `db:"bandwidth_out"`
 	BandwidthIn        int32   `db:"bandwidth_in"`
 	SystemDiskSize     int32   `db:"system_disk_size"`
-	IPAddress          string  `db:"ip_address"`
+	IpAddress          string  `db:"ip_address"`
 	SystemDiskCategory string  `db:"system_disk_category"`
 	DataDiskString     string  `db:"data_disk"`
 	AutoRenew          int     `db:"renew"`

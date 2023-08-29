@@ -53,7 +53,7 @@ func (d *SQLDB) SaveInstanceInfoOfUser(rInfo *types.InstanceDetails) (int64, err
 func (d *SQLDB) UpdateInstanceInfoOfUser(info *types.InstanceDetails) error {
 	query := fmt.Sprintf(`UPDATE %s SET ip_address=?, instance_id=?, user_id=?,os_type=?,cores=?,memory=?,expired_time=?,
 	    security_group_id=?,access_key=? WHERE order_id=?`, userInstancesTable)
-	_, err := d.db.Exec(query, info.IPAddress, info.InstanceID, info.UserID, info.OSType, info.Cores, info.Memory, info.ExpiredTime, info.SecurityGroupID, info.AccessKey, info.OrderID)
+	_, err := d.db.Exec(query, info.IpAddress, info.InstanceId, info.UserID, info.OSType, info.Cores, info.Memory, info.ExpiredTime, info.SecurityGroupId, info.AccessKey, info.OrderID)
 
 	return err
 }
@@ -61,7 +61,7 @@ func (d *SQLDB) UpdateInstanceInfoOfUser(info *types.InstanceDetails) error {
 // RenewVpsInstance updates VPS instance renewal information in the database.
 func (d *SQLDB) RenewVpsInstance(info *types.InstanceDetails) error {
 	query := fmt.Sprintf(`UPDATE %s SET period_unit=?, period=?, trade_price=?,renew=? WHERE instance_id=?`, userInstancesTable)
-	_, err := d.db.Exec(query, info.PeriodUnit, info.Period, info.TradePrice, info.AutoRenew, info.InstanceID)
+	_, err := d.db.Exec(query, info.PeriodUnit, info.Period, info.TradePrice, info.AutoRenew, info.InstanceId)
 
 	return err
 }
@@ -69,7 +69,7 @@ func (d *SQLDB) RenewVpsInstance(info *types.InstanceDetails) error {
 // UpdateRenewInstanceStatus updates VPS instance renewal status in the database.
 func (d *SQLDB) UpdateRenewInstanceStatus(info *types.SetRenewOrderReq) error {
 	query := fmt.Sprintf(`UPDATE %s SET renew=? WHERE instance_id=?`, userInstancesTable)
-	_, err := d.db.Exec(query, info.Renew, info.InstanceID)
+	_, err := d.db.Exec(query, info.Renew, info.InstanceId)
 	if err != nil {
 		return err
 	}
@@ -198,7 +198,7 @@ func (d *SQLDB) LoadInstanceDefaultInfo(req *types.InstanceTypeFromBaseReq) (*ty
 	var args []interface{}
 
 	query = "region_id=?"
-	args = append(args, req.RegionID)
+	args = append(args, req.RegionId)
 	if req.InstanceCategory != "" {
 		query += " and instance_category=?"
 		args = append(args, req.InstanceCategory)
@@ -207,13 +207,13 @@ func (d *SQLDB) LoadInstanceDefaultInfo(req *types.InstanceTypeFromBaseReq) (*ty
 		query += " and memory_size=?"
 		args = append(args, req.MemorySize)
 	}
-	if req.CPUCoreCount != 0 {
+	if req.CpuCoreCount != 0 {
 		query += " and cpu_core_count=?"
-		args = append(args, req.CPUCoreCount)
+		args = append(args, req.CpuCoreCount)
 	}
-	if req.CPUArchitecture != "" {
+	if req.CpuArchitecture != "" {
 		query += " and cpu_architecture=?"
-		args = append(args, req.CPUArchitecture)
+		args = append(args, req.CpuArchitecture)
 	}
 
 	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE %s and status!=''", instanceBaseInfoTable, query)
@@ -240,18 +240,18 @@ func (d *SQLDB) LoadInstanceCPUInfo(req *types.InstanceTypeFromBaseReq) ([]*int3
 	var query string
 	var args []interface{}
 	query = "region_id=?"
-	args = append(args, req.RegionID)
+	args = append(args, req.RegionId)
 	if req.InstanceCategory != "" {
 		query += " and instance_category=?"
 		args = append(args, req.InstanceCategory)
 	}
-	if req.CPUCoreCount != 0 {
+	if req.CpuCoreCount != 0 {
 		query += " and cpu_core_count=?"
-		args = append(args, req.CPUCoreCount)
+		args = append(args, req.CpuCoreCount)
 	}
-	if req.CPUArchitecture != "" {
+	if req.CpuArchitecture != "" {
 		query += " and cpu_architecture=?"
-		args = append(args, req.CPUArchitecture)
+		args = append(args, req.CpuArchitecture)
 	}
 
 	querySQL := fmt.Sprintf("SELECT distinct cpu_core_count FROM %s WHERE %s order by cpu_core_count asc", instanceBaseInfoTable, query)
@@ -268,18 +268,18 @@ func (d *SQLDB) LoadInstanceMemoryInfo(req *types.InstanceTypeFromBaseReq) ([]*f
 	var query string
 	var args []interface{}
 	query = "region_id=?"
-	args = append(args, req.RegionID)
+	args = append(args, req.RegionId)
 	if req.InstanceCategory != "" {
 		query += " and instance_category=?"
 		args = append(args, req.InstanceCategory)
 	}
-	if req.CPUCoreCount != 0 {
+	if req.CpuCoreCount != 0 {
 		query += " and cpu_core_count=?"
-		args = append(args, req.CPUCoreCount)
+		args = append(args, req.CpuCoreCount)
 	}
-	if req.CPUArchitecture != "" {
+	if req.CpuArchitecture != "" {
 		query += " and cpu_architecture=?"
-		args = append(args, req.CPUArchitecture)
+		args = append(args, req.CpuArchitecture)
 	}
 
 	querySQL := fmt.Sprintf("SELECT distinct memory_size FROM %s WHERE %s order by memory_size asc", instanceBaseInfoTable, query)
