@@ -99,7 +99,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 			DataDisk:           vInfo.DataDisk,
 		}
 
-		result, err := m.vpsMgr.CreateAliYunInstance(createInfo)
+		result, err := m.vpsMgr.CreateAliYunInstance(vInfo.OrderID, createInfo)
 		if err != nil {
 			return ctx.Send(BuyFailed{Msg: err.Error()})
 		}

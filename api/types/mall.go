@@ -116,6 +116,7 @@ type CreateInstanceResponse struct {
 	PrivateKey       string
 	AccessKey        string
 }
+
 type DescribeInstanceTypeReq struct {
 	RegionId         string
 	MemorySize       float32

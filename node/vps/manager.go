@@ -47,7 +47,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 }
 
 // CreateAliYunInstance creates an Alibaba Cloud instance.
-func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
+func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
 	accessKeyID := m.cfg.AliyunAccessKeyID
 	accessKeySecret := m.cfg.AliyunAccessKeySecret
 
@@ -131,6 +131,7 @@ func (m *Manager) CreateAliYunInstance(vpsInfo *types.CreateInstanceReq) (*types
 				ExpiredTime:     *ExpiredTime,
 				BandwidthOut:    *BandwidthOut,
 				AccessKey:       result.AccessKey,
+				OrderID:         orderID,
 			}
 			errU := m.UpdateInstanceInfoOfUser(instanceDetailsInfo)
 			if errU != nil {
