@@ -2,6 +2,7 @@ package aliyun
 
 import (
 	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
@@ -17,15 +18,13 @@ const (
 	defaultRegionID = "cn-hangzhou"
 )
 
-var VpsClient map[string]*ecs20140526.Client
+var VpsClient sync.Map
 
 // ClientInit /**
 func newClient(regionID, keyID, keySecret string) (*ecs20140526.Client, *tea.SDKError) {
-	if VpsClient == nil {
-		VpsClient = make(map[string]*ecs20140526.Client)
-	}
-	if v, ok := VpsClient[regionID]; ok {
-		return v, nil
+	if v, ok := VpsClient.Load(regionID); ok {
+		c := v.(*ecs20140526.Client)
+		return c, nil
 	}
 	configClient := &openapi.Config{
 		AccessKeyId:     tea.String(keyID),
@@ -43,7 +42,8 @@ func newClient(regionID, keyID, keySecret string) (*ecs20140526.Client, *tea.SDK
 		}
 		return nil, errors
 	}
-	VpsClient[regionID] = client
+
+	VpsClient.Store(regionID, client)
 	return client, nil
 }
 
