@@ -139,17 +139,19 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*
 		var instanceIds []string
 		instanceIds = append(instanceIds, instanceInfo.InstanceId)
 
-		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
+		rsp, err := aliyun.DescribeInstances(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
 		if err != nil {
-			log.Errorf("DescribeInstanceStatus err: %s", *err.Message)
+			log.Errorf("DescribeInstances err: %s", *err.Message)
 			continue
 		}
 
-		if len(rsp.Body.InstanceStatuses.InstanceStatus) == 0 {
+		if len(rsp.Body.Instances.Instance) == 0 {
 			continue
 		}
 
-		instanceInfo.State = *rsp.Body.InstanceStatuses.InstanceStatus[0].Status
+		instanceInfo.ExpiredTime = *rsp.Body.Instances.Instance[0].ExpiredTime
+		instanceInfo.State = *rsp.Body.Instances.Instance[0].Status
+
 		instanceInfo.Renew = ""
 		if instanceInfo.State == "Stopped" {
 			continue
@@ -166,14 +168,6 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*
 			continue
 		}
 		instanceInfo.Renew = status
-		instanceExpiredTime, err := aliyun.DescribeInstances(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
-		if err != nil {
-			log.Errorf("DescribeInstances err: %s", *err.Message)
-			continue
-		}
-		if len(instanceExpiredTime.Body.Instances.Instance) > 0 {
-			instanceInfo.ExpiredTime = *instanceExpiredTime.Body.Instances.Instance[0].ExpiredTime
-		}
 	}
 
 	return instanceInfos, nil

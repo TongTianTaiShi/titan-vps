@@ -3,6 +3,7 @@ package mall
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -106,7 +107,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		UserID:    userID,
 		Value:     newBalanceString,
 		OrderType: types.BuyVPS,
-		EndTime:   endDate.Format("2006-01-02 15:04:05"),
+		CycleTime: fmt.Sprintf("%s - %s", time.Now().Format("2006-01-02 15:04:05"), endDate.Format("2006-01-02 15:04:05")),
 	}
 
 	err = m.OrderMgr.CreatedOrder(info)
@@ -171,12 +172,17 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 
 	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
 
+	endDate := countEndDate(req.PeriodUnit, int(req.Period))
+
+	eTime, err := time.Parse("2006-01-02T15:04Z", req.ExpiredTime)
+
 	info := &types.OrderRecord{
 		VpsID:     req.ID,
 		OrderID:   orderID,
 		UserID:    userID,
 		Value:     newBalanceString,
 		OrderType: types.RenewVPS,
+		CycleTime: fmt.Sprintf("%s - %s", eTime.Format("2006-01-02 15:04:05"), endDate.Format("2006-01-02 15:04:05")),
 	}
 
 	err = m.OrderMgr.CreatedOrder(info)

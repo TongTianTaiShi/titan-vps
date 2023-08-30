@@ -6,7 +6,7 @@ var cOrderRecordTable = `
 		user_id            VARCHAR(128)  NOT NULL,
 		value              VARCHAR(32)   DEFAULT 0,
 		created_time       DATETIME      DEFAULT CURRENT_TIMESTAMP,
-		end_time           VARCHAR(32)   DEFAULT "",
+		cycle_time         VARCHAR(64)   DEFAULT "",
 		state              INT           DEFAULT 0,
 		done_state         INT           DEFAULT 0,
 		done_time          DATETIME      DEFAULT CURRENT_TIMESTAMP,
@@ -133,3 +133,11 @@ var cInstanceDefaultTable = `
 	    updated_time               DATETIME      DEFAULT CURRENT_TIMESTAMP,
 		UNIQUE KEY (region_id,instance_type_id)
 	) ENGINE=InnoDB COMMENT='instance info';`
+
+var cInstanceRefundTable = `
+	CREATE TABLE if not exists %s (
+		instance_id   VARCHAR(128) NOT NULL,
+		executor      VARCHAR(128) DEFAULT "",
+	    refund_time   VARCHAR(32)  DEFAULT "",
+		PRIMARY KEY (instance_id)
+	) ENGINE=InnoDB COMMENT='instance refund';`

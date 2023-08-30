@@ -27,7 +27,7 @@ type AdminAPIStruct struct {
 
 		GetWithdrawalRecords func(p0 context.Context, p1 *types.GetWithdrawRequest) (*types.GetWithdrawResponse, error) `perm:"default"`
 
-		InquiryPriceRefundInstance func(p0 context.Context, p1 string) (float64, error) `perm:"admin"`
+		InquiryPriceRefundInstance func(p0 context.Context, p1 string) (float32, error) `perm:"admin"`
 
 		LoginAdmin func(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) `perm:"default"`
 
@@ -249,15 +249,15 @@ func (s *AdminAPIStub) GetWithdrawalRecords(p0 context.Context, p1 *types.GetWit
 	return nil, ErrNotSupported
 }
 
-func (s *AdminAPIStruct) InquiryPriceRefundInstance(p0 context.Context, p1 string) (float64, error) {
+func (s *AdminAPIStruct) InquiryPriceRefundInstance(p0 context.Context, p1 string) (float32, error) {
 	if s.Internal.InquiryPriceRefundInstance == nil {
-		return *new(float64), ErrNotSupported
+		return *new(float32), ErrNotSupported
 	}
 	return s.Internal.InquiryPriceRefundInstance(p0, p1)
 }
 
-func (s *AdminAPIStub) InquiryPriceRefundInstance(p0 context.Context, p1 string) (float64, error) {
-	return *new(float64), ErrNotSupported
+func (s *AdminAPIStub) InquiryPriceRefundInstance(p0 context.Context, p1 string) (float32, error) {
+	return *new(float32), ErrNotSupported
 }
 
 func (s *AdminAPIStruct) LoginAdmin(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) {

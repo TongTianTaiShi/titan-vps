@@ -96,8 +96,6 @@ func RefundInstance(keyID, keySecret, instanceID string) (int64, error) {
 		}
 		out = *result.Body.Data.OrderId
 
-		fmt.Println("result :", result)
-
 		return nil
 	}()
 
@@ -141,8 +139,6 @@ func InquiryPriceRefundInstance(keyID, keySecret, instanceID string) (float64, e
 			return err
 		}
 		out = *result.Body.Data.RefundAmount
-		fmt.Println("result :", result)
-
 		return nil
 	}()
 

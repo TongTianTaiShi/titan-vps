@@ -236,7 +236,7 @@ type OrderRecord struct {
 	DoneTime    time.Time  `db:"done_time"`
 	VpsID       int64      `db:"vps_id"`
 	Msg         string     `db:"msg"`
-	EndTime     string     `db:"end_time"`
+	CycleTime   string     `db:"cycle_time"`
 	Expiration  time.Time  `db:"expiration"`
 	OrderType   OrderType  `db:"order_type"`
 }
@@ -434,6 +434,8 @@ type InstanceDetails struct {
 	AccessKey          string    `db:"access_key"`
 	State              string
 	Renew              string
+	Executor           string `db:"executor"`
+	RefundTime         string `db:"refund_time"`
 }
 
 type CreateInstanceReq struct {

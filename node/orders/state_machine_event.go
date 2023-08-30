@@ -48,7 +48,7 @@ func (evt CreateOrder) applyGlobal(state *OrderInfo) bool {
 	state.Value = evt.Value
 	state.DoneState = evt.DoneState
 	state.VpsID = evt.VpsID
-	state.EndTime = evt.EndTime
+	state.CycleTime = evt.CycleTime
 
 	return true
 }

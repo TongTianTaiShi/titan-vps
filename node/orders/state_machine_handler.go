@@ -143,6 +143,8 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 func (m *Manager) handleOrderDone(ctx statemachine.Context, info OrderInfo) error {
 	log.Debugf("handle done, %s, goods info:%v", info.OrderID, info.GoodsInfo)
 
+	m.removeOrder(info.OrderID.String())
+
 	if info.DoneState == OrderDoneStatePurchaseFailed {
 		original, err := m.LoadUserBalance(info.User)
 		if err != nil {
@@ -163,7 +165,13 @@ func (m *Manager) handleOrderDone(ctx statemachine.Context, info OrderInfo) erro
 		}
 	}
 
-	m.removeOrder(info.OrderID.String())
+	if info.DoneState != OrderDoneStateSuccess {
+		err := m.DeleteInstanceInfo(info.VpsID)
+		if err != nil {
+			log.Errorf("handleOrderDone DeleteInstanceInfo err:%s", err.Error())
+			return nil
+		}
+	}
 
 	return nil
 }

@@ -143,29 +143,6 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		}
 	}
 
-	// t.EndTime (string) (string)
-	if len("EndTime") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"EndTime\" was too long")
-	}
-
-	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("EndTime"))); err != nil {
-		return err
-	}
-	if _, err := io.WriteString(w, string("EndTime")); err != nil {
-		return err
-	}
-
-	if len(t.EndTime) > cbg.MaxLength {
-		return xerrors.Errorf("Value in field t.EndTime was too long")
-	}
-
-	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.EndTime))); err != nil {
-		return err
-	}
-	if _, err := io.WriteString(w, string(t.EndTime)); err != nil {
-		return err
-	}
-
 	// t.OrderID (orders.OrderHash) (string)
 	if len("OrderID") > cbg.MaxLength {
 		return xerrors.Errorf("Value in field \"OrderID\" was too long")
@@ -186,6 +163,29 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 	if _, err := io.WriteString(w, string(t.OrderID)); err != nil {
+		return err
+	}
+
+	// t.CycleTime (string) (string)
+	if len("CycleTime") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"CycleTime\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("CycleTime"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string("CycleTime")); err != nil {
+		return err
+	}
+
+	if len(t.CycleTime) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.CycleTime was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.CycleTime))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.CycleTime)); err != nil {
 		return err
 	}
 
@@ -374,17 +374,6 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 
 				t.VpsID = int64(extraI)
 			}
-			// t.EndTime (string) (string)
-		case "EndTime":
-
-			{
-				sval, err := cbg.ReadString(cr)
-				if err != nil {
-					return err
-				}
-
-				t.EndTime = string(sval)
-			}
 			// t.OrderID (orders.OrderHash) (string)
 		case "OrderID":
 
@@ -395,6 +384,17 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 				}
 
 				t.OrderID = OrderHash(sval)
+			}
+			// t.CycleTime (string) (string)
+		case "CycleTime":
+
+			{
+				sval, err := cbg.ReadString(cr)
+				if err != nil {
+					return err
+				}
+
+				t.CycleTime = string(sval)
 			}
 			// t.DoneState (orders.OrderDoneState) (int64)
 		case "DoneState":

@@ -1,10 +1,12 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/LMF709268224/titan-vps/api/types"
+	"github.com/jmoiron/sqlx"
 )
 
 // LoadInstanceInfoByID loads VPS information by VPS ID.
@@ -129,7 +131,7 @@ func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*type
 	out := new(types.GetInstanceResponse)
 
 	var infos []*types.InstanceDetails
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=?  order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? AND instance_id!='' order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
 	if limit > loadInstancesDefaultLimit {
 		limit = loadInstancesDefaultLimit
 	}
@@ -138,7 +140,7 @@ func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*type
 		return nil, err
 	}
 
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=?", userInstancesTable)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=? AND instance_id!='' ", userInstancesTable)
 	var count int
 	err = d.db.Get(&count, countQuery, userID)
 	if err != nil {
@@ -152,30 +154,30 @@ func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*type
 }
 
 // LoadInstancesInfo loads instance information.
-func (d *SQLDB) LoadInstancesInfo(limit, page int64) (*types.GetInstanceResponse, error) {
-	out := new(types.GetInstanceResponse)
+func (d *SQLDB) LoadInstancesInfo(limit, page int64) (*sqlx.Rows, int, error) {
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s  WHERE instance_id!=''", userInstancesTable)
+	var total int
+	err := d.db.Get(&total, countQuery)
+	if err != nil {
+		return nil, total, err
+	}
 
-	var infos []*types.InstanceDetails
-	query := fmt.Sprintf("SELECT * FROM %s order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
 	if limit > loadInstancesDefaultLimit {
 		limit = loadInstancesDefaultLimit
 	}
-	err := d.db.Select(&infos, query, limit, page*limit)
-	if err != nil {
-		return nil, err
-	}
 
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s ", userInstancesTable)
-	var count int
-	err = d.db.Get(&count, countQuery)
-	if err != nil {
-		return nil, err
-	}
+	query := fmt.Sprintf("SELECT * FROM %s WHERE instance_id!='' order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
+	rows, err := d.db.QueryxContext(context.Background(), query, limit, page*limit)
 
-	out.Total = count
-	out.List = infos
+	return rows, total, err
+}
 
-	return out, nil
+// DeleteInstanceInfo delete instance info by id
+func (d *SQLDB) DeleteInstanceInfo(id int64) error {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=? `, userInstancesTable)
+	_, err := d.db.Exec(query, id)
+
+	return err
 }
 
 // LoadInstanceInfoByUser loads details of a specific instance.
@@ -288,4 +290,27 @@ func (d *SQLDB) LoadInstanceMemoryInfo(req *types.InstanceTypeFromBaseReq) ([]*f
 		return nil, err
 	}
 	return info, nil
+}
+
+// SaveInstanceRefundInfo Save administrators who unsubscribe from instances
+func (d *SQLDB) SaveInstanceRefundInfo(instanceID, executor string) error {
+	date := time.Now().Format("2006-01-02 15:04:05")
+
+	query := fmt.Sprintf(
+		`INSERT INTO %s (instance_id,executor,refund_time) VALUES (?,?,?)`, instanceRefundTable)
+	_, err := d.db.Exec(query, instanceID, executor, date)
+
+	return err
+}
+
+// LoadInstanceRefundInfo loads details of a specific instance.
+func (d *SQLDB) LoadInstanceRefundInfo(instanceID string) (*types.InstanceDetails, error) {
+	var info types.InstanceDetails
+	query := fmt.Sprintf("SELECT * FROM %s WHERE instance_id=?", instanceRefundTable)
+	err := d.db.Get(&info, query, instanceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &info, nil
 }

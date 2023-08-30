@@ -11,10 +11,10 @@ import (
 // SaveOrderInfo saves order information.
 func (d *SQLDB) SaveOrderInfo(rInfo *types.OrderRecord) error {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (order_id, value, state, done_state, vps_id, msg, user_id, order_type, end_time) 
-		        VALUES (:order_id, :value, :state, :done_state, :vps_id, :msg, :user_id, :order_type, :end_time)
+		`INSERT INTO %s (order_id, value, state, done_state, vps_id, msg, user_id, order_type, cycle_time) 
+		        VALUES (:order_id, :value, :state, :done_state, :vps_id, :msg, :user_id, :order_type, :cycle_time)
 				ON DUPLICATE KEY UPDATE state=:state, done_state=:done_state, done_time=NOW(), user_id=:user_id,
-				value=:value, vps_id=:vps_id, msg=:msg, order_type=:order_type, end_time=:end_time`, orderRecordTable)
+				value=:value, vps_id=:vps_id, msg=:msg, order_type=:order_type, cycle_time=:cycle_time`, orderRecordTable)
 	_, err := d.db.NamedExec(query, rInfo)
 
 	return err

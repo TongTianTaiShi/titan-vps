@@ -187,67 +187,74 @@ func (m *Mall) SupplementRechargeOrder(ctx context.Context, hash string) error {
 
 // RefundInstance is a method that handles refund request for a specific instance
 func (m *Mall) RefundInstance(ctx context.Context, instanceID string) (int64, error) {
+	userID := handler.GetID(ctx)
+
 	accessKeyID, accessKeySecret := m.getAliAccessKeys()
 
-	return aliyun.RefundInstance(accessKeyID, accessKeySecret, instanceID)
+	oID, err := aliyun.RefundInstance(accessKeyID, accessKeySecret, instanceID)
+	if err != nil {
+		return 0, err
+	}
+
+	err = m.SaveInstanceRefundInfo(instanceID, userID)
+	return oID, err
 }
 
 // InquiryPriceRefundInstance is a method that inquires the price of refunding a specific instance
-func (m *Mall) InquiryPriceRefundInstance(ctx context.Context, instanceID string) (float64, error) {
+func (m *Mall) InquiryPriceRefundInstance(ctx context.Context, instanceID string) (float32, error) {
 	accessKeyID, accessKeySecret := m.getAliAccessKeys()
 
-	return aliyun.InquiryPriceRefundInstance(accessKeyID, accessKeySecret, instanceID)
+	amount, err := aliyun.InquiryPriceRefundInstance(accessKeyID, accessKeySecret, instanceID)
+	if err != nil {
+		return 0, err
+	}
+
+	usdRate := utils.GetUSDRate()
+
+	return float32(amount) / usdRate, err
 }
 
 // GetInstanceRecords is a method that retrieves the records of instances
 func (m *Mall) GetInstanceRecords(ctx context.Context, limit, page int64) (*types.GetInstanceResponse, error) {
 	accessKeyID, accessKeySecret := m.getAliAccessKeys()
-	instanceInfos, err := m.LoadInstancesInfo(limit, page)
+	out := &types.GetInstanceResponse{}
+
+	rows, total, err := m.LoadInstancesInfo(limit, page)
 	if err != nil {
 		log.Errorf("LoadMyInstancesInfo err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
+	defer rows.Close()
 
-	for _, instanceInfo := range instanceInfos.List {
+	out.Total = total
+
+	for rows.Next() {
+		info := &types.InstanceDetails{}
+		err = rows.StructScan(info)
+		if err != nil {
+			log.Errorf("InstanceDetails StructScan err: %s", err.Error())
+			continue
+		}
+
+		rInfo, err := m.LoadInstanceRefundInfo(info.InstanceId)
+		if err == nil {
+			info.Executor = rInfo.Executor
+			info.RefundTime = rInfo.RefundTime
+		}
+
 		var instanceIds []string
-		instanceIds = append(instanceIds, instanceInfo.InstanceId)
+		instanceIds = append(instanceIds, info.InstanceId)
 
-		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
-		if err != nil {
-			log.Errorf("DescribeInstanceStatus err: %s", *err.Message)
-			continue
-		}
-
-		if len(rsp.Body.InstanceStatuses.InstanceStatus) == 0 {
-			continue
+		rsp, aErr := aliyun.DescribeInstances(info.RegionId, accessKeyID, accessKeySecret, instanceIds)
+		if aErr == nil {
+			if len(rsp.Body.Instances.Instance) > 0 {
+				info.ExpiredTime = *rsp.Body.Instances.Instance[0].ExpiredTime
+				info.State = *rsp.Body.Instances.Instance[0].Status
+			}
 		}
 
-		instanceInfo.State = *rsp.Body.InstanceStatuses.InstanceStatus[0].Status
-		instanceInfo.Renew = ""
-		if instanceInfo.State == "Stopped" {
-			continue
-		}
-
-		renewInfo := types.SetRenewOrderReq{
-			RegionID:   instanceInfo.RegionId,
-			InstanceId: instanceInfo.InstanceId,
-		}
-
-		status, errEk := m.GetRenewInstance(ctx, renewInfo)
-		if errEk != nil {
-			log.Errorf("GetRenewInstance err: %s", errEk.Error())
-			continue
-		}
-		instanceInfo.Renew = status
-		instanceExpiredTime, err := aliyun.DescribeInstances(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
-		if err != nil {
-			log.Errorf("DescribeInstances err: %s", *err.Message)
-			continue
-		}
-		if len(instanceExpiredTime.Body.Instances.Instance) > 0 {
-			instanceInfo.ExpiredTime = *instanceExpiredTime.Body.Instances.Instance[0].ExpiredTime
-		}
+		out.List = append(out.List, info)
 	}
 
-	return instanceInfos, nil
+	return out, nil
 }

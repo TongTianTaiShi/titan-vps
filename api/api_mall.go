@@ -39,7 +39,7 @@ type AdminAPI interface {
 	GetRechargeAddresses(ctx context.Context, limit, page int64) (*types.GetRechargeAddressResponse, error)      //perm:admin
 	SupplementRechargeOrder(ctx context.Context, hash string) error                                              //perm:admin,user
 	RefundInstance(ctx context.Context, instanceID string) (int64, error)                                        //perm:admin
-	InquiryPriceRefundInstance(ctx context.Context, instanceID string) (float64, error)                          //perm:admin
+	InquiryPriceRefundInstance(ctx context.Context, instanceID string) (float32, error)                          //perm:admin
 	GetInstanceRecords(ctx context.Context, limit, page int64) (*types.GetInstanceResponse, error)               //perm:default
 }
 
