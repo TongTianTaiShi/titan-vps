@@ -27,6 +27,7 @@ type OrderInfo struct {
 	OrderType int64
 	VpsID     int64
 	Msg       string
+	EndTime   string
 
 	*GoodsInfo
 }
@@ -41,6 +42,7 @@ func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 		DoneState: state.DoneState.Int(),
 		VpsID:     state.VpsID,
 		Msg:       state.Msg,
+		EndTime:   state.EndTime,
 		OrderType: types.OrderType(state.OrderType),
 	}
 }
@@ -55,6 +57,7 @@ func orderInfoFrom(info *types.OrderRecord) *OrderInfo {
 		VpsID:     info.VpsID,
 		Msg:       info.Msg,
 		User:      info.UserID,
+		EndTime:   info.EndTime,
 		OrderType: int64(info.OrderType),
 	}
 	return cInfo

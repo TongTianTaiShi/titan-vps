@@ -6,6 +6,7 @@ var cOrderRecordTable = `
 		user_id            VARCHAR(128)  NOT NULL,
 		value              VARCHAR(32)   DEFAULT 0,
 		created_time       DATETIME      DEFAULT CURRENT_TIMESTAMP,
+		end_time           VARCHAR(32)   DEFAULT "",
 		state              INT           DEFAULT 0,
 		done_state         INT           DEFAULT 0,
 		done_time          DATETIME      DEFAULT CURRENT_TIMESTAMP,

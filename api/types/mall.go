@@ -236,6 +236,7 @@ type OrderRecord struct {
 	DoneTime    time.Time  `db:"done_time"`
 	VpsID       int64      `db:"vps_id"`
 	Msg         string     `db:"msg"`
+	EndTime     string     `db:"end_time"`
 	Expiration  time.Time  `db:"expiration"`
 	OrderType   OrderType  `db:"order_type"`
 }

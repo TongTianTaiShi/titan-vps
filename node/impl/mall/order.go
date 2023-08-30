@@ -6,6 +6,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -14,6 +15,21 @@ import (
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/node/handler"
 )
+
+func countEndDate(unit string, period int) time.Time {
+	tt := time.Now()
+
+	switch unit {
+	case "Week":
+		tt = tt.AddDate(0, 0, 7*period)
+	case "Month":
+		tt = tt.AddDate(0, period, 0)
+	case "Year":
+		tt = tt.AddDate(period, 0, 0)
+	}
+
+	return tt
+}
 
 // CreateOrder creates a new order.
 func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (string, error) {
@@ -81,6 +97,8 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	// Calculate new balance
 	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
 
+	endDate := countEndDate(req.PeriodUnit, int(req.Period))
+
 	// Create an order record
 	info := &types.OrderRecord{
 		VpsID:     id,
@@ -88,6 +106,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		UserID:    userID,
 		Value:     newBalanceString,
 		OrderType: types.BuyVPS,
+		EndTime:   endDate.Format("2006-01-02"),
 	}
 
 	err = m.OrderMgr.CreatedOrder(info)

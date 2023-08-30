@@ -26,7 +26,7 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 
 	cw := cbg.NewCborWriter(w)
 
-	if _, err := cw.Write([]byte{169}); err != nil {
+	if _, err := cw.Write([]byte{170}); err != nil {
 		return err
 	}
 
@@ -141,6 +141,29 @@ func (t *OrderInfo) MarshalCBOR(w io.Writer) error {
 		if err := cw.WriteMajorTypeHeader(cbg.MajNegativeInt, uint64(-t.VpsID-1)); err != nil {
 			return err
 		}
+	}
+
+	// t.EndTime (string) (string)
+	if len("EndTime") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"EndTime\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("EndTime"))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string("EndTime")); err != nil {
+		return err
+	}
+
+	if len(t.EndTime) > cbg.MaxLength {
+		return xerrors.Errorf("Value in field t.EndTime was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len(t.EndTime))); err != nil {
+		return err
+	}
+	if _, err := io.WriteString(w, string(t.EndTime)); err != nil {
+		return err
 	}
 
 	// t.OrderID (orders.OrderHash) (string)
@@ -350,6 +373,17 @@ func (t *OrderInfo) UnmarshalCBOR(r io.Reader) (err error) {
 				}
 
 				t.VpsID = int64(extraI)
+			}
+			// t.EndTime (string) (string)
+		case "EndTime":
+
+			{
+				sval, err := cbg.ReadString(cr)
+				if err != nil {
+					return err
+				}
+
+				t.EndTime = string(sval)
 			}
 			// t.OrderID (orders.OrderHash) (string)
 		case "OrderID":
