@@ -21,7 +21,7 @@ type Mall interface {
 	DescribePrice(ctx context.Context, describePriceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error)                                              //perm:default
 	CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error)                                                           //perm:user
 	RebootInstance(ctx context.Context, regionID, instanceID string) error                                                                                          //perm:user
-	DescribeInstances(ctx context.Context, regionID, instanceId string) error                                                                                       //perm:default
+	DescribeInstances(ctx context.Context, regionID, instanceID string) error                                                                                       //perm:default
 	GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error)                                            //perm:default
 	GetInstanceCpuInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*int32, error)                                                                   //perm:default
 	GetInstanceMemoryInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*float32, error)                                                              //perm:default
@@ -38,6 +38,9 @@ type AdminAPI interface {
 	RejectUserWithdrawal(ctx context.Context, orderID string) error                                              //perm:admin
 	GetRechargeAddresses(ctx context.Context, limit, page int64) (*types.GetRechargeAddressResponse, error)      //perm:admin
 	SupplementRechargeOrder(ctx context.Context, hash string) error                                              //perm:admin,user
+	RefundInstance(ctx context.Context, instanceID string) (int64, error)                                        //perm:admin
+	InquiryPriceRefundInstance(ctx context.Context, instanceID string) (float64, error)                          //perm:admin
+	GetInstanceRecords(ctx context.Context, limit, page int64) (*types.GetInstanceResponse, error)               //perm:default
 }
 
 // OrderAPI is an interface for order
@@ -64,7 +67,7 @@ type UserAPI interface {
 	Withdraw(ctx context.Context, withdrawAddr, value string) error                                      //perm:user
 	GetUserRechargeRecords(ctx context.Context, limit, page int64) (*types.RechargeResponse, error)      //perm:user
 	GetUserWithdrawalRecords(ctx context.Context, limit, page int64) (*types.GetWithdrawResponse, error) //perm:user
-	GetUserInstanceRecords(ctx context.Context, limit, page int64) (*types.UserInstanceResponse, error)  //perm:user
+	GetUserInstanceRecords(ctx context.Context, limit, page int64) (*types.GetInstanceResponse, error)   //perm:user
 	GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error)       //perm:user
 	UpdateInstanceName(ctx context.Context, instanceID, instanceName string) error                       //perm:user
 }

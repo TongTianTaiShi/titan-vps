@@ -389,7 +389,7 @@ type RechargeAddress struct {
 	UserID string `db:"user_id"`
 }
 
-type UserInstanceResponse struct {
+type GetInstanceResponse struct {
 	Total int
 	List  []*InstanceDetails
 }

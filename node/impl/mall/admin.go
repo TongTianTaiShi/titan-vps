@@ -9,6 +9,7 @@ import (
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/LMF709268224/titan-vps/api/types"
+	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/node/handler"
 	"github.com/LMF709268224/titan-vps/node/utils"
 	"github.com/filecoin-project/go-jsonrpc/auth"
@@ -182,4 +183,71 @@ func (m *Mall) AddAdminUser(ctx context.Context, userID, nickName string) error 
 // SupplementRechargeOrder supplements a recharge order.
 func (m *Mall) SupplementRechargeOrder(ctx context.Context, hash string) error {
 	return m.TransactionMgr.SupplementOrder(hash)
+}
+
+// RefundInstance is a method that handles refund request for a specific instance
+func (m *Mall) RefundInstance(ctx context.Context, instanceID string) (int64, error) {
+	accessKeyID, accessKeySecret := m.getAliAccessKeys()
+
+	return aliyun.RefundInstance(accessKeyID, accessKeySecret, instanceID)
+}
+
+// InquiryPriceRefundInstance is a method that inquires the price of refunding a specific instance
+func (m *Mall) InquiryPriceRefundInstance(ctx context.Context, instanceID string) (float64, error) {
+	accessKeyID, accessKeySecret := m.getAliAccessKeys()
+
+	return aliyun.InquiryPriceRefundInstance(accessKeyID, accessKeySecret, instanceID)
+}
+
+// GetInstanceRecords is a method that retrieves the records of instances
+func (m *Mall) GetInstanceRecords(ctx context.Context, limit, page int64) (*types.GetInstanceResponse, error) {
+	accessKeyID, accessKeySecret := m.getAliAccessKeys()
+	instanceInfos, err := m.LoadInstancesInfo(limit, page)
+	if err != nil {
+		log.Errorf("LoadMyInstancesInfo err: %s", err.Error())
+		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
+	}
+
+	for _, instanceInfo := range instanceInfos.List {
+		var instanceIds []string
+		instanceIds = append(instanceIds, instanceInfo.InstanceId)
+
+		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
+		if err != nil {
+			log.Errorf("DescribeInstanceStatus err: %s", *err.Message)
+			continue
+		}
+
+		if len(rsp.Body.InstanceStatuses.InstanceStatus) == 0 {
+			continue
+		}
+
+		instanceInfo.State = *rsp.Body.InstanceStatuses.InstanceStatus[0].Status
+		instanceInfo.Renew = ""
+		if instanceInfo.State == "Stopped" {
+			continue
+		}
+
+		renewInfo := types.SetRenewOrderReq{
+			RegionID:   instanceInfo.RegionId,
+			InstanceId: instanceInfo.InstanceId,
+		}
+
+		status, errEk := m.GetRenewInstance(ctx, renewInfo)
+		if errEk != nil {
+			log.Errorf("GetRenewInstance err: %s", errEk.Error())
+			continue
+		}
+		instanceInfo.Renew = status
+		instanceExpiredTime, err := aliyun.DescribeInstances(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
+		if err != nil {
+			log.Errorf("DescribeInstances err: %s", *err.Message)
+			continue
+		}
+		if len(instanceExpiredTime.Body.Instances.Instance) > 0 {
+			instanceInfo.ExpiredTime = *instanceExpiredTime.Body.Instances.Instance[0].ExpiredTime
+		}
+	}
+
+	return instanceInfos, nil
 }

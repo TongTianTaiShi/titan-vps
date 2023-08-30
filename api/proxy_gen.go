@@ -4,6 +4,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/journal/alerting"
 	"github.com/google/uuid"
@@ -20,11 +21,17 @@ type AdminAPIStruct struct {
 
 		GetAdminSignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
+		GetInstanceRecords func(p0 context.Context, p1 int64, p2 int64) (*types.GetInstanceResponse, error) `perm:"default"`
+
 		GetRechargeAddresses func(p0 context.Context, p1 int64, p2 int64) (*types.GetRechargeAddressResponse, error) `perm:"admin"`
 
 		GetWithdrawalRecords func(p0 context.Context, p1 *types.GetWithdrawRequest) (*types.GetWithdrawResponse, error) `perm:"default"`
 
+		InquiryPriceRefundInstance func(p0 context.Context, p1 string) (float64, error) `perm:"admin"`
+
 		LoginAdmin func(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) `perm:"default"`
+
+		RefundInstance func(p0 context.Context, p1 string) (int64, error) `perm:"admin"`
 
 		RejectUserWithdrawal func(p0 context.Context, p1 string) error `perm:"admin"`
 
@@ -155,7 +162,7 @@ type UserAPIStruct struct {
 
 		GetSignCode func(p0 context.Context, p1 string) (string, error) `perm:"default"`
 
-		GetUserInstanceRecords func(p0 context.Context, p1 int64, p2 int64) (*types.UserInstanceResponse, error) `perm:"user"`
+		GetUserInstanceRecords func(p0 context.Context, p1 int64, p2 int64) (*types.GetInstanceResponse, error) `perm:"user"`
 
 		GetUserRechargeRecords func(p0 context.Context, p1 int64, p2 int64) (*types.RechargeResponse, error) `perm:"user"`
 
@@ -209,6 +216,17 @@ func (s *AdminAPIStub) GetAdminSignCode(p0 context.Context, p1 string) (string, 
 	return "", ErrNotSupported
 }
 
+func (s *AdminAPIStruct) GetInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.GetInstanceResponse, error) {
+	if s.Internal.GetInstanceRecords == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.GetInstanceRecords(p0, p1, p2)
+}
+
+func (s *AdminAPIStub) GetInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.GetInstanceResponse, error) {
+	return nil, ErrNotSupported
+}
+
 func (s *AdminAPIStruct) GetRechargeAddresses(p0 context.Context, p1 int64, p2 int64) (*types.GetRechargeAddressResponse, error) {
 	if s.Internal.GetRechargeAddresses == nil {
 		return nil, ErrNotSupported
@@ -231,6 +249,17 @@ func (s *AdminAPIStub) GetWithdrawalRecords(p0 context.Context, p1 *types.GetWit
 	return nil, ErrNotSupported
 }
 
+func (s *AdminAPIStruct) InquiryPriceRefundInstance(p0 context.Context, p1 string) (float64, error) {
+	if s.Internal.InquiryPriceRefundInstance == nil {
+		return *new(float64), ErrNotSupported
+	}
+	return s.Internal.InquiryPriceRefundInstance(p0, p1)
+}
+
+func (s *AdminAPIStub) InquiryPriceRefundInstance(p0 context.Context, p1 string) (float64, error) {
+	return *new(float64), ErrNotSupported
+}
+
 func (s *AdminAPIStruct) LoginAdmin(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) {
 	if s.Internal.LoginAdmin == nil {
 		return nil, ErrNotSupported
@@ -240,6 +269,17 @@ func (s *AdminAPIStruct) LoginAdmin(p0 context.Context, p1 *types.UserReq) (*typ
 
 func (s *AdminAPIStub) LoginAdmin(p0 context.Context, p1 *types.UserReq) (*types.LoginResponse, error) {
 	return nil, ErrNotSupported
+}
+
+func (s *AdminAPIStruct) RefundInstance(p0 context.Context, p1 string) (int64, error) {
+	if s.Internal.RefundInstance == nil {
+		return 0, ErrNotSupported
+	}
+	return s.Internal.RefundInstance(p0, p1)
+}
+
+func (s *AdminAPIStub) RefundInstance(p0 context.Context, p1 string) (int64, error) {
+	return 0, ErrNotSupported
 }
 
 func (s *AdminAPIStruct) RejectUserWithdrawal(p0 context.Context, p1 string) error {
@@ -660,14 +700,14 @@ func (s *UserAPIStub) GetSignCode(p0 context.Context, p1 string) (string, error)
 	return "", ErrNotSupported
 }
 
-func (s *UserAPIStruct) GetUserInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.UserInstanceResponse, error) {
+func (s *UserAPIStruct) GetUserInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.GetInstanceResponse, error) {
 	if s.Internal.GetUserInstanceRecords == nil {
 		return nil, ErrNotSupported
 	}
 	return s.Internal.GetUserInstanceRecords(p0, p1, p2)
 }
 
-func (s *UserAPIStub) GetUserInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.UserInstanceResponse, error) {
+func (s *UserAPIStub) GetUserInstanceRecords(p0 context.Context, p1 int64, p2 int64) (*types.GetInstanceResponse, error) {
 	return nil, ErrNotSupported
 }
 

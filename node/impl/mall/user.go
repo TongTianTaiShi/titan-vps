@@ -126,9 +126,9 @@ func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, page int64) 
 }
 
 // GetUserInstanceRecords retrieves user instance records with pagination.
-func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*types.UserInstanceResponse, error) {
+func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*types.GetInstanceResponse, error) {
 	userID := handler.GetID(ctx)
-	k, s := m.getAliAccessKeys()
+	accessKeyID, accessKeySecret := m.getAliAccessKeys()
 	instanceInfos, err := m.LoadInstancesInfoByUser(userID, limit, page)
 	if err != nil {
 		log.Errorf("LoadMyInstancesInfo err: %s", err.Error())
@@ -139,7 +139,7 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*
 		var instanceIds []string
 		instanceIds = append(instanceIds, instanceInfo.InstanceId)
 
-		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.RegionId, k, s, instanceIds)
+		rsp, err := aliyun.DescribeInstanceStatus(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
 		if err != nil {
 			log.Errorf("DescribeInstanceStatus err: %s", *err.Message)
 			continue
@@ -166,7 +166,7 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*
 			continue
 		}
 		instanceInfo.Renew = status
-		instanceExpiredTime, err := aliyun.DescribeInstances(instanceInfo.RegionId, k, s, instanceIds)
+		instanceExpiredTime, err := aliyun.DescribeInstances(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
 		if err != nil {
 			log.Errorf("DescribeInstances err: %s", *err.Message)
 			continue

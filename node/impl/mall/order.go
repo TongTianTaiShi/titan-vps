@@ -106,7 +106,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		UserID:    userID,
 		Value:     newBalanceString,
 		OrderType: types.BuyVPS,
-		EndTime:   endDate.Format("2006-01-02"),
+		EndTime:   endDate.Format("2006-01-02 15:04:05"),
 	}
 
 	err = m.OrderMgr.CreatedOrder(info)

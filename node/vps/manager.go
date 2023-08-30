@@ -84,7 +84,7 @@ func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInst
 	}
 
 	// 设置安全端口 (使用账密的时候必须用)
-	// err = aliyun.AuthorizeSecurityGroup(regionID, k, s, securityGroupID)
+	// err = aliyun.AuthorizeSecurityGroup(regionID, accessKeyID, accessKeySecret, securityGroupID)
 	// if err != nil {
 	// 	log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
 	// }

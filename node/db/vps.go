@@ -125,8 +125,8 @@ func (d *SQLDB) UpdateInstanceDefaultStatus(instanceTypeID, regionID string) err
 }
 
 // LoadInstancesInfoByUser loads user instance information.
-func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*types.UserInstanceResponse, error) {
-	out := new(types.UserInstanceResponse)
+func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*types.GetInstanceResponse, error) {
+	out := new(types.GetInstanceResponse)
 
 	var infos []*types.InstanceDetails
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=?  order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
@@ -152,8 +152,8 @@ func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*type
 }
 
 // LoadInstancesInfo loads instance information.
-func (d *SQLDB) LoadInstancesInfo(limit, page int64) (*types.UserInstanceResponse, error) {
-	out := new(types.UserInstanceResponse)
+func (d *SQLDB) LoadInstancesInfo(limit, page int64) (*types.GetInstanceResponse, error) {
+	out := new(types.GetInstanceResponse)
 
 	var infos []*types.InstanceDetails
 	query := fmt.Sprintf("SELECT * FROM %s order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
