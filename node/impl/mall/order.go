@@ -20,7 +20,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	userID := handler.GetID(ctx)
 
 	instanceDetails := &types.InstanceDetails{
-		RegionId:           req.RegionID,
+		RegionId:           req.RegionId,
 		InstanceType:       req.InstanceType,
 		ImageID:            req.ImageID,
 		SecurityGroupId:    req.SecurityGroupID,
@@ -30,10 +30,11 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		InternetChargeType: req.InternetChargeType,
 		SystemDiskSize:     req.SystemDiskSize,
 		SystemDiskCategory: req.SystemDiskCategory,
-		BandwidthOut:       req.BandwidthOut,
+		BandwidthOut:       req.InternetMaxBandwidthOut,
 		UserID:             userID,
 		InstanceChargeType: req.InstanceChargeType,
-		BandwidthIn:        req.BandwidthIn,
+		BandwidthIn:        req.InternetMaxBandwidthIn,
+		AutoRenew:          req.Renew,
 	}
 
 	// Marshal DataDisk if it's not empty
@@ -47,14 +48,14 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 	}
 
 	priceReq := &types.DescribePriceReq{
-		RegionId:                     req.RegionID,
+		RegionId:                     req.RegionId,
 		InstanceType:                 req.InstanceType,
 		PriceUnit:                    req.PeriodUnit,
 		Period:                       req.Period,
 		Amount:                       req.Amount,
 		InternetChargeType:           req.InternetChargeType,
 		ImageID:                      req.ImageID,
-		InternetMaxBandwidthOut:      req.BandwidthOut,
+		InternetMaxBandwidthOut:      req.InternetMaxBandwidthOut,
 		SystemDiskCategory:           req.SystemDiskCategory,
 		SystemDiskSize:               req.SystemDiskSize,
 		DescribePriceRequestDataDisk: req.DataDisk,

@@ -51,12 +51,12 @@ func newClient(regionID, keyID, keySecret string) (*ecs20140526.Client, *tea.SDK
 func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceReq, dryRun bool) (*types.CreateInstanceResponse, *tea.SDKError) {
 	var out *types.CreateInstanceResponse
 
-	client, err := newClient(instanceReq.RegionID, keyID, keySecret)
+	client, err := newClient(instanceReq.RegionId, keyID, keySecret)
 	if err != nil {
 		return out, err
 	}
 	createInstanceRequest := &ecs20140526.CreateInstanceRequest{
-		RegionId:           tea.String(instanceReq.RegionID),
+		RegionId:           tea.String(instanceReq.RegionId),
 		InstanceType:       tea.String(instanceReq.InstanceType),
 		DryRun:             tea.Bool(dryRun),
 		ImageId:            tea.String(instanceReq.ImageID),

@@ -436,20 +436,22 @@ type InstanceDetails struct {
 }
 
 type CreateInstanceReq struct {
-	RegionID           string `db:"region_id"`
-	InstanceType       string `db:"instance_type"`
-	ImageID            string `db:"image_id"`
-	SecurityGroupID    string `db:"security_group_id"`
-	PeriodUnit         string `db:"period_unit"`
-	Period             int32  `db:"period"`
-	DryRun             bool   `db:"dry_run"`
-	InternetChargeType string `db:"internet_charge_type"`
-	SystemDiskSize     int32  `db:"system_disk_size"`
-	SystemDiskCategory string `db:"system_disk_category"`
-	InstanceChargeType string `db:"instance_charge_type"`
-	BandwidthOut       int32  `db:"bandwidth_out"`
-	BandwidthIn        int32  `db:"bandwidth_in"`
-	DataDisk           []DescribePriceRequestDataDisk
+	RegionId                string `db:"region_id"`
+	InstanceType            string `db:"instance_type"`
+	ImageID                 string `db:"image_id"`
+	InternetChargeType      string `db:"internet_charge_type"`
+	PeriodUnit              string `db:"period_unit"`
+	Period                  int32  `db:"period"`
+	InternetMaxBandwidthOut int32  `db:"bandwidth_out"`
+	InternetMaxBandwidthIn  int32  `db:"bandwidth_in"`
+	SystemDiskCategory      string `db:"system_disk_category"`
+	SystemDiskSize          int32  `db:"system_disk_size"`
+	DataDisk                []DescribePriceRequestDataDisk
+	InstanceChargeType      string `db:"instance_charge_type"`
+	Renew                   int    `db:"renew"`
+
+	SecurityGroupID string `db:"security_group_id"`
+	DryRun          bool   `db:"dry_run"`
 }
 
 type GetRechargeAddressResponse struct {

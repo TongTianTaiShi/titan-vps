@@ -536,16 +536,16 @@ var createOrderCmd = &cli.Command{
 
 		address, err := api.CreateOrder(ctx, types.CreateOrderReq{
 			CreateInstanceReq: types.CreateInstanceReq{
-				RegionID:           "cn-qingdao",
-				ImageID:            "aliyun_2_1903_x64_20G_alibase_20230731.vhd",
-				PeriodUnit:         "Week",
-				Period:             1,
-				InstanceType:       "ecs.n4.small",
-				InternetChargeType: "PayByTraffic",
-				DryRun:             true,
-				BandwidthOut:       1,
-				SystemDiskCategory: "cloud_efficiency",
-				SystemDiskSize:     40,
+				RegionId:                "cn-qingdao",
+				ImageID:                 "aliyun_2_1903_x64_20G_alibase_20230731.vhd",
+				PeriodUnit:              "Week",
+				Period:                  1,
+				InstanceType:            "ecs.n4.small",
+				InternetChargeType:      "PayByTraffic",
+				DryRun:                  true,
+				InternetMaxBandwidthOut: 1,
+				SystemDiskCategory:      "cloud_efficiency",
+				SystemDiskSize:          40,
 			},
 			Amount: 1,
 		})

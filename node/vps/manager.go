@@ -7,8 +7,6 @@ import (
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/terrors"
 
-	ecs20140526 "github.com/alibabacloud-go/ecs-20140526/v3/client"
-
 	"github.com/LMF709268224/titan-vps/api/types"
 	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/node/config"
@@ -23,8 +21,7 @@ var log = logging.Logger("vps")
 // Manager manager order
 type Manager struct {
 	*db.SQLDB
-	cfg       config.MallCfg
-	vpsClient map[string]*ecs20140526.Client
+	cfg config.MallCfg
 
 	getInstanceInfoRunning bool
 }
@@ -37,9 +34,8 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 	}
 
 	m := &Manager{
-		SQLDB:     sdb,
-		cfg:       cfg,
-		vpsClient: make(map[string]*ecs20140526.Client),
+		SQLDB: sdb,
+		cfg:   cfg,
 	}
 	go m.cronGetInstanceDefaultInfo()
 
@@ -53,7 +49,7 @@ func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInst
 
 	priceUnit := vpsInfo.PeriodUnit
 	period := vpsInfo.Period
-	regionID := vpsInfo.RegionID
+	regionID := vpsInfo.RegionId
 	if priceUnit == "Year" {
 		priceUnit = "Month"
 		period = period * 12

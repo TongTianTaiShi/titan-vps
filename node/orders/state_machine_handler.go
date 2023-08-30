@@ -85,18 +85,18 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 
 	if info.OrderType == int64(types.BuyVPS) {
 		createInfo := &types.CreateInstanceReq{
-			RegionID:           vInfo.RegionId,
-			InstanceType:       vInfo.InstanceType,
-			ImageID:            vInfo.ImageID,
-			SecurityGroupID:    vInfo.SecurityGroupId,
-			PeriodUnit:         vInfo.PeriodUnit,
-			Period:             vInfo.Period,
-			DryRun:             vInfo.DryRun,
-			InternetChargeType: vInfo.InternetChargeType,
-			SystemDiskSize:     vInfo.SystemDiskSize,
-			SystemDiskCategory: vInfo.SystemDiskCategory,
-			BandwidthOut:       vInfo.BandwidthOut,
-			DataDisk:           vInfo.DataDisk,
+			RegionId:                vInfo.RegionId,
+			InstanceType:            vInfo.InstanceType,
+			ImageID:                 vInfo.ImageID,
+			SecurityGroupID:         vInfo.SecurityGroupId,
+			PeriodUnit:              vInfo.PeriodUnit,
+			Period:                  vInfo.Period,
+			DryRun:                  vInfo.DryRun,
+			InternetChargeType:      vInfo.InternetChargeType,
+			SystemDiskSize:          vInfo.SystemDiskSize,
+			SystemDiskCategory:      vInfo.SystemDiskCategory,
+			InternetMaxBandwidthOut: vInfo.BandwidthOut,
+			DataDisk:                vInfo.DataDisk,
 		}
 
 		result, err := m.vpsMgr.CreateAliYunInstance(vInfo.OrderID, createInfo)
