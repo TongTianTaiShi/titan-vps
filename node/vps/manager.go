@@ -234,6 +234,11 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
 				continue
 			}
+
+			if len(images) == 0 {
+				continue
+			}
+
 			disk := &types.AvailableResourceReq{
 				InstanceType:        instance.InstanceTypeId,
 				RegionId:            regionID,
@@ -246,48 +251,48 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
 				continue
 			}
-			if len(disks) > 0 {
-				priceReq := &types.DescribePriceReq{
-					RegionId:                regionID,
-					InstanceType:            instance.InstanceTypeId,
-					PriceUnit:               "Month",
-					ImageID:                 images[0].ImageId,
-					InternetChargeType:      "PayByTraffic",
-					SystemDiskCategory:      disks[0].Value,
-					SystemDiskSize:          40,
-					Period:                  1,
-					Amount:                  1,
-					InternetMaxBandwidthOut: 10,
-				}
-				price, err := aliyun.DescribePrice(accessKeyID, accessKeySecret, priceReq)
-				if err != nil {
-					log.Errorf("DescribePrice err:%v", err.Error())
-					_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
-					continue
-				}
-				info := &types.DescribeInstanceTypeFromBase{
-					RegionId:               regionID,
-					InstanceTypeId:         instance.InstanceTypeId,
-					MemorySize:             instance.MemorySize,
-					CpuArchitecture:        instance.CpuArchitecture,
-					InstanceCategory:       instance.InstanceCategory,
-					CpuCoreCount:           instance.CpuCoreCount,
-					AvailableZone:          instance.AvailableZone,
-					InstanceTypeFamily:     instance.InstanceTypeFamily,
-					PhysicalProcessorModel: instance.PhysicalProcessorModel,
-					OriginalPrice:          price.OriginalPrice,
-					Price:                  price.USDPrice,
-					Status:                 instance.Status,
-				}
-				saveErr := m.SaveInstancesInfo(info)
-				if err != nil {
-					log.Errorf("SaveMyInstancesInfo:%v", saveErr)
-				}
 
+			if len(disks) == 0 {
+				continue
 			}
 
+			priceReq := &types.DescribePriceReq{
+				RegionId:                regionID,
+				InstanceType:            instance.InstanceTypeId,
+				PriceUnit:               "Month",
+				ImageID:                 images[0].ImageId,
+				InternetChargeType:      "PayByTraffic",
+				SystemDiskCategory:      disks[0].Value,
+				SystemDiskSize:          40,
+				Period:                  1,
+				Amount:                  1,
+				InternetMaxBandwidthOut: 10,
+			}
+			price, err := aliyun.DescribePrice(accessKeyID, accessKeySecret, priceReq)
+			if err != nil {
+				log.Errorf("DescribePrice err:%v", err.Error())
+				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
+				continue
+			}
+			info := &types.DescribeInstanceTypeFromBase{
+				RegionId:               regionID,
+				InstanceTypeId:         instance.InstanceTypeId,
+				MemorySize:             instance.MemorySize,
+				CpuArchitecture:        instance.CpuArchitecture,
+				InstanceCategory:       instance.InstanceCategory,
+				CpuCoreCount:           instance.CpuCoreCount,
+				AvailableZone:          instance.AvailableZone,
+				InstanceTypeFamily:     instance.InstanceTypeFamily,
+				PhysicalProcessorModel: instance.PhysicalProcessorModel,
+				OriginalPrice:          price.OriginalPrice,
+				Price:                  price.USDPrice,
+				Status:                 instance.Status,
+			}
+			saveErr := m.SaveInstancesInfo(info)
+			if err != nil {
+				log.Errorf("SaveMyInstancesInfo:%v", saveErr)
+			}
 		}
-
 	}
 	return
 }
