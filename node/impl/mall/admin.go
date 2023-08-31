@@ -245,8 +245,8 @@ func (m *Mall) GetInstanceRecords(ctx context.Context, limit, page int64) (*type
 		var instanceIds []string
 		instanceIds = append(instanceIds, info.InstanceId)
 
-		rsp, aErr := aliyun.DescribeInstances(info.RegionId, accessKeyID, accessKeySecret, instanceIds)
-		if aErr == nil {
+		rsp, sErr := aliyun.DescribeInstances(info.RegionId, accessKeyID, accessKeySecret, instanceIds)
+		if sErr == nil {
 			if len(rsp.Body.Instances.Instance) > 0 {
 				info.ExpiredTime = *rsp.Body.Instances.Instance[0].ExpiredTime
 				info.State = *rsp.Body.Instances.Instance[0].Status

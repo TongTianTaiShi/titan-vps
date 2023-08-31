@@ -57,28 +57,28 @@ func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInst
 
 	var securityGroupID string
 
-	securityGroups, err := aliyun.DescribeSecurityGroups(regionID, accessKeyID, accessKeySecret)
-	if err == nil && len(securityGroups) > 0 {
+	securityGroups, sErr := aliyun.DescribeSecurityGroups(regionID, accessKeyID, accessKeySecret)
+	if sErr == nil && len(securityGroups) > 0 {
 		securityGroupID = securityGroups[0]
 	} else {
-		securityGroupID, err = aliyun.CreateSecurityGroup(regionID, accessKeyID, accessKeySecret)
-		if err != nil {
-			log.Errorf("CreateSecurityGroup err: %s", err.Error())
-			return nil, xerrors.New(err.Error())
+		securityGroupID, sErr = aliyun.CreateSecurityGroup(regionID, accessKeyID, accessKeySecret)
+		if sErr != nil {
+			log.Errorf("CreateSecurityGroup err: %v", sErr)
+			return nil, xerrors.New(*sErr.Message)
 		}
 	}
 
 	log.Debugln("securityGroupID:", securityGroupID, " , DryRun:", vpsInfo.DryRun)
 
-	result, err := aliyun.CreateInstance(accessKeyID, accessKeySecret, vpsInfo, vpsInfo.DryRun)
-	if err != nil {
-		log.Errorf("CreateInstance err: %s", err.Error())
-		return nil, xerrors.New(err.Error())
+	result, sErr := aliyun.CreateInstance(accessKeyID, accessKeySecret, vpsInfo, vpsInfo.DryRun)
+	if sErr != nil {
+		log.Errorf("CreateInstance err: %v", sErr)
+		return nil, xerrors.New(*sErr.Message)
 	}
 
-	address, err := aliyun.AllocatePublicIPAddress(regionID, accessKeyID, accessKeySecret, result.InstanceID)
-	if err != nil {
-		log.Errorf("AllocatePublicIpAddress err: %s", err.Error())
+	address, sErr := aliyun.AllocatePublicIPAddress(regionID, accessKeyID, accessKeySecret, result.InstanceID)
+	if sErr != nil {
+		log.Errorf("AllocatePublicIpAddress err: %v", sErr)
 	} else {
 		result.PublicIpAddress = address
 	}
@@ -92,17 +92,17 @@ func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInst
 	go func() {
 		time.Sleep(1 * time.Minute)
 
-		err = aliyun.StartInstance(regionID, accessKeyID, accessKeySecret, result.InstanceID)
-		if err != nil {
-			log.Infoln("StartInstance err:", err)
+		sErr = aliyun.StartInstance(regionID, accessKeyID, accessKeySecret, result.InstanceID)
+		if sErr != nil {
+			log.Infoln("StartInstance err:", sErr)
 		}
 	}()
 
 	var instanceIds []string
 	instanceIds = append(instanceIds, result.InstanceID)
-	instanceInfo, err := aliyun.DescribeInstances(regionID, accessKeyID, accessKeySecret, instanceIds)
-	if err != nil {
-		log.Errorf("DescribeInstances err: %s", err.Error())
+	instanceInfo, sErr := aliyun.DescribeInstances(regionID, accessKeyID, accessKeySecret, instanceIds)
+	if sErr != nil {
+		log.Errorf("DescribeInstances err: %v", sErr)
 	} else {
 		if len(instanceInfo.Body.Instances.Instance) > 0 {
 			ip := instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0]
@@ -144,10 +144,10 @@ func (m *Manager) RenewInstance(renewInstanceRequest *types.RenewInstanceRequest
 	accessKeyID := m.cfg.AliyunAccessKeyID
 	accessKeySecret := m.cfg.AliyunAccessKeySecret
 
-	err := aliyun.RenewInstance(accessKeyID, accessKeySecret, renewInstanceRequest)
-	if err != nil {
-		log.Errorf("RenewInstance err: %s", err.Error())
-		return xerrors.New(err.Error())
+	sErr := aliyun.RenewInstance(accessKeyID, accessKeySecret, renewInstanceRequest)
+	if sErr != nil {
+		log.Errorf("RenewInstance err: %v", sErr)
+		return xerrors.New(*sErr.Message)
 	}
 	return nil
 }
@@ -197,9 +197,9 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 	if regionID != "" {
 		regionIDs = append(regionIDs, regionID)
 	} else {
-		regions, err := aliyun.DescribeRegions(accessKeyID, accessKeySecret)
-		if err != nil {
-			log.Errorf("DescribePrice err:%v", err.Error())
+		regions, sErr := aliyun.DescribeRegions(accessKeyID, accessKeySecret)
+		if sErr != nil {
+			log.Errorf("DescribePrice err:%v", sErr)
 			return
 		}
 		for _, region := range regions.Body.Regions.Region {
@@ -268,12 +268,14 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 				Amount:                  1,
 				InternetMaxBandwidthOut: 10,
 			}
-			price, err := aliyun.DescribePrice(accessKeyID, accessKeySecret, priceReq)
-			if err != nil {
-				log.Errorf("DescribePrice err:%v", err.Error())
+
+			price, sErr := aliyun.DescribePrice(accessKeyID, accessKeySecret, priceReq)
+			if sErr != nil {
+				log.Errorf("DescribePrice err:%v", sErr.Error())
 				_ = m.UpdateInstanceDefaultStatus(instance.InstanceTypeId, regionID)
 				continue
 			}
+
 			info := &types.DescribeInstanceTypeFromBase{
 				RegionId:               regionID,
 				InstanceTypeId:         instance.InstanceTypeId,
@@ -301,16 +303,16 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 func (m *Manager) DescribeInstanceType(ctx context.Context, instanceType *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) {
 	accessKeyID := m.cfg.AliyunAccessKeyID
 	accessKeySecret := m.cfg.AliyunAccessKeySecret
-	rsp, err := aliyun.DescribeInstanceTypes(accessKeyID, accessKeySecret, instanceType)
-	if err != nil {
-		log.Errorf("DescribeInstanceTypes err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
+	rsp, sErr := aliyun.DescribeInstanceTypes(accessKeyID, accessKeySecret, instanceType)
+	if sErr != nil {
+		log.Errorf("DescribeInstanceTypes err: %v", sErr)
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *sErr.Message}
 	}
 
-	availableResource, err := aliyun.DescribeAvailableResource(accessKeyID, accessKeySecret, instanceType)
-	if err != nil {
-		log.Errorf("DescribeAvailableResource err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
+	availableResource, sErr := aliyun.DescribeAvailableResource(accessKeyID, accessKeySecret, instanceType)
+	if sErr != nil {
+		log.Errorf("DescribeAvailableResource err: %v", sErr)
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *sErr.Message}
 	}
 
 	if availableResource.Body.AvailableZones == nil {
@@ -366,10 +368,10 @@ func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType str
 	accessKeyID := m.cfg.AliyunAccessKeyID
 	accessKeySecret := m.cfg.AliyunAccessKeySecret
 
-	rsp, err := aliyun.DescribeImages(regionID, accessKeyID, accessKeySecret, instanceType)
-	if err != nil {
-		log.Errorf("DescribeImages err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
+	rsp, sErr := aliyun.DescribeImages(regionID, accessKeyID, accessKeySecret, instanceType)
+	if sErr != nil {
+		log.Errorf("DescribeImages err: %v", sErr)
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *sErr.Message}
 	}
 
 	var rspDataList []*types.DescribeImageResponse
@@ -393,10 +395,10 @@ func (m *Manager) DescribeImages(ctx context.Context, regionID, instanceType str
 func (m *Manager) DescribeAvailableResourceForDesk(ctx context.Context, desk *types.AvailableResourceReq) ([]*types.AvailableResourceResponse, error) {
 	accessKeyID := m.cfg.AliyunAccessKeyID
 	accessKeySecret := m.cfg.AliyunAccessKeySecret
-	rsp, err := aliyun.DescribeAvailableResourceForDesk(accessKeyID, accessKeySecret, desk)
-	if err != nil {
-		log.Errorf("DescribeImages err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
+	rsp, sErr := aliyun.DescribeAvailableResourceForDesk(accessKeyID, accessKeySecret, desk)
+	if sErr != nil {
+		log.Errorf("DescribeImages err: %v", sErr)
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *sErr.Message}
 	}
 
 	category := map[string]int{
@@ -447,10 +449,10 @@ func (m *Manager) ModifyInstanceRenew(renewReq *types.SetRenewOrderReq) error {
 		return err
 	}
 
-	errSDK := aliyun.ModifyInstanceAutoRenewAttribute(accessKeyID, accessKeySecret, renewReq)
-	if err != nil {
-		log.Errorf("ModifyInstanceAutoRenewAttribute err: %s", *errSDK.Message)
-		return &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *errSDK.Message}
+	sErr := aliyun.ModifyInstanceAutoRenewAttribute(accessKeyID, accessKeySecret, renewReq)
+	if sErr != nil {
+		log.Errorf("ModifyInstanceAutoRenewAttribute err: %s", *sErr.Message)
+		return &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *sErr.Message}
 	}
 
 	return nil

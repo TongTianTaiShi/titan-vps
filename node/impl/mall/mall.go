@@ -61,10 +61,10 @@ func (m *Mall) getAliAccessKeys() (string, string) {
 
 // DescribeRegions retrieves and describes cloud regions.
 func (m *Mall) DescribeRegions(ctx context.Context) (map[string]string, error) {
-	rsp, err := aliyun.DescribeRegions(m.getAliAccessKeys())
-	if err != nil {
-		log.Errorf("DescribeRegions err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
+	rsp, sErr := aliyun.DescribeRegions(m.getAliAccessKeys())
+	if sErr != nil {
+		log.Errorf("DescribeRegions err: %v", sErr)
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *sErr.Message}
 	}
 
 	rpsData := make(map[string]string)
@@ -90,10 +90,10 @@ func (m *Mall) DescribeRecommendInstanceType(ctx context.Context, instanceTypeRe
 	defer log.Debugf("DescribeRecommendInstanceType request time:%s", time.Since(startTime))
 
 	accessKeyID, accessKeySecret := m.getAliAccessKeys()
-	rsp, err := aliyun.DescribeRecommendInstanceType(accessKeyID, accessKeySecret, instanceTypeReq)
-	if err != nil {
-		log.Errorf("DescribeRecommendInstanceType err: %s", err.Error())
-		return nil, xerrors.New(err.Error())
+	rsp, sErr := aliyun.DescribeRecommendInstanceType(accessKeyID, accessKeySecret, instanceTypeReq)
+	if sErr != nil {
+		log.Errorf("DescribeRecommendInstanceType err: %v", sErr)
+		return nil, xerrors.New(*sErr.Message)
 	}
 
 	var rspDataList []*types.DescribeRecommendInstanceResponse
@@ -142,10 +142,10 @@ func (m *Mall) DescribePrice(ctx context.Context, priceReq *types.DescribePriceR
 
 	accessKeyID, accessKeySecret := m.getAliAccessKeys()
 
-	price, err := aliyun.DescribePrice(accessKeyID, accessKeySecret, priceReq)
-	if err != nil {
-		log.Errorf("DescribePrice err:%v", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
+	price, sErr := aliyun.DescribePrice(accessKeyID, accessKeySecret, priceReq)
+	if sErr != nil {
+		log.Errorf("DescribePrice err:%v", sErr)
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *sErr.Message}
 	}
 
 	usdRate := utils.GetUSDRate()
@@ -164,24 +164,24 @@ func (m *Mall) CreateKeyPair(ctx context.Context, regionID, instanceID string) (
 
 	// TODO 密钥对有上限 不能无限创建
 	keyPairNameNew := "KeyPair" + fmt.Sprintf("%06d", randNew.Intn(1000000))
-	keyInfo, err := aliyun.CreateKeyPair(regionID, accessKeyID, accessKeySecret, keyPairNameNew)
-	if err != nil {
-		log.Errorf("CreateKeyPair err: %s", err.Error())
-		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
+	keyInfo, sErr := aliyun.CreateKeyPair(regionID, accessKeyID, accessKeySecret, keyPairNameNew)
+	if sErr != nil {
+		log.Errorf("CreateKeyPair err: %v", sErr)
+		return nil, &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *sErr.Message}
 	}
 
 	var instanceIds []string
 	instanceIds = append(instanceIds, instanceID)
-	_, err = aliyun.AttachKeyPair(regionID, accessKeyID, accessKeySecret, keyPairNameNew, instanceIds)
-	if err != nil {
-		log.Errorf("AttachKeyPair err: %s", err.Error())
+	_, sErr = aliyun.AttachKeyPair(regionID, accessKeyID, accessKeySecret, keyPairNameNew, instanceIds)
+	if sErr != nil {
+		log.Errorf("AttachKeyPair err: %v", sErr)
 	}
 
 	go func() {
 		time.Sleep(1 * time.Minute)
-		err = aliyun.RebootInstance(regionID, accessKeyID, accessKeySecret, instanceID)
-		if err != nil {
-			log.Infoln("RebootInstance err:", err)
+		sErr = aliyun.RebootInstance(regionID, accessKeyID, accessKeySecret, instanceID)
+		if sErr != nil {
+			log.Infoln("RebootInstance err:", sErr)
 		}
 	}()
 
@@ -194,10 +194,10 @@ func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceID string) 
 	defer log.Debugf("RebootInstance request time:%s", time.Since(startTime))
 
 	accessKeyID, accessKeySecret := m.getAliAccessKeys()
-	err := aliyun.RebootInstance(regionID, accessKeyID, accessKeySecret, instanceID)
-	if err != nil {
-		log.Errorf("AttachKeyPair err: %s", err.Error())
-		return &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
+	sErr := aliyun.RebootInstance(regionID, accessKeyID, accessKeySecret, instanceID)
+	if sErr != nil {
+		log.Errorf("AttachKeyPair err: %v", sErr)
+		return &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *sErr.Message}
 	}
 
 	return nil
@@ -211,10 +211,10 @@ func (m *Mall) DescribeInstances(ctx context.Context, regionID, instanceId strin
 	accessKeyID, accessKeySecret := m.getAliAccessKeys()
 	var instanceIds []string
 	instanceIds = append(instanceIds, instanceId)
-	_, err := aliyun.DescribeInstances(regionID, accessKeyID, accessKeySecret, instanceIds)
-	if err != nil {
-		log.Errorf("AttachKeyPair err: %s", err.Error())
-		return &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *err.Message}
+	_, sErr := aliyun.DescribeInstances(regionID, accessKeyID, accessKeySecret, instanceIds)
+	if sErr != nil {
+		log.Errorf("AttachKeyPair err: %v", sErr)
+		return &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *sErr.Message}
 	}
 	return nil
 }
@@ -236,10 +236,10 @@ func (m *Mall) RenewInstance(ctx context.Context, renewReq types.SetRenewOrderRe
 // GetRenewInstance retrieves the renewal status for an instance.
 func (m *Mall) GetRenewInstance(ctx context.Context, renewReq types.SetRenewOrderReq) (string, error) {
 	accessKeyID, accessKeySecret := m.getAliAccessKeys()
-	info, err := aliyun.DescribeInstanceAutoRenewAttribute(accessKeyID, accessKeySecret, &renewReq)
-	if err != nil {
-		log.Errorf("DescribeInstanceAutoRenewAttribute err: %s", err.Error())
-		return "", &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *err.Message}
+	info, sErr := aliyun.DescribeInstanceAutoRenewAttribute(accessKeyID, accessKeySecret, &renewReq)
+	if sErr != nil {
+		log.Errorf("DescribeInstanceAutoRenewAttribute err: %v", sErr)
+		return "", &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *sErr.Message}
 	}
 	out := *info.Body.InstanceRenewAttributes.InstanceRenewAttribute[0].RenewalStatus
 	return out, nil

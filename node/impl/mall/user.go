@@ -139,9 +139,9 @@ func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*
 		var instanceIds []string
 		instanceIds = append(instanceIds, instanceInfo.InstanceId)
 
-		rsp, err := aliyun.DescribeInstances(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
-		if err != nil {
-			log.Errorf("DescribeInstances err: %s", *err.Message)
+		rsp, sErr := aliyun.DescribeInstances(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
+		if sErr != nil {
+			log.Errorf("DescribeInstances err: %s", *sErr.Message)
 			continue
 		}
 
