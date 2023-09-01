@@ -34,7 +34,7 @@ func DefaultMallCfg() *MallCfg {
 			},
 		},
 		Timeout:               "30s",
-		DryRun:                true,
+		DryRun:                false,
 		AliyunAccessKeyID:     "",
 		AliyunAccessKeySecret: "",
 		DatabaseAddress:       "",

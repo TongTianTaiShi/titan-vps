@@ -36,12 +36,12 @@ func (d *SQLDB) LoadUserInstanceInfoByInstanceID(instanceID string) (*types.Inst
 // SaveInstanceInfoOfUser saves VPS instance information into the database.
 func (d *SQLDB) SaveInstanceInfoOfUser(rInfo *types.InstanceDetails) (int64, error) {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (region_id,instance_id,user_id,order_id, instance_type, dry_run, image_id,
+		`INSERT INTO %s (region_id,instance_id,user_id,order_id, instance_type, image_id,
 			    security_group_id, instance_charge_type,internet_charge_type, period_unit, period, bandwidth_out,bandwidth_in,
-			    ip_address,trade_price,system_disk_category,system_disk_size,os_type,data_disk,renew, access_key) 
-				VALUES (:region_id,:instance_id,:user_id,:order_id, :instance_type, :dry_run, :image_id, 
+			    ip_address,trade_price,system_disk_category,system_disk_size,os_type,data_disk,auto_renew, access_key, state) 
+				VALUES (:region_id,:instance_id,:user_id,:order_id, :instance_type, :image_id, 
 				:security_group_id, :instance_charge_type,:internet_charge_type, :period_unit, :period, :bandwidth_out,:bandwidth_in,
-				:ip_address,:trade_price,:system_disk_category,:system_disk_size,:os_type,:data_disk,:renew, :access_key)`, userInstancesTable)
+				:ip_address,:trade_price,:system_disk_category,:system_disk_size,:os_type,:data_disk,:auto_renew, :access_key, :state)`, userInstancesTable)
 
 	result, err := d.db.NamedExec(query, rInfo)
 	if err != nil {
@@ -54,15 +54,24 @@ func (d *SQLDB) SaveInstanceInfoOfUser(rInfo *types.InstanceDetails) (int64, err
 // UpdateInstanceInfoOfUser updates VPS instance information in the database.
 func (d *SQLDB) UpdateInstanceInfoOfUser(info *types.InstanceDetails) error {
 	query := fmt.Sprintf(`UPDATE %s SET ip_address=?, instance_id=?, os_type=?,cores=?,memory=?,expired_time=?,
-	    security_group_id=?,access_key=?,bandwidth_out=?,instance_name=? WHERE order_id=?`, userInstancesTable)
-	_, err := d.db.Exec(query, info.IpAddress, info.InstanceId, info.OSType, info.Cores, info.Memory, info.ExpiredTime, info.SecurityGroupId, info.AccessKey, info.BandwidthOut, info.InstanceName, info.OrderID)
+	    security_group_id=?,access_key=?,bandwidth_out=?,instance_name=?,state=?,renew=?,update_time=NOW() WHERE order_id=?`, userInstancesTable)
+	_, err := d.db.Exec(query, info.IpAddress, info.InstanceId, info.OSType, info.Cores, info.Memory, info.ExpiredTime,
+		info.SecurityGroupId, info.AccessKey, info.BandwidthOut, info.InstanceName, info.State, info.Renew, info.OrderID)
+
+	return err
+}
+
+// UpdateInstanceState updates VPS instance state in the database.
+func (d *SQLDB) UpdateInstanceState(instanceID, state string) error {
+	query := fmt.Sprintf(`UPDATE %s SET state=? WHERE instance_id=?`, userInstancesTable)
+	_, err := d.db.Exec(query, state, instanceID)
 
 	return err
 }
 
 // RenewVpsInstance updates VPS instance renewal information in the database.
 func (d *SQLDB) RenewVpsInstance(info *types.InstanceDetails) error {
-	query := fmt.Sprintf(`UPDATE %s SET period_unit=?, period=?, trade_price=?,renew=? WHERE instance_id=?`, userInstancesTable)
+	query := fmt.Sprintf(`UPDATE %s SET period_unit=?, period=?, trade_price=?,auto_renew=? WHERE instance_id=?`, userInstancesTable)
 	_, err := d.db.Exec(query, info.PeriodUnit, info.Period, info.TradePrice, info.AutoRenew, info.InstanceId)
 
 	return err
@@ -70,7 +79,7 @@ func (d *SQLDB) RenewVpsInstance(info *types.InstanceDetails) error {
 
 // UpdateRenewInstanceStatus updates VPS instance renewal status in the database.
 func (d *SQLDB) UpdateRenewInstanceStatus(info *types.SetRenewOrderReq) error {
-	query := fmt.Sprintf(`UPDATE %s SET renew=? WHERE instance_id=?`, userInstancesTable)
+	query := fmt.Sprintf(`UPDATE %s SET auto_renew=? WHERE instance_id=?`, userInstancesTable)
 	_, err := d.db.Exec(query, info.Renew, info.InstanceId)
 	if err != nil {
 		return err
@@ -126,23 +135,23 @@ func (d *SQLDB) UpdateInstanceDefaultStatus(instanceTypeID, regionID string) err
 	return err
 }
 
-// LoadInstancesInfoByUser loads user instance information.
-func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*types.GetInstanceResponse, error) {
+// LoadActiveInstancesInfo loads active instance information.
+func (d *SQLDB) LoadActiveInstancesInfo(limit, page int64) (*types.GetInstanceResponse, error) {
 	out := new(types.GetInstanceResponse)
 
 	var infos []*types.InstanceDetails
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? AND instance_id!='' order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE state!='' AND instance_id!='' order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
 	if limit > loadInstancesDefaultLimit {
 		limit = loadInstancesDefaultLimit
 	}
-	err := d.db.Select(&infos, query, userID, limit, page*limit)
+	err := d.db.Select(&infos, query, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}
 
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=? AND instance_id!='' ", userInstancesTable)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE state!='' AND instance_id!='' ", userInstancesTable)
 	var count int
-	err = d.db.Get(&count, countQuery, userID)
+	err = d.db.Get(&count, countQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -151,6 +160,52 @@ func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*type
 	out.List = infos
 
 	return out, nil
+}
+
+// // LoadInstancesInfoByUser loads user instance information.
+// func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*types.GetInstanceResponse, error) {
+// 	out := new(types.GetInstanceResponse)
+
+// 	var infos []*types.InstanceDetails
+// 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? AND instance_id!='' order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
+// 	if limit > loadInstancesDefaultLimit {
+// 		limit = loadInstancesDefaultLimit
+// 	}
+// 	err := d.db.Select(&infos, query, userID, limit, page*limit)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=? AND instance_id!='' ", userInstancesTable)
+// 	var count int
+// 	err = d.db.Get(&count, countQuery, userID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	out.Total = count
+// 	out.List = infos
+
+// 	return out, nil
+// }
+
+// LoadInstancesInfoByUser loads user instance information.
+func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*sqlx.Rows, int, error) {
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE user_id=? AND instance_id!='' ", userInstancesTable)
+	var total int
+	err := d.db.Get(&total, countQuery, userID)
+	if err != nil {
+		return nil, total, err
+	}
+
+	if limit > loadInstancesDefaultLimit {
+		limit = loadInstancesDefaultLimit
+	}
+
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? AND instance_id!='' order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
+	rows, err := d.db.QueryxContext(context.Background(), query, userID, limit, page*limit)
+
+	return rows, total, err
 }
 
 // LoadInstancesInfo loads instance information.

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/LMF709268224/titan-vps/api"
-	"github.com/LMF709268224/titan-vps/lib/aliyun"
 	"github.com/LMF709268224/titan-vps/lib/trxbridge"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/gbrlsnchs/jwt/v3"
@@ -128,49 +127,30 @@ func (m *Mall) GetUserWithdrawalRecords(ctx context.Context, limit, page int64) 
 // GetUserInstanceRecords retrieves user instance records with pagination.
 func (m *Mall) GetUserInstanceRecords(ctx context.Context, limit, page int64) (*types.GetInstanceResponse, error) {
 	userID := handler.GetID(ctx)
-	accessKeyID, accessKeySecret := m.getAliAccessKeys()
-	instanceInfos, err := m.LoadInstancesInfoByUser(userID, limit, page)
+
+	out := &types.GetInstanceResponse{}
+
+	rows, total, err := m.LoadInstancesInfoByUser(userID, limit, page)
 	if err != nil {
 		log.Errorf("LoadMyInstancesInfo err: %s", err.Error())
 		return nil, &api.ErrWeb{Code: terrors.DatabaseError.Int(), Message: err.Error()}
 	}
+	defer rows.Close()
 
-	for _, instanceInfo := range instanceInfos.List {
-		var instanceIds []string
-		instanceIds = append(instanceIds, instanceInfo.InstanceId)
+	out.Total = total
 
-		rsp, sErr := aliyun.DescribeInstances(instanceInfo.RegionId, accessKeyID, accessKeySecret, instanceIds)
-		if sErr != nil {
-			log.Errorf("DescribeInstances err: %s", *sErr.Message)
+	for rows.Next() {
+		info := &types.InstanceDetails{}
+		err = rows.StructScan(info)
+		if err != nil {
+			log.Errorf("InstanceDetails StructScan err: %s", err.Error())
 			continue
 		}
 
-		if len(rsp.Body.Instances.Instance) == 0 {
-			continue
-		}
-
-		instanceInfo.ExpiredTime = *rsp.Body.Instances.Instance[0].ExpiredTime
-		instanceInfo.State = *rsp.Body.Instances.Instance[0].Status
-
-		instanceInfo.Renew = ""
-		if instanceInfo.State == "Stopped" {
-			continue
-		}
-
-		renewInfo := types.SetRenewOrderReq{
-			RegionID:   instanceInfo.RegionId,
-			InstanceId: instanceInfo.InstanceId,
-		}
-
-		status, errEk := m.GetRenewInstance(ctx, renewInfo)
-		if errEk != nil {
-			log.Errorf("GetRenewInstance err: %s", errEk.Error())
-			continue
-		}
-		instanceInfo.Renew = status
+		out.List = append(out.List, m.VpsMgr.UpdateInstanceInfo(info, false))
 	}
 
-	return instanceInfos, nil
+	return out, nil
 }
 
 // GetInstanceDetailsInfo retrieves details of a specific instance.

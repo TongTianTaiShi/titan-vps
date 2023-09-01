@@ -102,8 +102,6 @@ type MallStruct struct {
 
 		DescribeInstanceType func(p0 context.Context, p1 *types.DescribeInstanceTypeReq) (*types.DescribeInstanceTypeResponse, error) `perm:"default"`
 
-		DescribeInstances func(p0 context.Context, p1 string, p2 string) error `perm:"default"`
-
 		DescribePrice func(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) `perm:"default"`
 
 		DescribeRecommendInstanceType func(p0 context.Context, p1 *types.DescribeRecommendInstanceTypeReq) ([]*types.DescribeRecommendInstanceResponse, error) `perm:"default"`
@@ -115,8 +113,6 @@ type MallStruct struct {
 		GetInstanceDefaultInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error) `perm:"default"`
 
 		GetInstanceMemoryInfo func(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) ([]*float32, error) `perm:"default"`
-
-		GetRenewInstance func(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) `perm:"default"`
 
 		RebootInstance func(p0 context.Context, p1 string, p2 string) error `perm:"user"`
 
@@ -508,17 +504,6 @@ func (s *MallStub) DescribeInstanceType(p0 context.Context, p1 *types.DescribeIn
 	return nil, ErrNotSupported
 }
 
-func (s *MallStruct) DescribeInstances(p0 context.Context, p1 string, p2 string) error {
-	if s.Internal.DescribeInstances == nil {
-		return ErrNotSupported
-	}
-	return s.Internal.DescribeInstances(p0, p1, p2)
-}
-
-func (s *MallStub) DescribeInstances(p0 context.Context, p1 string, p2 string) error {
-	return ErrNotSupported
-}
-
 func (s *MallStruct) DescribePrice(p0 context.Context, p1 *types.DescribePriceReq) (*types.DescribePriceResponse, error) {
 	if s.Internal.DescribePrice == nil {
 		return nil, ErrNotSupported
@@ -583,17 +568,6 @@ func (s *MallStruct) GetInstanceMemoryInfo(p0 context.Context, p1 *types.Instanc
 
 func (s *MallStub) GetInstanceMemoryInfo(p0 context.Context, p1 *types.InstanceTypeFromBaseReq) ([]*float32, error) {
 	return *new([]*float32), ErrNotSupported
-}
-
-func (s *MallStruct) GetRenewInstance(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) {
-	if s.Internal.GetRenewInstance == nil {
-		return "", ErrNotSupported
-	}
-	return s.Internal.GetRenewInstance(p0, p1)
-}
-
-func (s *MallStub) GetRenewInstance(p0 context.Context, p1 types.SetRenewOrderReq) (string, error) {
-	return "", ErrNotSupported
 }
 
 func (s *MallStruct) RebootInstance(p0 context.Context, p1 string, p2 string) error {

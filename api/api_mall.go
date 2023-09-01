@@ -22,11 +22,9 @@ type Mall interface {
 	DescribePrice(ctx context.Context, describePriceReq *types.DescribePriceReq) (*types.DescribePriceResponse, error)                                              //perm:default
 	CreateKeyPair(ctx context.Context, regionID, instanceID string) (*types.CreateKeyPairResponse, error)                                                           //perm:user
 	RebootInstance(ctx context.Context, regionID, instanceID string) error                                                                                          //perm:user
-	DescribeInstances(ctx context.Context, regionID, instanceID string) error                                                                                       //perm:default
 	GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error)                                            //perm:default
 	GetInstanceCpuInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*int32, error)                                                                   //perm:default
 	GetInstanceMemoryInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*float32, error)                                                              //perm:default
-	GetRenewInstance(ctx context.Context, renewReq types.SetRenewOrderReq) (string, error)                                                                          //perm:default
 }
 
 // AdminAPI is an interface for admin

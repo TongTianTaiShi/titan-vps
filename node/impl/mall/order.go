@@ -43,7 +43,6 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		SecurityGroupId:    req.SecurityGroupID,
 		PeriodUnit:         req.PeriodUnit,
 		Period:             req.Period,
-		DryRun:             req.DryRun,
 		InternetChargeType: req.InternetChargeType,
 		SystemDiskSize:     req.SystemDiskSize,
 		SystemDiskCategory: req.SystemDiskCategory,
@@ -52,6 +51,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		InstanceChargeType: req.InstanceChargeType,
 		BandwidthIn:        req.InternetMaxBandwidthIn,
 		AutoRenew:          req.Renew,
+		State:              "Pending",
 	}
 
 	// Marshal DataDisk if it's not empty

@@ -122,7 +122,7 @@ func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceRe
 }
 
 // RunInstances run aliyun instances
-func RunInstances(regionID, keyID, keySecret, instanceType, imageID, password, securityGroupID, periodUnit string, period int32) (*types.CreateInstanceResponse, *tea.SDKError) {
+func RunInstances(regionID, keyID, keySecret, instanceType, imageID, password, securityGroupID, periodUnit string, period int32, dryRun bool) (*types.CreateInstanceResponse, *tea.SDKError) {
 	var out *types.CreateInstanceResponse
 
 	client, err := newClient(regionID, keyID, keySecret)
@@ -133,7 +133,7 @@ func RunInstances(regionID, keyID, keySecret, instanceType, imageID, password, s
 	createInstanceRequest := &ecs20140526.RunInstancesRequest{
 		RegionId:           tea.String(regionID),
 		InstanceType:       tea.String(instanceType),
-		DryRun:             tea.Bool(true),
+		DryRun:             tea.Bool(dryRun),
 		ImageId:            tea.String(imageID),
 		SecurityGroupId:    tea.String(securityGroupID),
 		InstanceChargeType: tea.String("PrePaid"),

@@ -196,6 +196,11 @@ func (m *Mall) RefundInstance(ctx context.Context, instanceID string) (int64, er
 		return 0, err
 	}
 
+	err = m.UpdateInstanceState(instanceID, "")
+	if err != nil {
+		return 0, err
+	}
+
 	err = m.SaveInstanceRefundInfo(instanceID, userID)
 	return oID, err
 }
@@ -216,7 +221,6 @@ func (m *Mall) InquiryPriceRefundInstance(ctx context.Context, instanceID string
 
 // GetInstanceRecords is a method that retrieves the records of instances
 func (m *Mall) GetInstanceRecords(ctx context.Context, limit, page int64) (*types.GetInstanceResponse, error) {
-	accessKeyID, accessKeySecret := m.getAliAccessKeys()
 	out := &types.GetInstanceResponse{}
 
 	rows, total, err := m.LoadInstancesInfo(limit, page)
@@ -242,18 +246,7 @@ func (m *Mall) GetInstanceRecords(ctx context.Context, limit, page int64) (*type
 			info.RefundTime = rInfo.RefundTime
 		}
 
-		var instanceIds []string
-		instanceIds = append(instanceIds, info.InstanceId)
-
-		rsp, sErr := aliyun.DescribeInstances(info.RegionId, accessKeyID, accessKeySecret, instanceIds)
-		if sErr == nil {
-			if len(rsp.Body.Instances.Instance) > 0 {
-				info.ExpiredTime = *rsp.Body.Instances.Instance[0].ExpiredTime
-				info.State = *rsp.Body.Instances.Instance[0].Status
-			}
-		}
-
-		out.List = append(out.List, info)
+		out.List = append(out.List, m.VpsMgr.UpdateInstanceInfo(info, false))
 	}
 
 	return out, nil

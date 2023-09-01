@@ -18,6 +18,8 @@ import (
 
 var log = logging.Logger("vps")
 
+const updateInstancesInterval = 30 * time.Minute
+
 // Manager manager order
 type Manager struct {
 	*db.SQLDB
@@ -37,7 +39,9 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 		SQLDB: sdb,
 		cfg:   cfg,
 	}
-	go m.cronGetInstanceDefaultInfo()
+
+	go m.cronUpdateInstanceDefaultInfo()
+	// go m.cronUpdateInstancesInfo()
 
 	return m, nil
 }
@@ -55,22 +59,22 @@ func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInst
 		period = period * 12
 	}
 
-	var securityGroupID string
+	// var securityGroupID string
 
-	securityGroups, sErr := aliyun.DescribeSecurityGroups(regionID, accessKeyID, accessKeySecret)
-	if sErr == nil && len(securityGroups) > 0 {
-		securityGroupID = securityGroups[0]
-	} else {
-		securityGroupID, sErr = aliyun.CreateSecurityGroup(regionID, accessKeyID, accessKeySecret)
-		if sErr != nil {
-			log.Errorf("CreateSecurityGroup err: %v", sErr)
-			return nil, xerrors.New(*sErr.Message)
-		}
-	}
+	// securityGroups, sErr := aliyun.DescribeSecurityGroups(regionID, accessKeyID, accessKeySecret)
+	// if sErr == nil && len(securityGroups) > 0 {
+	// 	securityGroupID = securityGroups[0]
+	// } else {
+	// 	securityGroupID, sErr = aliyun.CreateSecurityGroup(regionID, accessKeyID, accessKeySecret)
+	// 	if sErr != nil {
+	// 		log.Errorf("CreateSecurityGroup err: %v", sErr)
+	// 		return nil, xerrors.New(*sErr.Message)
+	// 	}
+	// }
 
-	log.Debugln("securityGroupID:", securityGroupID, " , DryRun:", vpsInfo.DryRun)
+	// log.Debugln("securityGroupID:", securityGroupID)
 
-	result, sErr := aliyun.CreateInstance(accessKeyID, accessKeySecret, vpsInfo, vpsInfo.DryRun)
+	result, sErr := aliyun.CreateInstance(accessKeyID, accessKeySecret, vpsInfo, m.cfg.DryRun)
 	if sErr != nil {
 		log.Errorf("CreateInstance err: %v", sErr)
 		return nil, xerrors.New(*sErr.Message)
@@ -89,6 +93,12 @@ func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInst
 	// 	log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
 	// }
 
+	instanceDetails := &types.InstanceDetails{
+		OrderID:    orderID,
+		RegionId:   regionID,
+		InstanceId: result.InstanceID,
+	}
+
 	go func() {
 		time.Sleep(1 * time.Minute)
 
@@ -96,47 +106,89 @@ func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInst
 		if sErr != nil {
 			log.Infoln("StartInstance err:", sErr)
 		}
+
+		m.UpdateInstanceInfo(instanceDetails, true)
+
+		time.Sleep(1 * time.Minute)
+
+		m.UpdateInstanceInfo(instanceDetails, true)
 	}()
 
-	var instanceIds []string
-	instanceIds = append(instanceIds, result.InstanceID)
-	instanceInfo, sErr := aliyun.DescribeInstances(regionID, accessKeyID, accessKeySecret, instanceIds)
+	return result, nil
+}
+
+// UpdateInstanceInfo update and return instance info
+func (m *Manager) UpdateInstanceInfo(instanceDetailsInfo *types.InstanceDetails, isForceUpdate bool) *types.InstanceDetails {
+	if !isForceUpdate && instanceDetailsInfo.UpdateTime.Add(updateInstancesInterval).After(time.Now()) {
+		return instanceDetailsInfo
+	}
+
+	accessKeyID := m.cfg.AliyunAccessKeyID
+	accessKeySecret := m.cfg.AliyunAccessKeySecret
+
+	instanceInfo, sErr := aliyun.DescribeInstances(instanceDetailsInfo.RegionId, accessKeyID, accessKeySecret, []string{instanceDetailsInfo.InstanceId})
 	if sErr != nil {
 		log.Errorf("DescribeInstances err: %v", sErr)
-	} else {
-		if len(instanceInfo.Body.Instances.Instance) > 0 {
-			ip := instanceInfo.Body.Instances.Instance[0].PublicIpAddress.IpAddress[0]
-			securityGroupId := ""
-			if len(instanceInfo.Body.Instances.Instance) > 0 {
-				securityGroupId = *instanceInfo.Body.Instances.Instance[0].SecurityGroupIds.SecurityGroupId[0]
-			}
-			OSType := instanceInfo.Body.Instances.Instance[0].OSType
-			InstanceName := instanceInfo.Body.Instances.Instance[0].InstanceName
-			BandwidthOut := instanceInfo.Body.Instances.Instance[0].InternetMaxBandwidthOut
-			Cores := instanceInfo.Body.Instances.Instance[0].Cpu
-			Memory := instanceInfo.Body.Instances.Instance[0].Memory
-			ExpiredTime := instanceInfo.Body.Instances.Instance[0].ExpiredTime
-			instanceDetailsInfo := &types.InstanceDetails{
-				IpAddress:       *ip,
-				InstanceId:      result.InstanceID,
-				SecurityGroupId: securityGroupId,
-				OSType:          *OSType,
-				Cores:           *Cores,
-				Memory:          float32(*Memory),
-				InstanceName:    *InstanceName,
-				ExpiredTime:     *ExpiredTime,
-				BandwidthOut:    *BandwidthOut,
-				AccessKey:       result.AccessKey,
-				OrderID:         orderID,
-			}
-			errU := m.UpdateInstanceInfoOfUser(instanceDetailsInfo)
-			if errU != nil {
-				log.Errorf("UpdateVpsInstance:%v", errU)
-			}
+		return instanceDetailsInfo
+	}
+
+	instanceDetailsInfo.State = ""
+
+	if len(instanceInfo.Body.Instances.Instance) > 0 {
+		instance := instanceInfo.Body.Instances.Instance[0]
+		ip := instance.PublicIpAddress.IpAddress[0]
+		securityGroupID := ""
+		if instance.SecurityGroupIds != nil && len(instance.SecurityGroupIds.SecurityGroupId) > 0 {
+			securityGroupID = *instance.SecurityGroupIds.SecurityGroupId[0]
+		}
+
+		instanceDetailsInfo.IpAddress = *ip
+		instanceDetailsInfo.SecurityGroupId = securityGroupID
+		instanceDetailsInfo.OSType = *instance.OSType
+		instanceDetailsInfo.Cores = *instance.Cpu
+		instanceDetailsInfo.Memory = float32(*instance.Memory)
+		instanceDetailsInfo.InstanceName = *instance.InstanceName
+		instanceDetailsInfo.ExpiredTime = *instance.ExpiredTime
+		instanceDetailsInfo.BandwidthOut = *instance.InternetMaxBandwidthOut
+		instanceDetailsInfo.AccessKey = accessKeyID
+		instanceDetailsInfo.State = *instance.Status
+
+		renewInfo := types.SetRenewOrderReq{
+			RegionID:   *instance.RegionId,
+			InstanceId: *instance.InstanceId,
+		}
+
+		status, errEk := m.getRenewInstance(renewInfo)
+		if errEk == nil {
+			instanceDetailsInfo.Renew = status
 		}
 	}
 
-	return result, nil
+	errU := m.UpdateInstanceInfoOfUser(instanceDetailsInfo)
+	if errU != nil {
+		log.Errorf("UpdateVpsInstance:%v", errU)
+	}
+
+	return instanceDetailsInfo
+}
+
+// GetRenewInstance retrieves the renewal status for an instance.
+func (m *Manager) getRenewInstance(renewReq types.SetRenewOrderReq) (string, error) {
+	accessKeyID := m.cfg.AliyunAccessKeyID
+	accessKeySecret := m.cfg.AliyunAccessKeySecret
+
+	info, sErr := aliyun.DescribeInstanceAutoRenewAttribute(accessKeyID, accessKeySecret, &renewReq)
+	if sErr != nil {
+		log.Errorf("DescribeInstanceAutoRenewAttribute err: %v", sErr)
+		return "", &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *sErr.Message}
+	}
+
+	out := ""
+	if info.Body != nil && info.Body.InstanceRenewAttributes != nil && len(info.Body.InstanceRenewAttributes.InstanceRenewAttribute) > 0 {
+		out = *info.Body.InstanceRenewAttributes.InstanceRenewAttribute[0].RenewalStatus
+	}
+
+	return out, nil
 }
 
 // RenewInstance renews an instance.
@@ -153,7 +205,7 @@ func (m *Manager) RenewInstance(renewInstanceRequest *types.RenewInstanceRequest
 }
 
 // cronFetchInstanceDefaultInfo fetches default instance information periodically.
-func (m *Manager) cronGetInstanceDefaultInfo() {
+func (m *Manager) cronUpdateInstanceDefaultInfo() {
 	now := time.Now()
 
 	nextTime := time.Date(now.Year(), now.Month(), now.Day(), 4, 0, 0, 0, now.Location())
@@ -174,6 +226,40 @@ func (m *Manager) cronGetInstanceDefaultInfo() {
 		timer.Reset(24 * time.Hour)
 
 		m.UpdateInstanceDefaultInfo("")
+	}
+}
+
+func (m *Manager) cronUpdateInstancesInfo() {
+	ticker := time.NewTicker(updateInstancesInterval)
+	defer ticker.Stop()
+
+	limit := int64(100)
+
+	work := func() {
+		page := int64(0)
+		for {
+			info, err := m.LoadActiveInstancesInfo(limit, page)
+			if err != nil {
+				log.Errorf("LoadActiveInstancesInfo err:%s", err.Error())
+				return
+			}
+
+			for _, instanceInfo := range info.List {
+				m.UpdateInstanceInfo(instanceInfo, false)
+			}
+
+			if int64(len(info.List)) == limit {
+				page++
+			} else {
+				return
+			}
+		}
+	}
+
+	for {
+		<-ticker.C
+
+		work()
 	}
 }
 
@@ -220,14 +306,12 @@ func (m *Manager) UpdateInstanceDefaultInfo(regionID string) {
 			continue
 		}
 		for _, instance := range instances.InstanceTypes {
-			ok, err := m.InstancesDefaultExists(instance.InstanceTypeId, regionID)
-			if err != nil {
-				log.Errorf("InstancesDefaultExists err:%v", err.Error())
+			exist, err := m.InstancesDefaultExists(instance.InstanceTypeId, regionID)
+			if exist || err != nil {
+				log.Errorf("InstancesDefaultExists exist:%v, err:%v", exist, err)
 				continue
 			}
-			if ok {
-				continue
-			}
+
 			images, err := m.DescribeImages(ctx, regionID, instance.InstanceTypeId)
 			if err != nil {
 				log.Errorf("DescribePrice err:%v", err.Error())

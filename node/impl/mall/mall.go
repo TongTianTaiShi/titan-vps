@@ -206,22 +206,6 @@ func (m *Mall) RebootInstance(ctx context.Context, regionID, instanceID string) 
 	return nil
 }
 
-// DescribeInstances retrieves information about a specific instance.
-func (m *Mall) DescribeInstances(ctx context.Context, regionID, instanceId string) error {
-	startTime := time.Now()
-	defer log.Debugf("DescribeInstances request time:%s", time.Since(startTime))
-
-	accessKeyID, accessKeySecret := m.getAliAccessKeys()
-	var instanceIds []string
-	instanceIds = append(instanceIds, instanceId)
-	_, sErr := aliyun.DescribeInstances(regionID, accessKeyID, accessKeySecret, instanceIds)
-	if sErr != nil {
-		log.Errorf("AttachKeyPair err: %v", sErr)
-		return &api.ErrWeb{Code: terrors.AliApiGetFailed.Int(), Message: *sErr.Message}
-	}
-	return nil
-}
-
 // UpdateInstanceDefaultInfo updates default instance information for a region.
 func (m *Mall) UpdateInstanceDefaultInfo(ctx context.Context, regionID string) error {
 	go m.VpsMgr.UpdateInstanceDefaultInfo(regionID)
@@ -234,18 +218,6 @@ func (m *Mall) RenewInstance(ctx context.Context, renewReq types.SetRenewOrderRe
 	defer log.Debugf("RenewInstance request time:%s", time.Since(startTime))
 
 	return m.VpsMgr.ModifyInstanceRenew(&renewReq)
-}
-
-// GetRenewInstance retrieves the renewal status for an instance.
-func (m *Mall) GetRenewInstance(ctx context.Context, renewReq types.SetRenewOrderReq) (string, error) {
-	accessKeyID, accessKeySecret := m.getAliAccessKeys()
-	info, sErr := aliyun.DescribeInstanceAutoRenewAttribute(accessKeyID, accessKeySecret, &renewReq)
-	if sErr != nil {
-		log.Errorf("DescribeInstanceAutoRenewAttribute err: %v", sErr)
-		return "", &api.ErrWeb{Code: terrors.ThisInstanceNotSupportOperation.Int(), Message: *sErr.Message}
-	}
-	out := *info.Body.InstanceRenewAttributes.InstanceRenewAttribute[0].RenewalStatus
-	return out, nil
 }
 
 // verifyEthMessage verifies an Ethereum message signature.

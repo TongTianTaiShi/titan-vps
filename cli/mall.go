@@ -42,9 +42,7 @@ var vpsCmds = &cli.Command{
 		UpdateDefaultInfoCmd,
 		GetInstanceDefaultCmd,
 		GetInstanceCpuCmd,
-		GetInstanceRenewStatusCmd,
 		GetInstanceMemoryCmd,
-		describeInstancesCmd,
 	},
 }
 
@@ -339,43 +337,6 @@ var GetInstanceCpuCmd = &cli.Command{
 	},
 }
 
-var GetInstanceRenewStatusCmd = &cli.Command{
-	Name:  "girs",
-	Usage: "GetInstanceRenewStatus",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "i",
-			Usage: "instance id",
-			Value: "",
-		},
-	},
-	Before: func(cctx *cli.Context) error {
-		return nil
-	},
-	Action: func(cctx *cli.Context) error {
-		ctx := ReqContext(cctx)
-
-		api, closer, err := GetMallAPI(cctx)
-		if err != nil {
-			return err
-		}
-
-		defer closer()
-		m := cctx.String("i")
-		req := types.SetRenewOrderReq{
-			RegionID:   "cn-hangzhou",
-			InstanceId: m,
-		}
-		list, err := api.GetRenewInstance(ctx, req)
-		if err != nil {
-			return err
-		}
-		fmt.Println(list)
-
-		return nil
-	},
-}
-
 var GetInstanceMemoryCmd = &cli.Command{
 	Name:  "gimc",
 	Usage: "get  desk indo",
@@ -413,37 +374,6 @@ var GetInstanceMemoryCmd = &cli.Command{
 			fmt.Println(*data)
 		}
 
-		return nil
-	},
-}
-
-var describeInstancesCmd = &cli.Command{
-	Name:  "dicc",
-	Usage: "describe regions",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:  "instanceID",
-			Usage: "region id",
-			Value: "",
-		},
-	},
-	Before: func(cctx *cli.Context) error {
-		return nil
-	},
-	Action: func(cctx *cli.Context) error {
-		ctx := ReqContext(cctx)
-
-		api, closer, err := GetMallAPI(cctx)
-		if err != nil {
-			return err
-		}
-
-		defer closer()
-		oid := cctx.String("instanceID")
-		err = api.DescribeInstances(ctx, "cn-hangzhou", oid)
-		if err != nil {
-			return err
-		}
 		return nil
 	},
 }
@@ -542,7 +472,6 @@ var createOrderCmd = &cli.Command{
 				Period:                  1,
 				InstanceType:            "ecs.n4.small",
 				InternetChargeType:      "PayByTraffic",
-				DryRun:                  true,
 				InternetMaxBandwidthOut: 1,
 				SystemDiskCategory:      "cloud_efficiency",
 				SystemDiskSize:          40,

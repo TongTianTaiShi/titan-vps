@@ -91,7 +91,6 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 			SecurityGroupID:         vInfo.SecurityGroupId,
 			PeriodUnit:              vInfo.PeriodUnit,
 			Period:                  vInfo.Period,
-			DryRun:                  vInfo.DryRun,
 			InternetChargeType:      vInfo.InternetChargeType,
 			SystemDiskSize:          vInfo.SystemDiskSize,
 			SystemDiskCategory:      vInfo.SystemDiskCategory,
