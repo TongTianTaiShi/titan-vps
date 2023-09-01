@@ -99,6 +99,8 @@ func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInst
 		InstanceId: result.InstanceID,
 	}
 
+	m.UpdateInstanceInfo(instanceDetails, true)
+
 	go func() {
 		time.Sleep(1 * time.Minute)
 
