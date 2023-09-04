@@ -75,7 +75,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 	}
 
 	vInfo.UserID = info.User
-	vInfo.OrderID = info.OrderID.String()
+	// vInfo.OrderID = info.OrderID.String()
 
 	if vInfo.DataDiskString != "" {
 		if err := json.Unmarshal([]byte(vInfo.DataDiskString), &vInfo.DataDisk); err != nil {
@@ -98,7 +98,7 @@ func (m *Manager) handleBuyGoods(ctx statemachine.Context, info OrderInfo) error
 			DataDisk:                vInfo.DataDisk,
 		}
 
-		result, err := m.vpsMgr.CreateAliYunInstance(vInfo.OrderID, createInfo)
+		result, err := m.vpsMgr.CreateAliYunInstance(vInfo.ID, createInfo)
 		if err != nil {
 			return ctx.Send(BuyFailed{Msg: err.Error()})
 		}

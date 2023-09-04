@@ -2,6 +2,7 @@ package aliyun
 
 import (
 	"encoding/json"
+	"fmt"
 	"sync"
 	"time"
 
@@ -55,12 +56,13 @@ func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceRe
 	if err != nil {
 		return out, err
 	}
+	fmt.Println("instanceReq.SecurityGroupID : ", instanceReq.SecurityGroupID)
 	createInstanceRequest := &ecs20140526.CreateInstanceRequest{
-		RegionId:           tea.String(instanceReq.RegionId),
-		InstanceType:       tea.String(instanceReq.InstanceType),
-		DryRun:             tea.Bool(dryRun),
-		ImageId:            tea.String(instanceReq.ImageID),
-		SecurityGroupId:    tea.String(instanceReq.SecurityGroupID),
+		RegionId:     tea.String(instanceReq.RegionId),
+		InstanceType: tea.String(instanceReq.InstanceType),
+		DryRun:       tea.Bool(dryRun),
+		ImageId:      tea.String(instanceReq.ImageID),
+		// SecurityGroupId:    tea.String(instanceReq.SecurityGroupID),
 		InstanceChargeType: tea.String("PrePaid"),
 		PeriodUnit:         tea.String(instanceReq.PeriodUnit),
 		InternetChargeType: tea.String(instanceReq.InternetChargeType),

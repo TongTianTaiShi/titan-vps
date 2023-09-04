@@ -39,7 +39,7 @@ func (state *OrderInfo) ToOrderRecord() *types.OrderRecord {
 		State:     types.OrderState(state.State),
 		UserID:    state.User,
 		Value:     state.Value,
-		DoneState: state.DoneState.Int(),
+		DoneState: types.OrderDoneState(state.DoneState),
 		VpsID:     state.VpsID,
 		Msg:       state.Msg,
 		CycleTime: state.CycleTime,

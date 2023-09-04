@@ -17,6 +17,8 @@ import (
 	"github.com/LMF709268224/titan-vps/node/handler"
 )
 
+const decimal = 1000000
+
 func countEndDate(unit string, period int) time.Time {
 	tt := time.Now()
 
@@ -83,20 +85,19 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 		log.Errorf("DescribePrice:%v", err)
 		return "", &api.ErrWeb{Code: terrors.DescribePriceError.Int(), Message: err.Error()}
 	}
+	// Calculate new balance
+	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*decimal), 'f', 0, 64)
 
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
 	instanceDetails.OrderID = orderID
-	instanceDetails.TradePrice = priceInfo.USDPrice / float32(req.Amount)
+	instanceDetails.Value = newBalanceString
 
 	id, err := m.SaveInstanceInfoOfUser(instanceDetails)
 	if err != nil {
 		log.Errorf("SaveVpsInstance:%v", err)
 		return "", err
 	}
-
-	// Calculate new balance
-	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
 
 	endDate := countEndDate(req.PeriodUnit, int(req.Period))
 
@@ -156,10 +157,12 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 		return "", &api.ErrWeb{Code: terrors.DescribePriceError.Int(), Message: err.Error()}
 	}
 
+	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*decimal), 'f', 0, 64)
+
 	hash := uuid.NewString()
 	orderID := strings.Replace(hash, "-", "", -1)
-	req.OrderID = orderID
-	req.TradePrice = priceInfo.USDPrice
+	// req.OrderID = orderID
+	req.Value = newBalanceString
 	req.PeriodUnit = renewReq.PeriodUnit
 	req.Period = renewReq.Period
 	req.AutoRenew = renewReq.Renew
@@ -169,8 +172,6 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 		log.Errorf("SaveVpsInstance:%v", err)
 		return "", err
 	}
-
-	newBalanceString := strconv.FormatFloat(math.Ceil(float64(priceInfo.USDPrice)*1000000), 'f', 0, 64)
 
 	endDate := countEndDate(req.PeriodUnit, int(req.Period))
 

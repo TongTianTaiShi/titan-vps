@@ -36,10 +36,10 @@ func (d *SQLDB) LoadUserInstanceInfoByInstanceID(instanceID string) (*types.Inst
 // SaveInstanceInfoOfUser saves VPS instance information into the database.
 func (d *SQLDB) SaveInstanceInfoOfUser(rInfo *types.InstanceDetails) (int64, error) {
 	query := fmt.Sprintf(
-		`INSERT INTO %s (region_id,instance_id,user_id,order_id, instance_type, image_id,
+		`INSERT INTO %s (region_id,instance_id,user_id, instance_type, image_id, order_id,
 			    security_group_id, instance_charge_type,internet_charge_type, period_unit, period, bandwidth_out,bandwidth_in,
 			    ip_address,trade_price,system_disk_category,system_disk_size,os_type,data_disk,auto_renew, access_key, state) 
-				VALUES (:region_id,:instance_id,:user_id,:order_id, :instance_type, :image_id, 
+				VALUES (:region_id,:instance_id,:user_id, :instance_type, :image_id, :order_id,
 				:security_group_id, :instance_charge_type,:internet_charge_type, :period_unit, :period, :bandwidth_out,:bandwidth_in,
 				:ip_address,:trade_price,:system_disk_category,:system_disk_size,:os_type,:data_disk,:auto_renew, :access_key, :state)`, userInstancesTable)
 
@@ -54,9 +54,9 @@ func (d *SQLDB) SaveInstanceInfoOfUser(rInfo *types.InstanceDetails) (int64, err
 // UpdateInstanceInfoOfUser updates VPS instance information in the database.
 func (d *SQLDB) UpdateInstanceInfoOfUser(info *types.InstanceDetails) error {
 	query := fmt.Sprintf(`UPDATE %s SET ip_address=?, instance_id=?, os_type=?,cores=?,memory=?,expired_time=?,
-	    security_group_id=?,access_key=?,bandwidth_out=?,instance_name=?,state=?,renew=?,update_time=NOW() WHERE order_id=?`, userInstancesTable)
+	    security_group_id=?,access_key=?,bandwidth_out=?,instance_name=?,state=?,renew=?,update_time=NOW() WHERE id=?`, userInstancesTable)
 	_, err := d.db.Exec(query, info.IpAddress, info.InstanceId, info.OSType, info.Cores, info.Memory, info.ExpiredTime,
-		info.SecurityGroupId, info.AccessKey, info.BandwidthOut, info.InstanceName, info.State, info.Renew, info.OrderID)
+		info.SecurityGroupId, info.AccessKey, info.BandwidthOut, info.InstanceName, info.State, info.Renew, info.ID)
 
 	return err
 }
@@ -71,8 +71,8 @@ func (d *SQLDB) UpdateInstanceState(instanceID, state string) error {
 
 // RenewVpsInstance updates VPS instance renewal information in the database.
 func (d *SQLDB) RenewVpsInstance(info *types.InstanceDetails) error {
-	query := fmt.Sprintf(`UPDATE %s SET period_unit=?, period=?, trade_price=?,auto_renew=? WHERE instance_id=?`, userInstancesTable)
-	_, err := d.db.Exec(query, info.PeriodUnit, info.Period, info.TradePrice, info.AutoRenew, info.InstanceId)
+	query := fmt.Sprintf(`UPDATE %s SET period_unit=?, period=?, value=?,auto_renew=? WHERE instance_id=?`, userInstancesTable)
+	_, err := d.db.Exec(query, info.PeriodUnit, info.Period, info.Value, info.AutoRenew, info.InstanceId)
 
 	return err
 }

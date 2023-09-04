@@ -246,6 +246,22 @@ func (m *Mall) GetInstanceRecords(ctx context.Context, limit, page int64) (*type
 			info.RefundTime = rInfo.RefundTime
 		}
 
+		orders, err := m.LoadOrderRecordsByVpsID(info.ID, types.Done, types.OrderDoneStateSuccess)
+		if err == nil {
+			tradePrice := "0"
+			for _, order := range orders {
+				price, err := utils.AddBigInt(tradePrice, order.Value)
+				if err != nil {
+					log.Errorf("AddBigInt %s,%s ,%s", tradePrice, order.Value, err.Error())
+					continue
+				}
+
+				tradePrice = price
+			}
+
+			info.Value = tradePrice
+		}
+
 		out.List = append(out.List, m.VpsMgr.UpdateInstanceInfo(info, false))
 	}
 

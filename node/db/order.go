@@ -132,3 +132,16 @@ func (d *SQLDB) LoadAllOrderRecords(statuses []int64, minute int64) (*sqlx.Rows,
 	query = d.db.Rebind(query)
 	return d.db.QueryxContext(context.Background(), query, args...)
 }
+
+// LoadOrderRecordsByVpsID loads order records for a specific vps id with pagination.
+func (d *SQLDB) LoadOrderRecordsByVpsID(vpsID int64, state types.OrderState, doneState types.OrderDoneState) ([]*types.OrderRecord, error) {
+	var infos []*types.OrderRecord
+	query := fmt.Sprintf("SELECT * FROM %s WHERE vps_id=? AND state=? AND done_state=?", orderRecordTable)
+
+	err := d.db.Select(&infos, query, vpsID, state, doneState)
+	if err != nil {
+		return nil, err
+	}
+
+	return infos, nil
+}

@@ -26,6 +26,42 @@ func (s OrderState) Int() int64 {
 	return int64(s)
 }
 
+// OrderDoneState represents the different states of a completed order.
+type OrderDoneState int64
+
+// Constants defining various states of a completed order.
+const (
+	// OrderDoneStateSuccess represents the state when the order is completed successfully.
+	OrderDoneStateSuccess OrderDoneState = iota
+	// OrderDoneStateTimeout represents the state when the order has timed out.
+	OrderDoneStateTimeout
+	// OrderDoneStateCancel represents the state when the user has canceled the order.
+	OrderDoneStateCancel
+	// OrderDoneStatePurchaseFailed represents the state when the purchase has failed.
+	OrderDoneStatePurchaseFailed
+)
+
+// String returns the string representation of the order done state.
+func (s OrderDoneState) String() string {
+	switch s {
+	case 0:
+		return "Success"
+	case 1:
+		return "Timeout"
+	case 2:
+		return "Cancel"
+	case 3:
+		return "PurchaseFailed"
+	}
+
+	return "Not found"
+}
+
+// Int returns the int representation of the order done state.
+func (s OrderDoneState) Int() int64 {
+	return int64(s)
+}
+
 // OrderType order type
 type OrderType int64
 
@@ -227,18 +263,18 @@ type AttachKeyPairResponse struct {
 
 // OrderRecord represents information about an order record
 type OrderRecord struct {
-	OrderID     string     `db:"order_id"`
-	UserID      string     `db:"user_id"`
-	Value       string     `db:"value"`
-	State       OrderState `db:"state"`
-	DoneState   int64      `db:"done_state"`
-	CreatedTime time.Time  `db:"created_time"`
-	DoneTime    time.Time  `db:"done_time"`
-	VpsID       int64      `db:"vps_id"`
-	Msg         string     `db:"msg"`
-	CycleTime   string     `db:"cycle_time"`
-	Expiration  time.Time  `db:"expiration"`
-	OrderType   OrderType  `db:"order_type"`
+	OrderID     string         `db:"order_id"`
+	UserID      string         `db:"user_id"`
+	Value       string         `db:"value"`
+	State       OrderState     `db:"state"`
+	DoneState   OrderDoneState `db:"done_state"`
+	CreatedTime time.Time      `db:"created_time"`
+	DoneTime    time.Time      `db:"done_time"`
+	VpsID       int64          `db:"vps_id"`
+	Msg         string         `db:"msg"`
+	CycleTime   string         `db:"cycle_time"`
+	Expiration  time.Time      `db:"expiration"`
+	OrderType   OrderType      `db:"order_type"`
 }
 
 type OrderRecordResponse struct {
@@ -444,7 +480,7 @@ type InstanceDetails struct {
 	AutoRenew          int       `db:"auto_renew"`
 	PeriodUnit         string    `db:"period_unit"`
 	Period             int32     `db:"period"`
-	TradePrice         float32   `db:"trade_price"`
+	Value              string    `db:"value"`
 	CreatedTime        time.Time `db:"created_time"`
 	ExpiredTime        string    `db:"expired_time"`
 	AccessKey          string    `db:"access_key"`

@@ -37,7 +37,7 @@ var cInstanceDetailsTable = `
 		bandwidth_in         INT           DEFAULT 0,
 		system_disk_size     INT           DEFAULT 0,
 	    ip_address 	         VARCHAR(16)   DEFAULT '',
-	    trade_price  		 FLOAT         DEFAULT 0,
+	    value       		 VARCHAR(32)   DEFAULT 0,
 	    memory  		     FLOAT         DEFAULT 0,
 	    memory_used  		 FLOAT         DEFAULT 0,  
 	    cores                INT           DEFAULT 0,

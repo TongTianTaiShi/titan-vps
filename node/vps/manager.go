@@ -47,7 +47,7 @@ func NewManager(sdb *db.SQLDB, getCfg dtypes.GetMallConfigFunc) (*Manager, error
 }
 
 // CreateAliYunInstance creates an Alibaba Cloud instance.
-func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
+func (m *Manager) CreateAliYunInstance(infoID int64, vpsInfo *types.CreateInstanceReq) (*types.CreateInstanceResponse, error) {
 	accessKeyID := m.cfg.AliyunAccessKeyID
 	accessKeySecret := m.cfg.AliyunAccessKeySecret
 
@@ -61,16 +61,14 @@ func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInst
 
 	// var securityGroupID string
 
-	// securityGroups, sErr := aliyun.DescribeSecurityGroups(regionID, accessKeyID, accessKeySecret)
-	// if sErr == nil && len(securityGroups) > 0 {
-	// 	securityGroupID = securityGroups[0]
-	// } else {
-	// 	securityGroupID, sErr = aliyun.CreateSecurityGroup(regionID, accessKeyID, accessKeySecret)
-	// 	if sErr != nil {
-	// 		log.Errorf("CreateSecurityGroup err: %v", sErr)
-	// 		return nil, xerrors.New(*sErr.Message)
-	// 	}
-	// }
+	securityGroups, sErr := aliyun.DescribeSecurityGroups(regionID, accessKeyID, accessKeySecret)
+	if sErr != nil || len(securityGroups) == 0 {
+		_, sErr = aliyun.CreateSecurityGroup(regionID, accessKeyID, accessKeySecret)
+		if sErr != nil {
+			log.Errorf("CreateSecurityGroup err: %v", sErr)
+			return nil, xerrors.New(*sErr.Message)
+		}
+	}
 
 	// log.Debugln("securityGroupID:", securityGroupID)
 
@@ -94,9 +92,10 @@ func (m *Manager) CreateAliYunInstance(orderID string, vpsInfo *types.CreateInst
 	// }
 
 	instanceDetails := &types.InstanceDetails{
-		OrderID:    orderID,
+		// OrderID:    orderID,
 		RegionId:   regionID,
 		InstanceId: result.InstanceID,
+		ID:         infoID,
 	}
 
 	m.UpdateInstanceInfo(instanceDetails, true)
