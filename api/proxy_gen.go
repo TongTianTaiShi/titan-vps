@@ -13,6 +13,19 @@ import (
 
 var ErrNotSupported = xerrors.New("method not supported")
 
+type AccountAPIStruct struct {
+	Internal struct {
+		GetVerifyMessage func(p0 context.Context, p1 string, p2 types.LoginType) (string, error) `perm:"default"`
+
+		LoginAccount func(p0 context.Context, p1 *types.AccountRequest) (*types.AccountLoginResponse, error) `perm:"default"`
+
+		SetInvitationCode func(p0 context.Context, p1 string) error `perm:"default"`
+	}
+}
+
+type AccountAPIStub struct {
+}
+
 type AdminAPIStruct struct {
 	Internal struct {
 		AddAdminUser func(p0 context.Context, p1 string, p2 string) error `perm:"admin"`
@@ -78,6 +91,8 @@ type MallStruct struct {
 
 	AdminAPIStruct
 
+	AccountAPIStruct
+
 	Internal struct {
 		CreateKeyPair func(p0 context.Context, p1 string, p2 string) (*types.CreateKeyPairResponse, error) `perm:"user"`
 
@@ -117,6 +132,8 @@ type MallStub struct {
 	UserAPIStub
 
 	AdminAPIStub
+
+	AccountAPIStub
 }
 
 type OrderAPIStruct struct {
@@ -181,6 +198,39 @@ type UserAPIStruct struct {
 }
 
 type UserAPIStub struct {
+}
+
+func (s *AccountAPIStruct) GetVerifyMessage(p0 context.Context, p1 string, p2 types.LoginType) (string, error) {
+	if s.Internal.GetVerifyMessage == nil {
+		return "", ErrNotSupported
+	}
+	return s.Internal.GetVerifyMessage(p0, p1, p2)
+}
+
+func (s *AccountAPIStub) GetVerifyMessage(p0 context.Context, p1 string, p2 types.LoginType) (string, error) {
+	return "", ErrNotSupported
+}
+
+func (s *AccountAPIStruct) LoginAccount(p0 context.Context, p1 *types.AccountRequest) (*types.AccountLoginResponse, error) {
+	if s.Internal.LoginAccount == nil {
+		return nil, ErrNotSupported
+	}
+	return s.Internal.LoginAccount(p0, p1)
+}
+
+func (s *AccountAPIStub) LoginAccount(p0 context.Context, p1 *types.AccountRequest) (*types.AccountLoginResponse, error) {
+	return nil, ErrNotSupported
+}
+
+func (s *AccountAPIStruct) SetInvitationCode(p0 context.Context, p1 string) error {
+	if s.Internal.SetInvitationCode == nil {
+		return ErrNotSupported
+	}
+	return s.Internal.SetInvitationCode(p0, p1)
+}
+
+func (s *AccountAPIStub) SetInvitationCode(p0 context.Context, p1 string) error {
+	return ErrNotSupported
 }
 
 func (s *AdminAPIStruct) AddAdminUser(p0 context.Context, p1 string, p2 string) error {
@@ -788,6 +838,7 @@ func (s *UserAPIStub) Withdraw(p0 context.Context, p1 string, p2 string) error {
 	return ErrNotSupported
 }
 
+var _ AccountAPI = new(AccountAPIStruct)
 var _ AdminAPI = new(AdminAPIStruct)
 var _ Common = new(CommonStruct)
 var _ Mall = new(MallStruct)

@@ -47,6 +47,8 @@ type MallCfg struct {
 	RechargeAddresses []string
 
 	TrxHeight int64
+
+	Email EmailConfig
 }
 
 type RouteCfg struct {
@@ -54,4 +56,11 @@ type RouteCfg struct {
 	Mode        string
 	ApiListen   string
 	SecretKey   string
+}
+
+type EmailConfig struct {
+	Name     string
+	SMTPHost string
+	SMTPPort string
+	Password string
 }

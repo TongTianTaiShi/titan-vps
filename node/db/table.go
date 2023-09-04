@@ -141,3 +141,20 @@ var cInstanceRefundTable = `
 	    refund_time   VARCHAR(32)  DEFAULT "",
 		PRIMARY KEY (instance_id)
 	) ENGINE=InnoDB COMMENT='instance refund';`
+
+var cInvitationTable = `
+	CREATE TABLE if not exists %s (
+		id   	VARCHAR(128) NOT NULL,
+		user_id   			VARCHAR(128),
+		PRIMARY KEY (id)
+	) ENGINE=InnoDB COMMENT='invitation';`
+
+var cAccountTable = `
+	CREATE TABLE if not exists %s (
+		id BIGINT(20) NOT NULL AUTO_INCREMENT,
+	    email VARCHAR(128),
+	    address VARCHAR(128),
+	    filecoin VARCHAR(128),
+	    create_time BIGINT(20),
+	    PRIMARY KEY (id)
+	)ENGINE=InnoDB COMMENT='account';`

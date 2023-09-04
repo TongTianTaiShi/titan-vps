@@ -3,6 +3,7 @@ package node
 import (
 	"errors"
 
+	"github.com/LMF709268224/titan-vps/node/account"
 	"github.com/LMF709268224/titan-vps/node/exchange"
 	"github.com/LMF709268224/titan-vps/node/user"
 	"github.com/LMF709268224/titan-vps/node/vps"
@@ -56,11 +57,13 @@ func ConfigMall(c interface{}) Option {
 		Override(new(*pubsub.PubSub), modules.NewPubSub),
 		Override(new(dtypes.MetadataDS), modules.Datastore),
 		Override(new(*db.SQLDB), modules.NewDB),
+		Override(new(*account.Cache), modules.NewCache),
 		Override(new(*transaction.Manager), transaction.NewManager),
 		Override(new(*exchange.RechargeManager), exchange.NewRechargeManager),
 		Override(new(*exchange.WithdrawManager), exchange.NewWithdrawManager),
 		Override(new(*orders.Manager), modules.NewStorageManager),
 		Override(new(*vps.Manager), vps.NewManager),
 		Override(new(*user.Manager), user.NewManager),
+		Override(new(*account.Manager), modules.NewManager),
 	)
 }

@@ -11,6 +11,7 @@ type Mall interface {
 	OrderAPI
 	UserAPI
 	AdminAPI
+	AccountAPI
 
 	DescribeRegions(ctx context.Context) (map[string]string, error)                                                                                                 //perm:default
 	UpdateInstanceDefaultInfo(ctx context.Context, regionID string) error                                                                                           //perm:admin
@@ -70,4 +71,10 @@ type UserAPI interface {
 	GetUserInstanceRecords(ctx context.Context, limit, page int64) (*types.GetInstanceResponse, error)   //perm:user
 	GetInstanceDetailsInfo(ctx context.Context, instanceID string) (*types.InstanceDetails, error)       //perm:user
 	UpdateInstanceName(ctx context.Context, instanceID, instanceName string) error                       //perm:user
+}
+
+type AccountAPI interface {
+	SetInvitationCode(ctx context.Context, code string) error                                             //perm:default
+	GetVerifyMessage(ctx context.Context, id string, loginType types.LoginType) (string, error)           //perm:default
+	LoginAccount(ctx context.Context, request *types.AccountRequest) (*types.AccountLoginResponse, error) //perm:default
 }

@@ -280,7 +280,25 @@ const (
 	LoginTypeMetaMask LoginType = iota
 	// LoginTypeTron
 	LoginTypeTron
+
+	LoginTypeEmail
+	LoginTypeFilecoin
 )
+
+func (l LoginType) String() string {
+	switch l {
+	case LoginTypeMetaMask:
+		return "MetaMask"
+	case LoginTypeTron:
+		return "Tron"
+	case LoginTypeEmail:
+		return "Email"
+	case LoginTypeFilecoin:
+		return "Filecoin"
+	default:
+		return "Not Found"
+	}
+}
 
 type RechargeResponse struct {
 	Total int
@@ -460,4 +478,36 @@ type CreateInstanceReq struct {
 type GetRechargeAddressResponse struct {
 	Total int
 	List  []*RechargeAddress
+}
+
+type AccountRequest struct {
+	Type LoginType
+
+	// if Type == LoginTypeMetaMask =>
+	//		UserID is ? 		&&	Ext is signature
+	// if Type == LoginTypeEmail 	=>
+	//		UserID is email		&&	Ext is verify code
+	// if Type == LoginTypeFilecoin =>
+	//		UserID is ?			&&	Ext is ?
+	UserID string
+	Ext    string
+
+	InvitationCode string
+}
+
+type AccountLoginResponse struct {
+	UserID string
+	Token  string
+}
+
+type InvitationInfo struct {
+	ID     string `db:"id"`
+	UserID string `db:"user_id"`
+}
+
+type AccountInfo struct {
+	Email      string `db:"email"`
+	Address    string `db:"address"`
+	Filecoin   string `db:"filecoin"`
+	CreateTime int64  `db:"create_time"`
 }

@@ -7,12 +7,13 @@ import (
 const (
 	// When changing these, update docs/API.md too
 
-	RoleAdmin   auth.Permission = "admin" // Manage permissions
-	RoleDefault auth.Permission = "default"
-	RoleUser    auth.Permission = "user"
+	RoleAdmin    auth.Permission = "admin" // Manage permissions
+	RoleDefault  auth.Permission = "default"
+	RoleUser     auth.Permission = "user"
+	RoleMerchant auth.Permission = "merchant"
 )
 
-var AllPermissions = []auth.Permission{RoleAdmin, RoleDefault, RoleUser}
+var AllPermissions = []auth.Permission{RoleAdmin, RoleDefault, RoleUser, RoleMerchant}
 
 func permissionedProxies(in, out interface{}) {
 	outs := GetInternalStructs(out)

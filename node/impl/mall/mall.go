@@ -10,6 +10,7 @@ import (
 	"github.com/LMF709268224/titan-vps/api/terrors"
 
 	"github.com/LMF709268224/titan-vps/api"
+	"github.com/LMF709268224/titan-vps/node/account"
 	"github.com/LMF709268224/titan-vps/node/exchange"
 	"github.com/LMF709268224/titan-vps/node/user"
 	"github.com/LMF709268224/titan-vps/node/utils"
@@ -42,10 +43,12 @@ type Mall struct {
 	*exchange.WithdrawManager
 	Notify *pubsub.PubSub
 	*db.SQLDB
+	*account.Cache
 	OrderMgr *orders.Manager
 	dtypes.GetMallConfigFunc
-	UserMgr *user.Manager
-	VpsMgr  *vps.Manager
+	UserMgr    *user.Manager
+	VpsMgr     *vps.Manager
+	AccountMgr *account.Manager
 }
 
 // getAliAccessKeys retrieves Aliyun access keys from the configuration.

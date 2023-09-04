@@ -2,6 +2,7 @@ package modules
 
 import (
 	"context"
+	"github.com/LMF709268224/titan-vps/node/account"
 
 	"github.com/LMF709268224/titan-vps/node/config"
 	"github.com/LMF709268224/titan-vps/node/db"
@@ -86,6 +87,16 @@ func NewPubSub() *pubsub.PubSub {
 // NewDB returns an *sqlx.DB instance
 func NewDB(cfg *config.MallCfg) (*db.SQLDB, error) {
 	return db.NewSQLDB(cfg.DatabaseAddress)
+}
+
+// NewCache returns an *cache instance
+func NewCache() (*account.Cache, error) {
+	return account.NewCache()
+}
+
+// NewManager returns an *manger instance
+func NewManager() (*account.Manager, error) {
+	return account.NewManager()
 }
 
 // StorageManagerParams Manager Params
