@@ -52,6 +52,8 @@ const (
 	instanceRefundTable   = "instance_refund"
 	invitationTable       = "invitation"
 	accountTable          = "account"
+	accessKeyTable        = "provider_access_info"
+
 	// Default limits for loading table entries.
 	loadOrderRecordsDefaultLimit    = 1000
 	loadRechargeRecordsDefaultLimit = 1000
@@ -88,6 +90,7 @@ func (d *SQLDB) initTables() error {
 	tx.MustExec(fmt.Sprintf(cInstanceRefundTable, instanceRefundTable))
 	tx.MustExec(fmt.Sprintf(cInvitationTable, invitationTable))
 	tx.MustExec(fmt.Sprintf(cAccountTable, accountTable))
+	tx.MustExec(fmt.Sprintf(cAccessKeyTable, accessKeyTable))
 
 	return tx.Commit()
 }

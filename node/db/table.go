@@ -160,3 +160,17 @@ var cAccountTable = `
 	    create_time BIGINT(20),
 	    PRIMARY KEY (id)
 	)ENGINE=InnoDB COMMENT='account';`
+
+var cAccessKeyTable = `
+    CREATE TABLE if not exists %s (
+	    provider_id    VARCHAR(128) NOT NULL UNIQUE,
+	    access_secret  VARCHAR(128) DEFAULT 0,
+	    access_key     VARCHAR(128) DEFAULT 0,
+		k_type         INT          DEFAULT 0,
+		state          INT          DEFAULT 0,
+		rebate         FLOAT        DEFAULT 0,
+	    nick           VARCHAR(64)  DEFAULT 0,
+	    created_time   DATETIME     DEFAULT CURRENT_TIMESTAMP,
+	    PRIMARY KEY (access_secret),
+		KEY idx_user (provider_id)
+    ) ENGINE=InnoDB COMMENT='provider access key';`

@@ -228,8 +228,8 @@ func (m *Mall) GetSignCode(ctx context.Context, userID string) (string, error) {
 }
 
 // Login authenticates a user and generates a JWT token.
-func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResponse, error) {
-	userID := user.UserId
+func (m *Mall) Login(ctx context.Context, uInfo *types.UserReq) (*types.LoginResponse, error) {
+	userID := uInfo.UserId
 	log.Debugf("login user:%s", userID)
 
 	code, err := m.UserMgr.GetSignCode(userID)
@@ -237,7 +237,7 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 		return nil, &api.ErrWeb{Code: terrors.NotFoundSignCode.Int(), Message: terrors.NotFoundSignCode.String()}
 	}
 
-	signature := user.Signature
+	signature := uInfo.Signature
 	address, err := verifyEthMessage(code, signature)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
@@ -251,7 +251,7 @@ func (m *Mall) Login(ctx context.Context, user *types.UserReq) (*types.LoginResp
 
 	p := types.JWTPayload{
 		ID:        address,
-		LoginType: int64(user.Type),
+		LoginType: int64(uInfo.Type),
 		Allow:     []auth.Permission{api.RoleUser},
 	}
 	tk, err := jwt.Sign(&p, m.APISecret)

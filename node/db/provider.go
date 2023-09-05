@@ -6,8 +6,6 @@ import (
 	"github.com/LMF709268224/titan-vps/api/types"
 )
 
-const accessKeyTable = "provider_access_info"
-
 func (d *SQLDB) SaveAccessKeyInfo(info *types.AccessKeyInfo) error {
 	query := fmt.Sprintf(
 		`INSERT INTO %s (provider_id, k_type, access_secret, access_key, state,  rebate, nick) 
