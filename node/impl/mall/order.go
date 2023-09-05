@@ -95,7 +95,7 @@ func (m *Mall) CreateOrder(ctx context.Context, req types.CreateOrderReq) (strin
 
 	id, err := m.SaveInstanceInfoOfUser(instanceDetails)
 	if err != nil {
-		log.Errorf("SaveVpsInstance:%v", err)
+		log.Errorf("SaveInstanceInfoOfUser:%v", err)
 		return "", err
 	}
 
@@ -169,7 +169,7 @@ func (m *Mall) RenewOrder(ctx context.Context, renewReq types.RenewOrderReq) (st
 
 	err = m.RenewVpsInstance(req)
 	if err != nil {
-		log.Errorf("SaveVpsInstance:%v", err)
+		log.Errorf("RenewVpsInstance:%v", err)
 		return "", err
 	}
 

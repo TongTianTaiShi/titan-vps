@@ -24,7 +24,7 @@ type Mall interface {
 	RebootInstance(ctx context.Context, regionID, instanceID string) error                                                                                          //perm:user
 	GetInstanceDefaultInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) (*types.InstanceTypeResponse, error)                                            //perm:default
 	GetInstanceCpuInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*int32, error)                                                                   //perm:default
-	GetInstanceMemoryInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*float32, error)                                                              //perm:default
+	GetInstanceMemoryInfo(ctx context.Context, req *types.InstanceTypeFromBaseReq) ([]*float32, error)                                                              //perm:default                                                                              //perm:admin
 }
 
 // AdminAPI is an interface for admin

@@ -59,31 +59,33 @@ func (m *Manager) CreateAliYunInstance(infoID int64, vpsInfo *types.CreateInstan
 		period = period * 12
 	}
 
-	// var securityGroupID string
+	var securityGroupID string
 
 	securityGroups, sErr := aliyun.DescribeSecurityGroups(regionID, accessKeyID, accessKeySecret)
 	if sErr != nil || len(securityGroups) == 0 {
-		_, sErr = aliyun.CreateSecurityGroup(regionID, accessKeyID, accessKeySecret)
+		securityGroupID, sErr = aliyun.CreateSecurityGroup(regionID, accessKeyID, accessKeySecret)
 		if sErr != nil {
 			log.Errorf("CreateSecurityGroup err: %v", sErr)
 			return nil, xerrors.New(*sErr.Message)
 		}
+	} else {
+		securityGroupID = securityGroups[0]
 	}
 
-	// log.Debugln("securityGroupID:", securityGroupID)
+	vpsInfo.SecurityGroupID = securityGroupID
 
-	result, sErr := aliyun.CreateInstance(accessKeyID, accessKeySecret, vpsInfo, m.cfg.DryRun)
+	result, sErr := aliyun.RunInstances(accessKeyID, accessKeySecret, vpsInfo, m.cfg.DryRun)
 	if sErr != nil {
 		log.Errorf("CreateInstance err: %v", sErr)
 		return nil, xerrors.New(*sErr.Message)
 	}
 
-	address, sErr := aliyun.AllocatePublicIPAddress(regionID, accessKeyID, accessKeySecret, result.InstanceID)
-	if sErr != nil {
-		log.Errorf("AllocatePublicIpAddress err: %v", sErr)
-	} else {
-		result.PublicIpAddress = address
-	}
+	// address, sErr := aliyun.AllocatePublicIPAddress(regionID, accessKeyID, accessKeySecret, result.InstanceID)
+	// if sErr != nil {
+	// 	log.Errorf("AllocatePublicIpAddress err: %v", sErr)
+	// } else {
+	// 	result.PublicIpAddress = address
+	// }
 
 	// 设置安全端口 (使用账密的时候必须用)
 	// err = aliyun.AuthorizeSecurityGroup(regionID, accessKeyID, accessKeySecret, securityGroupID)
@@ -91,22 +93,24 @@ func (m *Manager) CreateAliYunInstance(infoID int64, vpsInfo *types.CreateInstan
 	// 	log.Errorf("AuthorizeSecurityGroup err: %s", err.Error())
 	// }
 
+	instanceID := *result.Body.InstanceIdSets.InstanceIdSet[0]
+
 	instanceDetails := &types.InstanceDetails{
 		// OrderID:    orderID,
 		RegionId:   regionID,
-		InstanceId: result.InstanceID,
+		InstanceId: instanceID,
 		ID:         infoID,
 	}
 
-	m.UpdateInstanceInfo(instanceDetails, true)
+	// m.UpdateInstanceInfo(instanceDetails, true)
 
 	go func() {
-		time.Sleep(1 * time.Minute)
+		// time.Sleep(1 * time.Minute)
 
-		sErr = aliyun.StartInstance(regionID, accessKeyID, accessKeySecret, result.InstanceID)
-		if sErr != nil {
-			log.Infoln("StartInstance err:", sErr)
-		}
+		// sErr = aliyun.StartInstance(regionID, accessKeyID, accessKeySecret, result.InstanceID)
+		// if sErr != nil {
+		// 	log.Infoln("StartInstance err:", sErr)
+		// }
 
 		m.UpdateInstanceInfo(instanceDetails, true)
 
@@ -115,7 +119,13 @@ func (m *Manager) CreateAliYunInstance(infoID int64, vpsInfo *types.CreateInstan
 		m.UpdateInstanceInfo(instanceDetails, true)
 	}()
 
-	return result, nil
+	return &types.CreateInstanceResponse{
+		InstanceID: instanceID,
+		OrderId:    *result.Body.OrderId,
+		RequestId:  *result.Body.RequestId,
+		TradePrice: *result.Body.TradePrice,
+		AccessKey:  accessKeyID,
+	}, nil
 }
 
 // UpdateInstanceInfo update and return instance info

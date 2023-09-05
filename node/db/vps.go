@@ -38,10 +38,10 @@ func (d *SQLDB) SaveInstanceInfoOfUser(rInfo *types.InstanceDetails) (int64, err
 	query := fmt.Sprintf(
 		`INSERT INTO %s (region_id,instance_id,user_id, instance_type, image_id, order_id,
 			    security_group_id, instance_charge_type,internet_charge_type, period_unit, period, bandwidth_out,bandwidth_in,
-			    ip_address,trade_price,system_disk_category,system_disk_size,os_type,data_disk,auto_renew, access_key, state) 
+			    ip_address,value,system_disk_category,system_disk_size,os_type,data_disk,auto_renew, access_key, state) 
 				VALUES (:region_id,:instance_id,:user_id, :instance_type, :image_id, :order_id,
 				:security_group_id, :instance_charge_type,:internet_charge_type, :period_unit, :period, :bandwidth_out,:bandwidth_in,
-				:ip_address,:trade_price,:system_disk_category,:system_disk_size,:os_type,:data_disk,:auto_renew, :access_key, :state)`, userInstancesTable)
+				:ip_address,:value,:system_disk_category,:system_disk_size,:os_type,:data_disk,:auto_renew, :access_key, :state)`, userInstancesTable)
 
 	result, err := d.db.NamedExec(query, rInfo)
 	if err != nil {
@@ -204,6 +204,25 @@ func (d *SQLDB) LoadInstancesInfoByUser(userID string, limit, page int64) (*sqlx
 
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=? AND instance_id!='' order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
 	rows, err := d.db.QueryxContext(context.Background(), query, userID, limit, page*limit)
+
+	return rows, total, err
+}
+
+// LoadInstancesInfoByAccessKey loads instance information.
+func (d *SQLDB) LoadInstancesInfoByAccessKey(accessKey string, limit, page int64) (*sqlx.Rows, int, error) {
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE access_key=? AND instance_id!='' ", userInstancesTable)
+	var total int
+	err := d.db.Get(&total, countQuery, accessKey)
+	if err != nil {
+		return nil, total, err
+	}
+
+	if limit > loadInstancesDefaultLimit {
+		limit = loadInstancesDefaultLimit
+	}
+
+	query := fmt.Sprintf("SELECT * FROM %s WHERE access_key=? AND instance_id!='' order by created_time desc LIMIT ? OFFSET ?", userInstancesTable)
+	rows, err := d.db.QueryxContext(context.Background(), query, accessKey, limit, page*limit)
 
 	return rows, total, err
 }

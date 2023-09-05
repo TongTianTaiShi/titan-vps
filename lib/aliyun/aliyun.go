@@ -3,6 +3,7 @@ package aliyun
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -124,27 +125,44 @@ func CreateInstance(keyID, keySecret string, instanceReq *types.CreateInstanceRe
 }
 
 // RunInstances run aliyun instances
-func RunInstances(regionID, keyID, keySecret, instanceType, imageID, password, securityGroupID, periodUnit string, period int32, dryRun bool) (*types.CreateInstanceResponse, *tea.SDKError) {
-	var out *types.CreateInstanceResponse
+func RunInstances(keyID, keySecret string, instanceReq *types.CreateInstanceReq, dryRun bool) (*ecs20140526.RunInstancesResponse, *tea.SDKError) {
+	var out *ecs20140526.RunInstancesResponse
 
-	client, err := newClient(regionID, keyID, keySecret)
+	client, err := newClient(instanceReq.RegionId, keyID, keySecret)
 	if err != nil {
 		return out, err
 	}
 
+	fmt.Println("RunInstances instanceReq.SecurityGroupID : ", instanceReq.SecurityGroupID)
 	createInstanceRequest := &ecs20140526.RunInstancesRequest{
-		RegionId:           tea.String(regionID),
-		InstanceType:       tea.String(instanceType),
+		RegionId:           tea.String(instanceReq.RegionId),
+		InstanceType:       tea.String(instanceReq.InstanceType),
 		DryRun:             tea.Bool(dryRun),
-		ImageId:            tea.String(imageID),
-		SecurityGroupId:    tea.String(securityGroupID),
+		ImageId:            tea.String(instanceReq.ImageID),
+		SecurityGroupId:    tea.String(instanceReq.SecurityGroupID),
 		InstanceChargeType: tea.String("PrePaid"),
-		PeriodUnit:         tea.String(periodUnit),
-		Period:             tea.Int32(period),
-		Password:           tea.String(password),
-		// TODO
-		InternetMaxBandwidthOut: tea.Int32(1),
-		InternetMaxBandwidthIn:  tea.Int32(1),
+		PeriodUnit:         tea.String(instanceReq.PeriodUnit),
+		InternetChargeType: tea.String(instanceReq.InternetChargeType),
+		Period:             tea.Int32(instanceReq.Period),
+		// Password:                tea.String(password),
+		InternetMaxBandwidthOut: tea.Int32(10),
+		InternetMaxBandwidthIn:  tea.Int32(10),
+		SystemDisk: &ecs20140526.RunInstancesRequestSystemDisk{
+			Size:     tea.String(strconv.FormatInt(int64(instanceReq.SystemDiskSize), 10)),
+			Category: tea.String(instanceReq.SystemDiskCategory),
+		},
+		DataDisk: []*ecs20140526.RunInstancesRequestDataDisk{},
+	}
+	if len(instanceReq.DataDisk) > 0 {
+		for _, v := range instanceReq.DataDisk {
+			size := v.Size
+			size32 := int32(size)
+			DataDiskInfo := &ecs20140526.RunInstancesRequestDataDisk{
+				Category: tea.String(v.Category),
+				Size:     tea.Int32(size32),
+			}
+			createInstanceRequest.DataDisk = append(createInstanceRequest.DataDisk, DataDiskInfo)
+		}
 	}
 
 	runtime := &util.RuntimeOptions{}
@@ -160,12 +178,7 @@ func RunInstances(regionID, keyID, keySecret, instanceType, imageID, password, s
 			return err
 		}
 
-		out = &types.CreateInstanceResponse{
-			InstanceID: *result.Body.InstanceIdSets.InstanceIdSet[0],
-			OrderId:    *result.Body.OrderId,
-			RequestId:  *result.Body.RequestId,
-			TradePrice: *result.Body.TradePrice,
-		}
+		out = result
 
 		return nil
 	}()
