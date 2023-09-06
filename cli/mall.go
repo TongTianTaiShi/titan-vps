@@ -14,6 +14,7 @@ var MallCMDs = []*cli.Command{
 	WithCategory("user", userCmds),
 	WithCategory("vps", vpsCmds),
 	WithCategory("admin", adminCmds),
+	WithCategory("provider", providerCmds),
 }
 
 var adminCmds = &cli.Command{

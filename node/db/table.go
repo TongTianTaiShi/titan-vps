@@ -146,20 +146,20 @@ var cInstanceRefundTable = `
 
 var cInvitationTable = `
 	CREATE TABLE if not exists %s (
-		id   	VARCHAR(128) NOT NULL,
-		user_id   			VARCHAR(128),
-		PRIMARY KEY (id)
+		invitation_code   	VARCHAR(128) NOT NULL,
+		id   	VARCHAR(128),
+		PRIMARY KEY (invitation_code)
 	) ENGINE=InnoDB COMMENT='invitation';`
 
-var cAccountTable = `
+var cProviderInfoTable = `
 	CREATE TABLE if not exists %s (
-		id BIGINT(20) NOT NULL AUTO_INCREMENT,
+		id VARCHAR(128) NOT NULL,
 	    email VARCHAR(128),
 	    address VARCHAR(128),
 	    filecoin VARCHAR(128),
 	    create_time BIGINT(20),
 	    PRIMARY KEY (id)
-	)ENGINE=InnoDB COMMENT='account';`
+	)ENGINE=InnoDB COMMENT='provider info';`
 
 var cAccessKeyTable = `
     CREATE TABLE if not exists %s (

@@ -51,7 +51,7 @@ const (
 	instanceBaseInfoTable = "instance_base_info"
 	instanceRefundTable   = "instance_refund"
 	invitationTable       = "invitation"
-	accountTable          = "account"
+	providerInfoTable     = "provider_info"
 	accessKeyTable        = "provider_access_info"
 
 	// Default limits for loading table entries.
@@ -89,7 +89,7 @@ func (d *SQLDB) initTables() error {
 	tx.MustExec(fmt.Sprintf(cInstanceDefaultTable, instanceBaseInfoTable))
 	tx.MustExec(fmt.Sprintf(cInstanceRefundTable, instanceRefundTable))
 	tx.MustExec(fmt.Sprintf(cInvitationTable, invitationTable))
-	tx.MustExec(fmt.Sprintf(cAccountTable, accountTable))
+	tx.MustExec(fmt.Sprintf(cProviderInfoTable, providerInfoTable))
 	tx.MustExec(fmt.Sprintf(cAccessKeyTable, accessKeyTable))
 
 	return tx.Commit()

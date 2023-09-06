@@ -536,11 +536,12 @@ type AccountLoginResponse struct {
 }
 
 type InvitationInfo struct {
-	ID     string `db:"id"`
-	UserID string `db:"user_id"`
+	InvCode string `db:"invitation_code"`
+	ID      string `db:"id"`
 }
 
 type AccountInfo struct {
+	ID         string `db:"id"`
 	Email      string `db:"email"`
 	Address    string `db:"address"`
 	Filecoin   string `db:"filecoin"`

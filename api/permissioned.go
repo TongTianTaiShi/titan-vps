@@ -10,10 +10,10 @@ const (
 	RoleAdmin    auth.Permission = "admin" // Manage permissions
 	RoleDefault  auth.Permission = "default"
 	RoleUser     auth.Permission = "user"
-	RoleMerchant auth.Permission = "merchant"
+	RoleProvider auth.Permission = "provider"
 )
 
-var AllPermissions = []auth.Permission{RoleAdmin, RoleDefault, RoleUser, RoleMerchant}
+var AllPermissions = []auth.Permission{RoleAdmin, RoleDefault, RoleUser, RoleProvider}
 
 func permissionedProxies(in, out interface{}) {
 	outs := GetInternalStructs(out)

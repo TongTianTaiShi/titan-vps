@@ -2,11 +2,13 @@ package mall
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/LMF709268224/titan-vps/api"
 	"github.com/LMF709268224/titan-vps/api/terrors"
 	"github.com/filecoin-project/go-jsonrpc/auth"
 	"github.com/gbrlsnchs/jwt/v3"
+	uuid2 "github.com/google/uuid"
 	"math/rand"
 	"strings"
 	"time"
@@ -17,14 +19,13 @@ import (
 )
 
 func (m *Mall) LoginAccount(ctx context.Context, request *types.AccountRequest) (*types.AccountLoginResponse, error) {
-	if request.Type != types.LoginTypeEmail && request.Type != types.LoginTypeMetaMask {
-		return nil, fmt.Errorf("%s not supported", request.Type.String())
-	}
-
-	if request.Type == types.LoginTypeMetaMask {
+	switch request.Type {
+	case types.LoginTypeMetaMask:
 		return m.loginMetaMask(request)
-	} else {
+	case types.LoginTypeEmail:
 		return m.loginEmail(request)
+	default:
+		return nil, fmt.Errorf("%s not supported", request.Type.String())
 	}
 }
 
@@ -36,23 +37,28 @@ func (m *Mall) loginEmail(request *types.AccountRequest) (*types.AccountLoginRes
 		return nil, err
 	}
 
+	uuid, err := m.getProviderUUID(email, request.Type)
+	if err != nil {
+		return nil, err
+	}
+
 	p := types.JWTPayload{
-		ID:        email,
+		ID:        uuid,
 		LoginType: int64(request.Type),
-		Allow:     []auth.Permission{api.RoleMerchant},
+		Allow:     []auth.Permission{api.RoleProvider},
 	}
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 
-	err = m.updateDatabase(request, email)
+	err = m.updateDatabase(request, uuid, email)
 	if err != nil {
 		return nil, err
 	}
 
 	rsp := &types.AccountLoginResponse{}
-	rsp.UserID = email
+	rsp.UserID = uuid
 	rsp.Token = string(tk)
 
 	return rsp, nil
@@ -76,41 +82,62 @@ func (m *Mall) loginMetaMask(request *types.AccountRequest) (*types.AccountLogin
 		return nil, &api.ErrWeb{Code: terrors.UserMismatch.Int(), Message: fmt.Sprintf("%s,%s", userID, address)}
 	}
 
+	uuid, err := m.getProviderUUID(address, request.Type)
+	if err != nil {
+		return nil, err
+	}
+
 	p := types.JWTPayload{
-		ID:        address,
+		ID:        uuid,
 		LoginType: int64(request.Type),
-		Allow:     []auth.Permission{api.RoleMerchant},
+		Allow:     []auth.Permission{api.RoleProvider},
 	}
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 
-	err = m.updateDatabase(request, address)
+	err = m.updateDatabase(request, uuid, address)
 	if err != nil {
 		return nil, err
 	}
 
 	rsp := &types.AccountLoginResponse{}
-	rsp.UserID = address
+	rsp.UserID = uuid
 	rsp.Token = string(tk)
 
 	return rsp, nil
 }
 
-func (m *Mall) updateDatabase(request *types.AccountRequest, userID string) error {
-	ok, err := m.SQLDB.CheckMerchantIsExist(userID, request.Type)
+func (m *Mall) getProviderUUID(userID string, loginType types.LoginType) (string, error) {
+	uuid, err := m.SQLDB.GetProviderUUID(userID, loginType)
+	if err == sql.ErrNoRows {
+		id, err := uuid2.NewUUID()
+		if err != nil {
+			return "", fmt.Errorf("generate uuid failed, err: %s", err)
+		}
+
+		return id.String(), nil
+	} else if err != nil {
+		return "", err
+	} else {
+		return uuid, nil
+	}
+}
+
+func (m *Mall) updateDatabase(request *types.AccountRequest, id string, userID string) error {
+	ok, err := m.SQLDB.CheckMerchantIsExist(id, request.Type)
 	if err != nil {
 		return err
 	}
 
 	if !ok {
-		err = m.SQLDB.SaveMerchantInfo(userID, request.Type)
+		err = m.SQLDB.SaveProviderInfo(id, userID, request.Type)
 		if err != nil {
 			return err
 		}
 
-		err = m.SQLDB.UpdateInvitationUserID(request.InvitationCode, userID)
+		err = m.SQLDB.UpdateInvitationUUID(request.InvitationCode, id)
 		if err != nil {
 			return err
 		}

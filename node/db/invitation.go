@@ -6,22 +6,22 @@ import (
 )
 
 func (d *SQLDB) InsertInvitationCode(code string) error {
-	info := types.InvitationInfo{ID: code}
+	info := types.InvitationInfo{InvCode: code}
 	query := fmt.Sprintf(
-		`INSERT IGNORE INTO %s (id) VALUES (:id)`, invitationTable)
+		`INSERT INTO %s (invitation_code) VALUES (:invitation_code)`, invitationTable)
 	_, err := d.db.NamedExec(query, info)
 
 	return err
 }
 
-func (d *SQLDB) UpdateInvitationUserID(code, userID string) error {
+func (d *SQLDB) UpdateInvitationUUID(code, uuid string) error {
 	info := types.InvitationInfo{
-		ID:     code,
-		UserID: userID,
+		InvCode: code,
+		ID:      uuid,
 	}
 
 	query := fmt.Sprintf(
-		`UPDATE %s SET user_id = COALESCE(:user_id, user_id) WHERE id = :id`, invitationTable)
+		`UPDATE %s SET id = :id WHERE id IS NULL AND invitation_code = :invitation_code`, invitationTable)
 	result, err := d.db.NamedExec(query, info)
 	if err != nil {
 		return err
