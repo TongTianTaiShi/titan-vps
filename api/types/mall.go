@@ -522,8 +522,7 @@ type AccountRequest struct {
 	Address  string
 	Filecoin string
 
-	UsePassword bool
-	Password    string
+	Password string
 
 	VerifyCode string
 

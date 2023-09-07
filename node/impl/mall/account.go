@@ -19,6 +19,7 @@ import (
 )
 
 func (m *Mall) LoginAccount(ctx context.Context, request *types.AccountRequest) (*types.AccountLoginResponse, error) {
+	m.Cache.Set("448688985@qq.com", "123456")
 	switch request.Type {
 	case types.LoginTypeMetaMask:
 		return m.loginMetaMask(request)
@@ -32,32 +33,30 @@ func (m *Mall) LoginAccount(ctx context.Context, request *types.AccountRequest) 
 }
 
 func (m *Mall) loginEmail(request *types.AccountRequest) (*types.AccountLoginResponse, error) {
-	if request.Email == "" {
-		return nil, fmt.Errorf("")
-	} else if request.UsePassword && request.Password == "" {
-		return nil, fmt.Errorf("")
-	} else if !request.UsePassword && request.VerifyCode == "" {
-		return nil, fmt.Errorf("")
+	if request.Email == "" || !(request.VerifyCode != "" && request.Password != "") {
+		return nil, &api.ErrWeb{Code: terrors.ProviderRequestParameterError.Int(), Message: terrors.ProviderRequestParameterError.String()}
 	}
 
 	uuid, err := m.getProviderUUID(request.Email, request.Type)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to obtain provider's uuid")
 	}
 
-	if request.UsePassword {
-		return nil, fmt.Errorf("not support password login")
-		//Todo! check password
+	if request.VerifyCode != "" {
+		if err = m.Cache.Check(request.Email, request.VerifyCode); err != nil {
+			return nil, fmt.Errorf("verify code authentication failed")
+		}
 	} else {
-		err = m.Cache.Check(request.Email, request.VerifyCode)
-		if err != nil {
-			return nil, err
+		if ok, err := m.SQLDB.CheckPassword(uuid, request.Password); err != nil {
+			return nil, fmt.Errorf("failed to find password")
+		} else if !ok {
+			return nil, fmt.Errorf("password error")
 		}
 	}
 
 	tk, err := m.signJWTToken(uuid, request.Type, []auth.Permission{api.RoleProvider})
 	if err != nil {
-		return nil, err
+		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 
 	err = m.updateDatabase(request, uuid, request.Email)
@@ -74,10 +73,8 @@ func (m *Mall) loginEmail(request *types.AccountRequest) (*types.AccountLoginRes
 }
 
 func (m *Mall) loginMetaMask(request *types.AccountRequest) (*types.AccountLoginResponse, error) {
-	if request.Address == "" {
-		return nil, fmt.Errorf("")
-	} else if request.Signature == "" {
-		return nil, fmt.Errorf("")
+	if request.Address == "" || request.Signature == "" {
+		return nil, &api.ErrWeb{Code: terrors.ProviderRequestParameterError.Int(), Message: terrors.ProviderRequestParameterError.String()}
 	}
 
 	uuid, err := m.getProviderUUID(request.Address, request.Type)
@@ -92,7 +89,7 @@ func (m *Mall) loginMetaMask(request *types.AccountRequest) (*types.AccountLogin
 
 	tk, err := m.signJWTToken(uuid, request.Type, []auth.Permission{api.RoleProvider})
 	if err != nil {
-		return nil, err
+		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 
 	err = m.updateDatabase(request, uuid, request.Address)
@@ -109,10 +106,8 @@ func (m *Mall) loginMetaMask(request *types.AccountRequest) (*types.AccountLogin
 }
 
 func (m *Mall) loginFilecoin(request *types.AccountRequest) (*types.AccountLoginResponse, error) {
-	if request.Filecoin == "" {
-		return nil, fmt.Errorf("")
-	} else if request.Address == "" || request.Signature == "" {
-		return nil, fmt.Errorf("")
+	if request.Filecoin == "" || request.Address == "" || request.Signature == "" {
+		return nil, &api.ErrWeb{Code: terrors.ProviderRequestParameterError.Int(), Message: terrors.ProviderRequestParameterError.String()}
 	}
 
 	uuid, err := m.getProviderUUID(request.Filecoin, request.Type)
@@ -127,7 +122,7 @@ func (m *Mall) loginFilecoin(request *types.AccountRequest) (*types.AccountLogin
 
 	tk, err := m.signJWTToken(uuid, request.Type, []auth.Permission{api.RoleProvider})
 	if err != nil {
-		return nil, err
+		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 
 	err = m.updateDatabase(request, uuid, request.Filecoin)
@@ -170,7 +165,7 @@ func (m *Mall) signJWTToken(id string, loginType types.LoginType, allow []auth.P
 
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
-		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
+		return nil, err
 	}
 
 	return tk, nil
@@ -193,13 +188,10 @@ func (m *Mall) getProviderUUID(userID string, loginType types.LoginType) (string
 }
 
 func (m *Mall) updateDatabase(request *types.AccountRequest, id string, loginAddress string) error {
-	ok, err := m.SQLDB.CheckProviderIsExist(id, request.Type)
-	if err != nil {
+	if exist, err := m.SQLDB.CheckProviderIsExist(id); err != nil {
 		return err
-	}
-
-	if !ok {
-		err = m.SQLDB.SaveProviderInfo(id, loginAddress, request.Type)
+	} else if !exist {
+		err = m.SQLDB.SaveProviderInfo(id, loginAddress, request.Type, request.Password)
 		if err != nil {
 			return err
 		}

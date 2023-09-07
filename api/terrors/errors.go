@@ -76,7 +76,15 @@ func (e TError) String() string {
 		return "get info error,please retry"
 	case ThisInstanceNotSupportOperation:
 		return "this instance not support operation"
+	case ProviderRequestParameterError:
+		return "provider request parameter error"
 	default:
 		return ""
 	}
 }
+
+const (
+	ProviderRequestParameterError TError = iota + 20000 //请求参数异常
+	ProviderNotFound                                    //用户未找到
+
+)

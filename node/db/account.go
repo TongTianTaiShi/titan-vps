@@ -7,13 +7,23 @@ import (
 	//"time"
 )
 
-func (d *SQLDB) SaveProviderInfo(id, loginAddress string, loginType types.LoginType) error {
+func (d *SQLDB) CheckPassword(id, passwd string) (bool, error) {
+	var tmp string
+	err := d.db.QueryRow(fmt.Sprintf(
+		`SELECT passwd FROM %s WHERE id = ?`, providerInfoTable), id).Scan(&tmp)
+	if err != nil {
+		return false, err
+	}
+	return tmp == passwd, nil
+}
+
+func (d *SQLDB) SaveProviderInfo(id, loginAddress string, loginType types.LoginType, passwd string) error {
 	now := time.Now().Unix()
 	switch loginType {
 	case types.LoginTypeMetaMask:
 		return d.saveProviderInfoByAddress(id, loginAddress, now)
 	case types.LoginTypeEmail:
-		return d.saveProviderInfoByEmail(id, loginAddress, now)
+		return d.saveProviderInfoByEmail(id, loginAddress, passwd, now)
 	case types.LoginTypeFilecoin:
 		return d.saveProviderInfoByFilecoin(id, loginAddress, now)
 	default:
@@ -21,10 +31,10 @@ func (d *SQLDB) SaveProviderInfo(id, loginAddress string, loginType types.LoginT
 	}
 }
 
-func (d *SQLDB) saveProviderInfoByEmail(id, email string, now int64) error {
-	info := types.AccountInfo{ID: id, Email: email, CreateTime: now}
+func (d *SQLDB) saveProviderInfoByEmail(id, email, passwd string, now int64) error {
+	info := types.AccountInfo{ID: id, Email: email, CreateTime: now, Password: passwd}
 	query := fmt.Sprintf(
-		`INSERT INTO %s (id, email, create_time) VALUES (:id, :email, :create_time)`, providerInfoTable)
+		`INSERT INTO %s (id, email, passwd, create_time) VALUES (:id, :email, :passwd, :create_time)`, providerInfoTable)
 	_, err := d.db.NamedExec(query, info)
 	return err
 }
@@ -45,7 +55,15 @@ func (d *SQLDB) saveProviderInfoByFilecoin(id, address string, now int64) error 
 	return err
 }
 
-func (d *SQLDB) CheckProviderIsExist(userID string, loginType types.LoginType) (bool, error) {
+func (d *SQLDB) CheckProviderIsExist(id string) (bool, error) {
+	var count int
+	err := d.db.QueryRow(fmt.Sprintf(
+		`SELECT COUNT(*) FROM %s WHERE id = ?`, providerInfoTable), id).Scan(&count)
+
+	return checkIsExist(count, err)
+}
+
+func (d *SQLDB) CheckProviderIsUse(userID string, loginType types.LoginType) (bool, error) {
 	switch loginType {
 	case types.LoginTypeMetaMask:
 		return d.checkAddressIsExist(userID)
@@ -74,10 +92,10 @@ func (d *SQLDB) checkAddressIsExist(address string) (bool, error) {
 	return checkIsExist(count, err)
 }
 
-func (d *SQLDB) checkFilecoinIsExist(address string) (bool, error) {
+func (d *SQLDB) checkFilecoinIsExist(filecoin string) (bool, error) {
 	var count int
 	err := d.db.QueryRow(fmt.Sprintf(
-		`SELECT COUNT(*) FROM %s WHERE filecoin = ?`, providerInfoTable), address).Scan(&count)
+		`SELECT COUNT(*) FROM %s WHERE filecoin = ?`, providerInfoTable), filecoin).Scan(&count)
 
 	return checkIsExist(count, err)
 }

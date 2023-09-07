@@ -103,11 +103,13 @@ var loginCmd = &cli.Command{
 		email := cctx.String("email")
 		inv := cctx.String("inv")
 		verify := cctx.String("verify")
+		passwd := cctx.String("passwd")
 		req := &types.AccountRequest{
 			Type:           2,
 			VerifyCode:     verify,
 			Email:          email,
 			InvitationCode: inv,
+			Password:       passwd,
 		}
 		response, err := api.LoginAccount(ctx, req)
 		if err != nil {
