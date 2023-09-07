@@ -79,13 +79,16 @@ var loginCmd = &cli.Command{
 	Usage: "login",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name: "id",
+			Name: "email",
+		},
+		&cli.StringFlag{
+			Name: "verify",
 		},
 		&cli.StringFlag{
 			Name: "inv",
 		},
 		&cli.StringFlag{
-			Name: "ext",
+			Name: "passwd",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
@@ -97,13 +100,13 @@ var loginCmd = &cli.Command{
 		}
 		defer closer()
 
-		id := cctx.String("id")
+		email := cctx.String("email")
 		inv := cctx.String("inv")
-		ext := cctx.String("ext")
+		verify := cctx.String("verify")
 		req := &types.AccountRequest{
 			Type:           2,
-			UserID:         id,
-			Ext:            ext,
+			VerifyCode:     verify,
+			Email:          email,
 			InvitationCode: inv,
 		}
 		response, err := api.LoginAccount(ctx, req)

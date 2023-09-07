@@ -7,15 +7,15 @@ import (
 	//"time"
 )
 
-func (d *SQLDB) SaveProviderInfo(id, userID string, loginType types.LoginType) error {
+func (d *SQLDB) SaveProviderInfo(id, loginAddress string, loginType types.LoginType) error {
 	now := time.Now().Unix()
 	switch loginType {
 	case types.LoginTypeMetaMask:
-		return d.saveProviderInfoByAddress(id, userID, now)
+		return d.saveProviderInfoByAddress(id, loginAddress, now)
 	case types.LoginTypeEmail:
-		return d.saveProviderInfoByEmail(id, userID, now)
+		return d.saveProviderInfoByEmail(id, loginAddress, now)
 	case types.LoginTypeFilecoin:
-		return d.saveProviderInfoByFilecoin(id, userID, now)
+		return d.saveProviderInfoByFilecoin(id, loginAddress, now)
 	default:
 		return fmt.Errorf("%s not  supported", loginType.String())
 	}
@@ -45,7 +45,7 @@ func (d *SQLDB) saveProviderInfoByFilecoin(id, address string, now int64) error 
 	return err
 }
 
-func (d *SQLDB) CheckMerchantIsExist(userID string, loginType types.LoginType) (bool, error) {
+func (d *SQLDB) CheckProviderIsExist(userID string, loginType types.LoginType) (bool, error) {
 	switch loginType {
 	case types.LoginTypeMetaMask:
 		return d.checkAddressIsExist(userID)

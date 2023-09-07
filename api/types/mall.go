@@ -518,21 +518,23 @@ type GetRechargeAddressResponse struct {
 type AccountRequest struct {
 	Type LoginType
 
-	// if Type == LoginTypeMetaMask =>
-	//		UserID is ? 		&&	Ext is signature
-	// if Type == LoginTypeEmail 	=>
-	//		UserID is email		&&	Ext is verify code
-	// if Type == LoginTypeFilecoin =>
-	//		UserID is ?			&&	Ext is ?
-	UserID string
-	Ext    string
+	Email    string
+	Address  string
+	Filecoin string
+
+	UsePassword bool
+	Password    string
+
+	VerifyCode string
+
+	Signature string
 
 	InvitationCode string
 }
 
 type AccountLoginResponse struct {
-	UserID string
-	Token  string
+	ID    string
+	Token string
 }
 
 type InvitationInfo struct {
@@ -545,5 +547,6 @@ type AccountInfo struct {
 	Email      string `db:"email"`
 	Address    string `db:"address"`
 	Filecoin   string `db:"filecoin"`
+	Password   string `db:"passwd"`
 	CreateTime int64  `db:"create_time"`
 }

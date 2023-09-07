@@ -24,89 +24,156 @@ func (m *Mall) LoginAccount(ctx context.Context, request *types.AccountRequest) 
 		return m.loginMetaMask(request)
 	case types.LoginTypeEmail:
 		return m.loginEmail(request)
+	case types.LoginTypeFilecoin:
+		return m.loginFilecoin(request)
 	default:
 		return nil, fmt.Errorf("%s not supported", request.Type.String())
 	}
 }
 
 func (m *Mall) loginEmail(request *types.AccountRequest) (*types.AccountLoginResponse, error) {
-	email := request.UserID
-	verifyCode := request.Ext
-	err := m.Cache.Check(email, verifyCode)
+	if request.Email == "" {
+		return nil, fmt.Errorf("")
+	} else if request.UsePassword && request.Password == "" {
+		return nil, fmt.Errorf("")
+	} else if !request.UsePassword && request.VerifyCode == "" {
+		return nil, fmt.Errorf("")
+	}
+
+	uuid, err := m.getProviderUUID(request.Email, request.Type)
 	if err != nil {
 		return nil, err
 	}
 
-	uuid, err := m.getProviderUUID(email, request.Type)
+	if request.UsePassword {
+		return nil, fmt.Errorf("not support password login")
+		//Todo! check password
+	} else {
+		err = m.Cache.Check(request.Email, request.VerifyCode)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	tk, err := m.signJWTToken(uuid, request.Type, []auth.Permission{api.RoleProvider})
 	if err != nil {
 		return nil, err
 	}
 
-	p := types.JWTPayload{
-		ID:        uuid,
-		LoginType: int64(request.Type),
-		Allow:     []auth.Permission{api.RoleProvider},
-	}
-	tk, err := jwt.Sign(&p, m.APISecret)
-	if err != nil {
-		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
-	}
-
-	err = m.updateDatabase(request, uuid, email)
+	err = m.updateDatabase(request, uuid, request.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	rsp := &types.AccountLoginResponse{}
-	rsp.UserID = uuid
-	rsp.Token = string(tk)
+	rsp := &types.AccountLoginResponse{
+		ID:    uuid,
+		Token: string(tk),
+	}
 
 	return rsp, nil
 }
 
 func (m *Mall) loginMetaMask(request *types.AccountRequest) (*types.AccountLoginResponse, error) {
-	userID := request.UserID
-
-	code, err := m.AccountMgr.GetSignCode(userID)
-	if err != nil {
-		return nil, &api.ErrWeb{Code: terrors.NotFoundSignCode.Int(), Message: terrors.NotFoundSignCode.String()}
+	if request.Address == "" {
+		return nil, fmt.Errorf("")
+	} else if request.Signature == "" {
+		return nil, fmt.Errorf("")
 	}
 
-	signature := request.Ext
-	address, err := verifyEthMessage(code, signature)
-	if err != nil {
-		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
-	}
-
-	if strings.ToLower(userID) != strings.ToLower(address) {
-		return nil, &api.ErrWeb{Code: terrors.UserMismatch.Int(), Message: fmt.Sprintf("%s,%s", userID, address)}
-	}
-
-	uuid, err := m.getProviderUUID(address, request.Type)
+	uuid, err := m.getProviderUUID(request.Address, request.Type)
 	if err != nil {
 		return nil, err
 	}
 
-	p := types.JWTPayload{
-		ID:        uuid,
-		LoginType: int64(request.Type),
-		Allow:     []auth.Permission{api.RoleProvider},
+	err = m.checkSignature(request)
+	if err != nil {
+		return nil, err
 	}
+
+	tk, err := m.signJWTToken(uuid, request.Type, []auth.Permission{api.RoleProvider})
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.updateDatabase(request, uuid, request.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := &types.AccountLoginResponse{
+		ID:    uuid,
+		Token: string(tk),
+	}
+
+	return rsp, nil
+}
+
+func (m *Mall) loginFilecoin(request *types.AccountRequest) (*types.AccountLoginResponse, error) {
+	if request.Filecoin == "" {
+		return nil, fmt.Errorf("")
+	} else if request.Address == "" || request.Signature == "" {
+		return nil, fmt.Errorf("")
+	}
+
+	uuid, err := m.getProviderUUID(request.Filecoin, request.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.checkSignature(request)
+	if err != nil {
+		return nil, err
+	}
+
+	tk, err := m.signJWTToken(uuid, request.Type, []auth.Permission{api.RoleProvider})
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.updateDatabase(request, uuid, request.Filecoin)
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := &types.AccountLoginResponse{
+		ID:    uuid,
+		Token: string(tk),
+	}
+
+	return rsp, nil
+}
+
+func (m *Mall) checkSignature(request *types.AccountRequest) error {
+	code, err := m.AccountMgr.GetSignCode(request.Address)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.NotFoundSignCode.Int(), Message: terrors.NotFoundSignCode.String()}
+	}
+
+	publicKey, err := verifyEthMessage(code, request.Signature)
+	if err != nil {
+		return &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
+	}
+
+	if strings.ToLower(request.Address) != strings.ToLower(publicKey) {
+		return &api.ErrWeb{Code: terrors.UserMismatch.Int(), Message: fmt.Sprintf("%s,%s", request.Address, publicKey)}
+	}
+
+	return nil
+}
+
+func (m *Mall) signJWTToken(id string, loginType types.LoginType, allow []auth.Permission) ([]byte, error) {
+	p := types.JWTPayload{
+		ID:        id,
+		LoginType: int64(loginType),
+		Allow:     allow,
+	}
+
 	tk, err := jwt.Sign(&p, m.APISecret)
 	if err != nil {
 		return nil, &api.ErrWeb{Code: terrors.SignError.Int(), Message: err.Error()}
 	}
 
-	err = m.updateDatabase(request, uuid, address)
-	if err != nil {
-		return nil, err
-	}
-
-	rsp := &types.AccountLoginResponse{}
-	rsp.UserID = uuid
-	rsp.Token = string(tk)
-
-	return rsp, nil
+	return tk, nil
 }
 
 func (m *Mall) getProviderUUID(userID string, loginType types.LoginType) (string, error) {
@@ -125,14 +192,14 @@ func (m *Mall) getProviderUUID(userID string, loginType types.LoginType) (string
 	}
 }
 
-func (m *Mall) updateDatabase(request *types.AccountRequest, id string, userID string) error {
-	ok, err := m.SQLDB.CheckMerchantIsExist(id, request.Type)
+func (m *Mall) updateDatabase(request *types.AccountRequest, id string, loginAddress string) error {
+	ok, err := m.SQLDB.CheckProviderIsExist(id, request.Type)
 	if err != nil {
 		return err
 	}
 
 	if !ok {
-		err = m.SQLDB.SaveProviderInfo(id, userID, request.Type)
+		err = m.SQLDB.SaveProviderInfo(id, loginAddress, request.Type)
 		if err != nil {
 			return err
 		}

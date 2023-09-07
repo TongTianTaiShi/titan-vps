@@ -154,8 +154,9 @@ var cInvitationTable = `
 var cProviderInfoTable = `
 	CREATE TABLE if not exists %s (
 		id VARCHAR(128) NOT NULL,
-	    email VARCHAR(128),
 	    address VARCHAR(128),
+	    email VARCHAR(128),
+		passwd VARCHAR(128),
 	    filecoin VARCHAR(128),
 	    create_time BIGINT(20),
 	    PRIMARY KEY (id)
